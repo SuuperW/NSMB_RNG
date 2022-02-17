@@ -23,6 +23,7 @@ namespace NSMB_RNG
 
         private ReadOnlySpan<byte> msgSpan => new ReadOnlySpan<byte>(msg, 32);
         private void* msg;
+        const int msgSize = 32;
 
         public bool is3DS = false;
 
@@ -117,25 +118,28 @@ namespace NSMB_RNG
 
         public SeedInitParams(ulong MACAddress, DateTime dt, bool _3DS = false)
         {
-            IntPtr ptr = Marshal.AllocHGlobal(32);
+            IntPtr ptr = Marshal.AllocHGlobal(msgSize);
             msg = (void*)ptr;
-            int* z = (int*)ptr;
-            for (int i = 0; i < 8; i++)
-                z[i] = 0;
+            long* zeroMe = (long*)ptr;
+            for (int i = 0; i < msgSize / sizeof(long); i++)
+                zeroMe[i] = 0;
 
-            VFrame = 0;
+            VFrame = 0; // we have set this before setting the MAC, because of the way the setters handle their overlap
             is3DS = _3DS;
-            SetMAC(MACAddress);
-
-            Year = dt.Year - 2000;
-            Month = dt.Month;
-            DayOfMonth = dt.Day;
-            DayOfWeek = (int)dt.DayOfWeek;
-            Hour = dt.Hour;
-            Minute = dt.Minute;
-            Second = dt.Second;
-
             Buttons = 0;
+
+            SetMAC(MACAddress);
+            SetDateTime(dt);
+        }
+
+        public SeedInitParams(SeedInitParams other)
+        {
+            IntPtr ptr = Marshal.AllocHGlobal(msgSize);
+            msg = (void*)ptr;
+            long* thisMsg = (long*)ptr;
+            long* otherMsg = (long*)other.msg;
+            for (int i = 0; i < msgSize / sizeof(long); i++)
+                thisMsg[i] = otherMsg[i];
         }
 
         ~SeedInitParams()
@@ -157,6 +161,22 @@ namespace NSMB_RNG
                 uint* sha1Parts = (uint*)ptrBytes;
                 return sha1Parts[0] ^ sha1Parts[1] ^ sha1Parts[2] ^ sha1Parts[3] ^ sha1Parts[4];
             }
+        }
+
+        public DateTime GetDateTime()
+        {
+            return new DateTime(Year + 2000, Month, DayOfMonth, Hour, Minute, Second);
+        }
+
+        public void SetDateTime(DateTime dt)
+        {
+            Year = dt.Year - 2000;
+            Month = dt.Month;
+            DayOfMonth = dt.Day;
+            DayOfWeek = (int)dt.DayOfWeek;
+            Hour = dt.Hour;
+            Minute = dt.Minute;
+            Second = dt.Second;
         }
 
         public override string ToString()

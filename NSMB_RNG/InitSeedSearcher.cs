@@ -5,15 +5,17 @@
         public int minTimer0, maxTimer0;
         public int minVCount, maxVCount;
         public uint minVFrame, maxVFrame;
-        public int minSeconds, maxSeconds;
+        public int secondsRange;
 
         private SeedInitParams seedParams;
-        uint desiredSeed;
+        private HashSet<uint> desiredSeeds;
 
-        public InitSeedSearcher(SeedInitParams seedInitParams, uint desiredSeed)
+        public InitSeedSearcher(SeedInitParams seedInitParams, IEnumerable<uint> desiredSeeds)
         {
             seedParams = seedInitParams;
-            this.desiredSeed = desiredSeed;
+            this.desiredSeeds = new HashSet<uint>();
+            foreach (uint s in desiredSeeds)
+                this.desiredSeeds.Add(s);
 
             minTimer0 = 0;
             maxTimer0 = 0x5FF; // Idk if that's right. Idk what timer0 is.
@@ -21,35 +23,40 @@
             maxVCount = 263; // 262?
             minVFrame = 1; // Lowest I've seen is 4.
             maxVFrame = 8; // Highest I've seen is 5.
-            minSeconds = 0;
-            maxSeconds = 0;
+
+            secondsRange = 0;
         }
 
-        public SeedInitParams FindSeed()
+        public List<SeedInitParams> FindSeeds()
         {
-            for (ushort timer0 = (ushort)minTimer0; timer0 <= maxTimer0; timer0++)
+            // We will iterate over the chosen range for timer0, vcount, vframe, and seconds.
+            List<SeedInitParams> list = new List<SeedInitParams>();
+            DateTime dt = seedParams.GetDateTime();
+            for (int secs = 0; secs <= secondsRange; secs++)
             {
-                seedParams.Timer0 = timer0;
-                for (ushort vCount = (ushort)minVCount; vCount <= maxVCount; vCount++)
+                for (ushort timer0 = (ushort)minTimer0; timer0 <= maxTimer0; timer0++)
                 {
-                    seedParams.VCount = vCount;
-                    for (uint vFrame = minVFrame; vFrame <= maxVFrame; vFrame++)
+                    seedParams.Timer0 = timer0;
+                    for (ushort vCount = (ushort)minVCount; vCount <= maxVCount; vCount++)
                     {
-                        seedParams.VFrame = vFrame;
-                        for (int secs = minSeconds; secs <= maxSeconds; secs++)
+                        seedParams.VCount = vCount;
+                        for (uint vFrame = minVFrame; vFrame <= maxVFrame; vFrame++)
                         {
-                            seedParams.Second = secs;
-                            if (seedParams.GetSeed() == desiredSeed)
-                                return seedParams;
+                            seedParams.VFrame = vFrame;
+                            if (desiredSeeds.Contains(seedParams.GetSeed()))
+                                list.Add(new SeedInitParams(seedParams));
                         }
                     }
                 }
+                // Increment seconds
+                dt.AddSeconds(1);
+                seedParams.SetDateTime(dt);
 
                 // Progress reporting
-                Console.WriteLine("Searched timer0: " + timer0);
+                Console.WriteLine("Searched second " + secs);
             }
 
-            return null;
+            return list;
         }
     }
 }
