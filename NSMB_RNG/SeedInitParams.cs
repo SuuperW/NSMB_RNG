@@ -24,6 +24,8 @@ namespace NSMB_RNG
         private ReadOnlySpan<byte> msgSpan => new ReadOnlySpan<byte>(msg, 32);
         private void* msg;
 
+        public bool is3DS = false;
+
         public ushort Timer0
         {
             get => ((ushort*)msg)[0];
@@ -81,7 +83,7 @@ namespace NSMB_RNG
             set
             {
                 byte v = ToBCD(value);
-                if (value >= 12) v += 0x40;
+                if (!is3DS && value >= 12) v += 0x40;
                 ((byte*)msg)[16] = v;
             } 
         }
@@ -113,7 +115,7 @@ namespace NSMB_RNG
             return tens * 10 + (input & 0xf);
         }
 
-        public SeedInitParams(ulong MACAddress, DateTime dt)
+        public SeedInitParams(ulong MACAddress, DateTime dt, bool _3DS = false)
         {
             IntPtr ptr = Marshal.AllocHGlobal(32);
             msg = (void*)ptr;
@@ -122,6 +124,7 @@ namespace NSMB_RNG
                 z[i] = 0;
 
             VFrame = 0;
+            is3DS = _3DS;
             SetMAC(MACAddress);
 
             Year = dt.Year - 2000;
