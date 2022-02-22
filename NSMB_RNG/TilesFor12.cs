@@ -8,7 +8,7 @@
         const int TILES_PER_ROW = 27;
         const int TILES_PER_SCREEN_VERTICAL = 12;
         char[] tileLetters = new char[] { 'H', 'E', 'P', 'C', 'B', 'A' };
-        // TODO: Names. Consider changing A to Submarine, H to Bean/Bell/Liver, B to Turtle
+        // TODO: Names. Consider changing A to Submarine, H to Bean/Bell/Liver, B to Turtle/Porkchop
 
         private uint LCRNG_NSMB(uint v)
         {
@@ -120,8 +120,6 @@
             Console.WriteLine("2a) Enter 1-2. This must be the first level (including special levels such as toad house) that the game loads.");
             Console.WriteLine("2b) Pause the game before the camera begins scrolling down.");
             Console.WriteLine("2c) Visually identify the first 7 randomized tiles in the first, top row of tiles. Refer to the tiles.png file for clarification and for the tile names used by the program.");
-            Console.WriteLine("-- If the visible tiles are all the same, go back to step 1b and choose a different time. This is extremely unlikley to happen, but if it does the program will not work.");
-            // TODO: Verify that the above warning is necessary. Check that 1-cycle has only dead ends leading to it, and that no small-cycles give all identical tiles.
             Console.WriteLine("-- Double or triple-check that you enter the tiles correctly! The process of finding RNG seeds can take a long time, and will not work at all if any of the entered values are incorrect.");
             Console.WriteLine("3a) The program will use a lookup table to identify all 'intermediate' RNG values that lead to this sequence of tiles.");
             Console.WriteLine("-- The 'intermediate' RNG values are tracked for optimization reasons. Actual initial RNG seeds will be calculated later on.");
@@ -135,7 +133,12 @@
             int[] inputTiles = getFirstSevenTiles();
 
             // Step 3a
-            List<uint> lookupResults = new List<uint>(); // TODO
+            List<uint> lookupResults = lookUpRNGByTiles(inputTiles);
+            if (lookupResults.Count == 0) // should never happen
+            {
+                Console.WriteLine("There are no RNG values that lead to the given set of tiles. Maybe you mis-typed one?");
+                return null;
+            }
             // processing data
             List<uint> currentValues = new List<uint>();
             foreach (uint v in lookupResults)
@@ -166,55 +169,61 @@
 
             // Step 3b
             inputTiles = getAllTiles("second");
-            int currentIndex = 0;
-            while (currentIndex < lookupResults.Count)
+            int distinctValues = removeNonmatchingValues(lookupResults, currentValues, inputTiles);
+            if (distinctValues == 0) // should never happen
             {
-                // Check if this value matches the input for 11 tiles.
-                uint v = currentValues[currentIndex];
-                bool match = true;
-                for (int i = 0; i < inputTiles.Length; i++)
-                {
-                    v = LCRNG_NSMB(v);
-                    uint tID = tileIDwithAfterStep(v);
-                    if (tID != inputTiles[i])
-                    {
-                        match = false;
-                        break;
-                    }
-                }
-                // If not match, remove this entry from the list of possible 'intermediate' RNG values.
-                if (!match)
-                {
-                    lookupResults.RemoveAt(currentIndex);
-                    currentValues.RemoveAt(currentIndex);
-                    continue;
-                }
-                // Move to the next row
-                for (int i = inputTiles.Length; i < TILES_PER_ROW; i++)
-                    v = LCRNG_NSMB(v);
-                // Update
-                currentValues[currentIndex] = v;
-                currentIndex++;
-            }
-
-            // Find values that have converged
-            HashSet<uint> distinctValues = new HashSet<uint>();
-            for (int i = 0; i < currentValues.Count; i++)
-            {
-                if (distinctValues.Contains(currentValues[i]))
-                    currentValues[i] = 0; // 0 is not a possible result of LCRNG_NSMB
-                else
-                    distinctValues.Add(currentValues[i]);
+                Console.WriteLine("There are no RNG values that lead to the given set of tiles. Maybe you mis-typed one?");
+                return null;
             }
 
             // Step 3c: Determine if the list is small enough (meaning, only 1 distinct value).
-            // If not, ask for second-to-last row and basically repeat step 3b.
-            // Then check again, and maybe ask for last row.
+            if (distinctValues != 1)
+            {
+                // If not, ask for second-to-last row and basically repeat step 3b.
+                inputTiles = getAllTiles("second-to-last");
+                removeNonmatchingValues(lookupResults, currentValues, inputTiles);
+                distinctValues = removeNonmatchingValues(lookupResults, currentValues, inputTiles);
+                if (distinctValues == 0) // should never happen
+                {
+                    Console.WriteLine("There are no RNG values that lead to the given set of tiles. Maybe you mis-typed one?");
+                    return null;
+                }
+                // Then check again, and maybe ask for last row.
+                if (distinctValues != 1)
+                {
+                    inputTiles = getAllTiles("last");
+                    removeNonmatchingValues(lookupResults, currentValues, inputTiles);
+                    distinctValues = removeNonmatchingValues(lookupResults, currentValues, inputTiles);
+                    if (distinctValues == 0) // should never happen
+                    {
+                        Console.WriteLine("There are no RNG values that lead to the given set of tiles. Maybe you mis-typed one?");
+                        return null;
+                    }
+                }
+            }
 
-            // Step 4a: If the list is still more than one distinct value, warn the user and offer to quit.
+            // Step 4a: If the list is large, warn the user and offer to quit.
+            if (lookupResults.Count > 10) // 10 is probably not large enough to bother warning about... but really I don't expect 10 to be possible
+            {
+                Console.WriteLine("There are " + lookupResults.Count + " potential 'intermediate' RNG values. The process of going back to initial RNG values may take a while.");
+                Console.Write("You can quit and try for a different seed if you want. Quit? [y/n]: ");
+                string? quit = Console.ReadLine();
+                if (!string.IsNullOrEmpty(quit) && quit[0] == 'y')
+                    return null;
+            }
             // Calculate all possible initial RNG values.
+            List<uint> initials = new List<uint>();
+            foreach (uint v in lookupResults)
+                initials.AddRange(reverseStep(v));
 
             // Step 4b: Save the list of initial RNG values.
+            FileStream fs = File.Open("initialValues.bin", FileMode.Create); // creates new or truncates
+            foreach (uint v in initials)
+                fs.Write(BitConverter.GetBytes(v));
+            fs.Close();
+            Console.WriteLine("Success! " + initials.Count + " values written to initialValues.bin.");
+
+            return initials;
         }
         private int[] getFirstSevenTiles()
         {
@@ -281,6 +290,76 @@
                 return tilesIntArray;
             else
                 return null;
+        }
+        private List<uint> lookUpRNGByTiles(int[] firstSeven)
+        {
+            string path = "path/to/my/files/";
+            string folder = firstSeven[0].ToString() + firstSeven[1].ToString() + firstSeven[2].ToString() + "/";
+            string file = firstSeven[3].ToString() + firstSeven[4].ToString() + firstSeven[5].ToString() + firstSeven[6].ToString();
+            FileStream fs = File.OpenRead(path + folder + file);
+            byte[] data = new byte[1024 * 210]; // all files are under 210KB
+            int bytesRead = 0;
+            // The Read method should read all bytes first time, but is not guaranteed to do so.
+            int count;
+            while ((count = fs.Read(data, bytesRead, data.Length - bytesRead)) != 0)
+            {
+                bytesRead += count;
+                if (bytesRead == data.Length)
+                    throw new Exception("There shouldn't be any files that big.");
+            }
+            fs.Close();
+
+            List<uint> values = new List<uint>(bytesRead / sizeof(uint));
+            for (int i = 0; i < data.Length; i += 4)
+                values.Add(BitConverter.ToUInt32(data, i));
+            return values;
+        }
+        /// <summary>
+        /// Returns the number of distinct values remaining in currentValues.
+        /// </summary>
+        private int removeNonmatchingValues(List<uint> lookupResults, List<uint> currentValues, int[] tiles)
+        {
+            int currentIndex = 0;
+            while (currentIndex < lookupResults.Count)
+            {
+                // Check if this value matches the input for 11 tiles.
+                uint v = currentValues[currentIndex];
+                bool match = true;
+                for (int i = 0; i < tiles.Length; i++)
+                {
+                    v = LCRNG_NSMB(v);
+                    uint tID = tileIDwithAfterStep(v);
+                    if (tID != tiles[i])
+                    {
+                        match = false;
+                        break;
+                    }
+                }
+                // If not match, remove this entry from the list of possible 'intermediate' RNG values.
+                if (!match)
+                {
+                    lookupResults.RemoveAt(currentIndex);
+                    currentValues.RemoveAt(currentIndex);
+                    continue;
+                }
+                // Move to the next row
+                for (int i = tiles.Length; i < TILES_PER_ROW; i++)
+                    v = LCRNG_NSMB(v);
+                // Update
+                currentValues[currentIndex] = v;
+                currentIndex++;
+            }
+
+            // Find values that have converged
+            HashSet<uint> distinctValues = new HashSet<uint>();
+            for (int i = 0; i < currentValues.Count; i++)
+            {
+                if (distinctValues.Contains(currentValues[i]))
+                    currentValues[i] = 0; // 0 is not a possible result of LCRNG_NSMB
+                else
+                    distinctValues.Add(currentValues[i]);
+            }
+            return distinctValues.Count;
         }
     }
 }
