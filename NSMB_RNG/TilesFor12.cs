@@ -15,6 +15,20 @@
             ulong a = ((ulong)0x0019660D * v + 0x3C6EF35F);
             return (uint)(a + (a >> 32));
         }
+        // LCRNG_NSMB can be re-written as:
+        // uint m = 0x0019660D
+        // uint a = 0x3C6EF35F
+        // ulong r = v*m + a
+        // ulong b = r + (r >> 32)
+        // return (u32)b
+        // Consider that m * 0x33333333 equals 0x51468fffaeb97. Let us call this value T. Note that (u32)(T + (T >> 32)) equals 0xffffffff.
+        // Let V be any input to nsmbStep such that the 33rd bit of r would be flipped by adding T.
+        // Then for all V, nsmbStep(V + 0x33333333) is equal to nsmbStep(V).
+        // Note that this only means that (r & 0xffffffff) must be greater than 0x51468, so most possible inputs to nsmbStep satisfy this condition.
+        // Let us call the set of all possible inputs that do NOT satisfy this condition E.
+        // So, for most values x, nsmbStep(x) equals nsmbStep(x + 0x33333333). In the case that x is in set E, nsmbStep(x) will be equal to nsmbStep(x + 0x33333333) + 1.
+        // Also, there are no two possible outputs of nsmbStep with a difference of less than 5, except in cases where one of the inputs is in set E. (In which case, the difference is 4 or 1.)
+        // Using these facts, reverseStep can search only up to 0x33333333, and find any remaining values by adding multiples of 0x33333333.
         private List<uint> reverseStep(uint v)
         {
             const uint m = 0x0019660D;
@@ -24,24 +38,16 @@
             const uint bigStepOffset = (uint)(twoP32 - (bigStep * m));
 
             uint tryMe = (v - LCRNG_NSMB(0)) / m;
-            uint lastTry = 0;
 
-            List<uint> allResults = new List<uint>(5);
 
-            while (tryMe >= lastTry) // loop until we pass uint.MaxValue
+            while (tryMe < 0x33333333)
             {
-                lastTry = tryMe;
-
                 uint result = LCRNG_NSMB(tryMe);
-                uint diff = result - v; // uint arithmetic may underflow
+                // We added one so that we can easily check if r is within 1 of v.
+                uint diff = result + 1 - v; // uint arithmetic may underflow
 
-                if (diff == 0)
-                {
-                    allResults.Add(tryMe);
-                    // Go to next value known to be before the next match
-                    uint bigStepsCount = (uint)((twoP32 - bigStep * m) / bigStepOffset);
-                    tryMe += bigStep * bigStepsCount;
-                }
+                if (diff <= 2)
+                    break;
                 // Underflow, result was less than v: Get back above v.
                 else if (diff >= 0x80000000)
                     tryMe += 1;
@@ -54,7 +60,21 @@
 
             }
 
-            return allResults;
+            if (tryMe >= 0x33333333)
+                return new List<uint>();
+            else
+            {
+                List<uint> allResults = new List<uint>(5);
+                uint tryMeToo = tryMe;
+                while (tryMeToo >= tryMe) // loop until tryMeToo overflows
+                {
+                    if (LCRNG_NSMB(tryMeToo) == v)
+                        allResults.Add(tryMeToo);
+
+                    tryMeToo += 0x33333333;
+                }
+                return allResults;
+            }
         }
 
         private uint tileIDwithBeforeStep(uint v)
