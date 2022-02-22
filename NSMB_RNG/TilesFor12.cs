@@ -30,6 +30,8 @@
 
             while (tryMe >= lastTry) // loop until we pass uint.MaxValue
             {
+                lastTry = tryMe;
+
                 uint result = LCRNG_NSMB(tryMe);
                 uint diff = result - v; // uint arithmetic may underflow
 
@@ -49,6 +51,7 @@
                     uint bigStepsCount = (diff + bigStepOffset - 1) / bigStepOffset;
                     tryMe += bigStep * bigStepsCount;
                 }
+
             }
 
             return allResults;
@@ -258,7 +261,7 @@
             bool inputIsValid = true;
             if (string.IsNullOrEmpty(rawInput))
                 inputIsValid = false;
-            else if (rawInput.Length == 7)
+            else if (rawInput.Length == count)
             {
                 rawInput = rawInput.ToUpper();
                 tilesIntArray = new int[7];
@@ -310,7 +313,7 @@
             fs.Close();
 
             List<uint> values = new List<uint>(bytesRead / sizeof(uint));
-            for (int i = 0; i < data.Length; i += 4)
+            for (int i = 0; i < bytesRead / sizeof(uint); i += sizeof(uint))
                 values.Add(BitConverter.ToUInt32(data, i));
             return values;
         }
