@@ -333,7 +333,7 @@
             fs.Close();
 
             List<uint> values = new List<uint>(bytesRead / sizeof(uint));
-            for (int i = 0; i < bytesRead / sizeof(uint); i += sizeof(uint))
+            for (int i = 0; i < bytesRead; i += sizeof(uint))
                 values.Add(BitConverter.ToUInt32(data, i));
             return values;
         }

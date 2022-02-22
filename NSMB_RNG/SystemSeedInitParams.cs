@@ -21,7 +21,7 @@ namespace NSMB_RNG
             Is3DS =   ((magic >> 31) & 0x1) == 1;
         }
 
-        public static uint GetMagic(SystemSeedInitParams seedParams, uint seconds = 0)
+        public static uint GetMagic(SeedInitParams seedParams)
         {
             uint magic = 0;
             // Verify
@@ -31,7 +31,7 @@ namespace NSMB_RNG
             magic = magic | ((uint)seedParams.Timer0 << 0);
             magic = magic | ((uint)seedParams.VCount << 12);
             magic = magic | (seedParams.VFrame << 24);
-            magic = magic | ((seedParams.Is3DS ? 1u : 0u) << 0);
+            magic = magic | ((seedParams.is3DS ? 1u : 0u) << 0);
             return magic;
         }
 

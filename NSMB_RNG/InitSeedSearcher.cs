@@ -18,11 +18,11 @@
                 this.desiredSeeds.Add(s);
 
             minTimer0 = 0;
-            maxTimer0 = 0x5FF; // Idk if that's right. Idk what timer0 is.
+            maxTimer0 = 0xfFF; // Idk if that's right. Idk what timer0 is.
             minVCount = 0;
             maxVCount = 263; // 262?
-            minVFrame = 1; // Lowest I've seen is 4.
-            maxVFrame = 8; // Highest I've seen is 5.
+            minVFrame = 0; // Lowest I've seen is 4.
+            maxVFrame = 0xf; // Highest I've seen is 5.
 
             secondsRange = 0;
         }
@@ -32,7 +32,7 @@
             // We will iterate over the chosen range for timer0, vcount, vframe, and seconds.
             List<SeedInitParams> list = new List<SeedInitParams>();
             DateTime dt = seedParams.GetDateTime();
-            for (int secs = 0; secs <= secondsRange; secs++)
+            for (int secs = 0; secs < secondsRange; secs++)
             {
                 for (ushort timer0 = (ushort)minTimer0; timer0 <= maxTimer0; timer0++)
                 {
