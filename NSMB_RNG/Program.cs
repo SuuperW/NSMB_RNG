@@ -28,13 +28,13 @@ int main()
         values.Add(BitConverter.ToUInt32(data, i));
 
     // Find the seed params!
-    SeedInitParams sip = new SeedInitParams(0x40f407f7d421, new DateTime(2000, 1, 1, 0, 0, 18));
+    SeedInitParams sip = new SeedInitParams(0x40f407f7d421, new DateTime(2000, 1, 1, 0, 0, 16));
     InitSeedSearcher iss = new InitSeedSearcher(sip, values);
-    iss.secondsRange = 1;
+    iss.secondsRange = 2;
     List<SeedInitParams> seedParams = iss.FindSeeds();
     for (int i = 0; i < seedParams.Count; i++)
     {
-        Console.WriteLine(SystemSeedInitParams.GetMagic(seedParams[i]));
+        Console.WriteLine(SystemSeedInitParams.GetMagic(seedParams[i]).ToString("x"));
     }
     Console.WriteLine("done");
 

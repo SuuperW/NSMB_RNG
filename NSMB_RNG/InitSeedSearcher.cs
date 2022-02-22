@@ -18,11 +18,11 @@
                 this.desiredSeeds.Add(s);
 
             minTimer0 = 0;
-            maxTimer0 = 0xfFF; // Idk if that's right. Idk what timer0 is.
+            maxTimer0 = 0x5FF; // Idk if that's right. Idk what timer0 is.
             minVCount = 0;
             maxVCount = 263; // 262?
-            minVFrame = 0; // Lowest I've seen is 4.
-            maxVFrame = 0xf; // Highest I've seen is 5.
+            minVFrame = 1; // Lowest I've seen is 4.
+            maxVFrame = 8; // Highest I've seen is 5.
 
             secondsRange = 0;
         }
@@ -49,7 +49,7 @@
                     }
                 }
                 // Increment seconds
-                dt.AddSeconds(1);
+                dt = dt.AddSeconds(1);
                 seedParams.SetDateTime(dt);
 
                 // Progress reporting

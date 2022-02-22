@@ -140,6 +140,9 @@ namespace NSMB_RNG
             long* otherMsg = (long*)other.msg;
             for (int i = 0; i < msgSize / sizeof(long); i++)
                 thisMsg[i] = otherMsg[i];
+
+            _mac = other._mac;
+            is3DS = other.is3DS;
         }
 
         ~SeedInitParams()
