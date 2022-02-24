@@ -13,11 +13,11 @@ namespace NSMB_RNG
         public uint VFrame;
         public bool Is3DS;
 
-        private SystemSeedInitParams(uint magic)
+        public SystemSeedInitParams(uint magic)
         {
             Timer0 =  (ushort)((magic >>  0) & 0xfff);
             VCount =  (ushort)((magic >> 12) & 0x1ff);
-            VFrame =  (magic >> 21) & 0xf;
+            VFrame =  (magic >> 24) & 0xf;
             Is3DS =   ((magic >> 31) & 0x1) == 1;
         }
 
@@ -31,8 +31,16 @@ namespace NSMB_RNG
             magic = magic | ((uint)seedParams.Timer0 << 0);
             magic = magic | ((uint)seedParams.VCount << 12);
             magic = magic | (seedParams.VFrame << 24);
-            magic = magic | ((seedParams.is3DS ? 1u : 0u) << 0);
+            magic = magic | ((seedParams.is3DS ? 1u : 0u) << 31);
             return magic;
+        }
+
+        public void SetSeedParams(SeedInitParams seedParams)
+        {
+            seedParams.Timer0 = Timer0;
+            seedParams.VCount = VCount;
+            seedParams.VFrame = VFrame;
+            seedParams.is3DS = Is3DS;
         }
 
         //public static SystemSeedInitParams DeSmuME_Personal = new SystemSeedInitParams(0x518, 0x28, 5);

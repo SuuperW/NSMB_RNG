@@ -94,7 +94,7 @@
             // Create arrays
             byte[][] tiles = new byte[4][];
             for (int i = 0; i < tiles.Length; i++)
-                tiles[i] = new byte[10];
+                tiles[i] = new byte[11];
 
             // Populate first two rows
             for (int row = 0; row < 2; row++)
@@ -110,7 +110,7 @@
             }
 
             // Advance to second-to-last row
-            for (int i = 0; i < TILES_PER_ROW * TILES_PER_SCREEN_VERTICAL - 4; i++)
+            for (int i = 0; i < TILES_PER_ROW * (TILES_PER_SCREEN_VERTICAL - 4); i++)
                 v = LCRNG_NSMB(v);
 
             // Populate last two rows
@@ -203,6 +203,11 @@
             if (distinctValues != 1)
             {
                 // If not, ask for second-to-last row and basically repeat step 3b.
+                for (int index = 0; index < currentValues.Count; index++)
+                {
+                    for (int i = 0; i < TILES_PER_ROW * (TILES_PER_SCREEN_VERTICAL - 4); i++)
+                        currentValues[i] = LCRNG_NSMB(currentValues[i]);
+                }
                 inputTiles = getAllTiles("second-to-last");
                 removeNonmatchingValues(lookupResults, currentValues, inputTiles);
                 distinctValues = removeNonmatchingValues(lookupResults, currentValues, inputTiles);
@@ -383,6 +388,24 @@
                     distinctValues.Add(currentValues[i]);
             }
             return distinctValues.Count;
+        }
+
+        public void printTilesFromSeed(uint seed)
+        {
+            byte[][] tiles = calculateTileRows(seed);
+            for (int y = 0; y < tiles.Length + 1; y++)
+            {
+                if (y == 2)
+                    Console.WriteLine("-----------");
+                else
+                {
+                    int tilesToOutput = y == 0 ? 7 : 11;
+                    int yIndex = y - (y > 2 ? 1 : 0);
+                    for (int x = 0; x < tilesToOutput; x++)
+                        Console.Write(tileLetters[tiles[yIndex][x]] + " ");
+                    Console.WriteLine();
+                }
+            }
         }
     }
 }
