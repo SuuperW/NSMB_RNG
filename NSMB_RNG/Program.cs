@@ -2,13 +2,16 @@
 
 using NSMB_RNG;
 
+const ulong myDSiMAC = 0x40f407f7d421;
+const ulong MAC = myDSiMAC;
+
 uint LCRNG_NSMB(uint v)
 {
     ulong a = ((ulong)0x0019660D * v + 0x3C6EF35F);
     return (uint)(a + (a >> 32));
 }
 
-int main()
+void findSeedParams()
 {
     // Read initals.bin
     FileStream fs = File.OpenRead("initialValues.bin");
@@ -28,7 +31,7 @@ int main()
         values.Add(BitConverter.ToUInt32(data, i));
 
     // Find the seed params!
-    SeedInitParams sip = new SeedInitParams(0x40f407f7d421, new DateTime(2000, 1, 1, 0, 0, 16));
+    SeedInitParams sip = new SeedInitParams(MAC, new DateTime(2000, 1, 1, 0, 0, 16));
     InitSeedSearcher iss = new InitSeedSearcher(sip, values);
     iss.secondsRange = 2;
     List<SeedInitParams> seedParams = iss.FindSeeds();
@@ -37,6 +40,23 @@ int main()
         Console.WriteLine(SystemSeedInitParams.GetMagic(seedParams[i]).ToString("x"));
     }
     Console.WriteLine("done");
+}
+
+int main()
+{
+    uint magic = 1;
+    while (magic != 0)
+    {
+        string? strInput = Console.ReadLine();
+        if (!string.IsNullOrEmpty(strInput))
+        {
+            uint input = Convert.ToUInt32(strInput, 16);
+            SystemSeedInitParams ssip = new SystemSeedInitParams(input);
+            SeedInitParams sip = new SeedInitParams(MAC, new DateTime(2000, 1, 1, 0, 0, 16));
+            ssip.SetSeedParams(sip);
+            TilesFor12.printTilesFromSeed(sip.GetSeed());
+        }
+    }
 
     return 0;
 }

@@ -1,16 +1,16 @@
 ﻿namespace NSMB_RNG
 {
-    internal class TilesFor12
+    internal static class TilesFor12
     {
         // The RNG advances 1937 times between entering 1-2 and randomizing the first visible tile.
         // There are 27 tiles per row of tiles in the area of interest.
         const int STEPS_BEFORE = 1937;
         const int TILES_PER_ROW = 27;
         const int TILES_PER_SCREEN_VERTICAL = 12;
-        char[] tileLetters = new char[] { 'H', 'E', 'P', 'C', 'B', 'A' };
+        private static char[] tileLetters = new char[] { 'H', 'E', 'P', 'C', 'B', 'A' };
         // TODO: Names. Consider changing A to Submarine, H to Bean/Bell/Liver, B to Turtle/Porkchop
 
-        private uint LCRNG_NSMB(uint v)
+        private static uint LCRNG_NSMB(uint v)
         {
             ulong a = ((ulong)0x0019660D * v + 0x3C6EF35F);
             return (uint)(a + (a >> 32));
@@ -29,7 +29,7 @@
         // So, for most values x, nsmbStep(x) equals nsmbStep(x + 0x33333333). In the case that x is in set E, nsmbStep(x) will be equal to nsmbStep(x + 0x33333333) + 1.
         // Also, there are no two possible outputs of nsmbStep with a difference of less than 5, except in cases where one of the inputs is in set E. (In which case, the difference is 4 or 1.)
         // Using these facts, reverseStep can search only up to 0x33333333, and find any remaining values by adding multiples of 0x33333333.
-        private List<uint> reverseStep(uint v)
+        private static List<uint> reverseStep(uint v)
         {
             const uint m = 0x0019660D;
             const ulong twoP32 = 0x100000000;
@@ -77,14 +77,10 @@
             }
         }
 
-        private uint tileIDwithBeforeStep(uint v)
-        {
-            v = LCRNG_NSMB(v);
-            return ((v >> 8) & 0x7) % 6;
-        }
-        private uint tileIDwithAfterStep(uint v) { return ((v >> 8) & 0x7) % 6; }
+        private static uint tileIDwithBeforeStep(uint v) { return tileIDwithAfterStep(LCRNG_NSMB(v)); }
+        private static uint tileIDwithAfterStep(uint v) { return ((v >> 8) & 0x7) % 6; }
 
-        public byte[][] calculateTileRows(uint vBeforEntering12)
+        public static byte[][] calculateTileRows(uint vBeforEntering12)
         {
             // Do pre-randomized-tiles rng steps
             uint v = vBeforEntering12;
@@ -132,7 +128,7 @@
         /// <summary>
         /// This method will prompt the user to input various information in order to perform the calculation.
         /// </summary>
-        public List<uint>? calculatePossibleSeeds()
+        public static List<uint>? calculatePossibleSeeds()
         {
             Console.WriteLine("Instructions:");
             Console.WriteLine("1a) Create a save file where 1-2 is unlocked.");
@@ -253,7 +249,7 @@
 
             return initials;
         }
-        private int[] getFirstSevenTiles()
+        private static int[] getFirstSevenTiles()
         {
             while (true)
             {
@@ -266,7 +262,7 @@
                     Console.WriteLine("Input was not in the expected format. Make sure you are entering exactly 7 letters, that each letter is a valid tile letter as indicated in tiles.png, and that you input only letters and (optionally) spaces.");
             }
         }
-        private int[] getAllTiles(string rowStr)
+        private static int[] getAllTiles(string rowStr)
         {
             while (true)
             {
@@ -279,7 +275,7 @@
                     Console.WriteLine("Input was not in the expected format. Make sure you are entering exactly 11 letters, that each letter is a valid tile letter as indicated in tiles.png, and that you input only letters and (optionally) spaces.");
             }
         }
-        private int[]? tryGetTiles(int count)
+        private static int[]? tryGetTiles(int count)
         {
             string? rawInput = Console.ReadLine();
             int[] tilesIntArray = new int[0]; // assigned because not-smart-enough code analyzer gave a warning
@@ -319,7 +315,7 @@
             else
                 return null;
         }
-        private List<uint> lookUpRNGByTiles(int[] firstSeven)
+        private static List<uint> lookUpRNGByTiles(int[] firstSeven)
         {
             string path = "path/to/my/files/";
             string folder = firstSeven[0].ToString() + firstSeven[1].ToString() + firstSeven[2].ToString() + "/";
@@ -345,7 +341,7 @@
         /// <summary>
         /// Returns the number of distinct values remaining in currentValues.
         /// </summary>
-        private int removeNonmatchingValues(List<uint> lookupResults, List<uint> currentValues, int[] tiles)
+        private static int removeNonmatchingValues(List<uint> lookupResults, List<uint> currentValues, int[] tiles)
         {
             int currentIndex = 0;
             while (currentIndex < lookupResults.Count)
@@ -390,7 +386,7 @@
             return distinctValues.Count;
         }
 
-        public void printTilesFromSeed(uint seed)
+        public static void printTilesFromSeed(uint seed)
         {
             byte[][] tiles = calculateTileRows(seed);
             for (int y = 0; y < tiles.Length + 1; y++)
