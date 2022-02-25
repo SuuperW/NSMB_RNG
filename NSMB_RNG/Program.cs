@@ -3,7 +3,14 @@
 using NSMB_RNG;
 
 const ulong myDSiMAC = 0x40f407f7d421;
-const ulong MAC = myDSiMAC;
+ulong MAC = 0;
+
+const string MAIN_MENU = "--- Main menu ---\n" +
+    "0) Quit\n" +
+    "1) Input MAC address\n" +
+    "2) Choose or calculate a magic\n" +
+    "3) Find a date/time for good seed\n" +
+    "Select an option: ";
 
 uint LCRNG_NSMB(uint v)
 {
@@ -42,19 +49,52 @@ void findSeedParams()
     Console.WriteLine("done");
 }
 
+int getUserMenuSelection(string menu, int maxOption)
+{
+    while (true)
+    {
+        Console.Write(menu);
+        string? userInput = Console.ReadLine();
+        if (!int.TryParse(userInput, out int menuOption))
+            Console.WriteLine("ERROR: Input was not an integer.");
+        else if (menuOption > maxOption || menuOption < 0)
+            Console.WriteLine("ERROR: Input is not a valid selection.");
+        else
+            return menuOption;
+    }
+}
+
 int main()
 {
-    uint magic = 1;
-    while (magic != 0)
+    Console.WriteLine("Welcome to NSMB_RNG.");
+    Console.WriteLine("Please refer to README.txt for instructions on how to use this program.");
+
+    int menuOption = -1;
+    while (menuOption != 0)
     {
-        string? strInput = Console.ReadLine();
-        if (!string.IsNullOrEmpty(strInput))
+        menuOption = getUserMenuSelection(MAIN_MENU, 3);
+        if (menuOption == 1)
         {
-            uint input = Convert.ToUInt32(strInput, 16);
-            SystemSeedInitParams ssip = new SystemSeedInitParams(input);
-            SeedInitParams sip = new SeedInitParams(MAC, new DateTime(2000, 1, 1, 0, 0, 16));
-            ssip.SetSeedParams(sip);
-            TilesFor12.printTilesFromSeed(sip.GetSeed());
+            ulong newMAC = ulong.MaxValue;
+            while (newMAC == ulong.MaxValue)
+            {
+                Console.Write("Enter your system's MAC address, with our without separators: ");
+                string? userInput = Console.ReadLine();
+                if (string.IsNullOrEmpty(userInput) || (userInput.Length != 12 && userInput.Length != 17))
+                {
+                    Console.WriteLine("ERROR: Unexpected number of characters. (should be either 12 or 17)");
+                    continue;
+                }
+                else if (userInput.Length == 17)
+                {
+                    string[] MACParts = userInput.Split(userInput[2]);
+                    userInput = string.Join("", MACParts);
+                }
+
+                try { newMAC = Convert.ToUInt64(userInput, 16); }
+                catch { Console.WriteLine("ERROR: Could not read MAC address."); }
+            }
+            MAC = newMAC;
         }
     }
 
