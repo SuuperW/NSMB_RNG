@@ -2,7 +2,8 @@
 
 using NSMB_RNG;
 
-const ulong myDSiMAC = 0x40f407f7d421;
+const string PATH_SETTINGS = "settings.bin";
+
 ulong MAC = 0;
 
 const string MAIN_MENU = "--- Main menu ---\n" +
@@ -12,10 +13,32 @@ const string MAIN_MENU = "--- Main menu ---\n" +
     "3) Find a date/time for good seed\n" +
     "Select an option: ";
 
-uint LCRNG_NSMB(uint v)
+bool loadSettings()
 {
-    ulong a = ((ulong)0x0019660D * v + 0x3C6EF35F);
-    return (uint)(a + (a >> 32));
+    if (File.Exists(PATH_SETTINGS))
+    {
+        using (FileStream fs = File.OpenRead(PATH_SETTINGS))
+        {
+            byte[] buffer = new byte[8];
+            int version = fs.ReadByte();
+            if (version == 0)
+            {
+                int count = fs.Read(buffer, 0, 6);
+                if (count == 6)
+                    MAC = BitConverter.ToUInt64(buffer);
+            }
+        }
+    }
+
+    return MAC != 0;
+}
+void saveSettings()
+{
+    using (FileStream fs = File.Open(PATH_SETTINGS, FileMode.Create))
+    {
+        fs.WriteByte(0); // version
+        fs.Write(BitConverter.GetBytes(MAC), 0, 6);
+    }
 }
 
 void findSeedParams()
@@ -68,11 +91,16 @@ int main()
 {
     Console.WriteLine("Welcome to NSMB_RNG.");
     Console.WriteLine("Please refer to README.txt for instructions on how to use this program.");
+    Console.WriteLine();
+
+    if (loadSettings())
+        Console.WriteLine("MAC address loaded from file.\n");
 
     int menuOption = -1;
     while (menuOption != 0)
     {
         menuOption = getUserMenuSelection(MAIN_MENU, 3);
+        // Input MAC address
         if (menuOption == 1)
         {
             ulong newMAC = ulong.MaxValue;
@@ -95,6 +123,8 @@ int main()
                 catch { Console.WriteLine("ERROR: Could not read MAC address."); }
             }
             MAC = newMAC;
+            saveSettings();
+            Console.WriteLine("MAC address set and saved to file.\n");
         }
     }
 
