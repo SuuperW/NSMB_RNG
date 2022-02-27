@@ -1,4 +1,8 @@
-﻿namespace NSMB_RNG
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+
+namespace NSMB_RNG
 {
     internal static class TilesFor12
     {

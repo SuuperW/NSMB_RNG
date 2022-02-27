@@ -1,4 +1,7 @@
-﻿namespace NSMB_RNG
+﻿using System;
+using System.Collections.Generic;
+
+namespace NSMB_RNG
 {
     internal class InitSeedSearcher
     {
