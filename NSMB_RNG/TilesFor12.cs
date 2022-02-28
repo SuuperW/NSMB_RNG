@@ -332,14 +332,17 @@ namespace NSMB_RNG
                 // Check if this value matches the input for 11 tiles.
                 uint v = currentValues[currentIndex];
                 bool match = true;
-                for (int i = 0; i < tiles.Length; i++)
+                if (v != 0) // 0 means it was previously found to have converged with another value
                 {
-                    v = LCRNG_NSMB(v);
-                    uint tID = tileIDwithAfterStep(v);
-                    if (tID != tiles[i])
+                    for (int i = 0; i < tiles.Length; i++)
                     {
-                        match = false;
-                        break;
+                        v = LCRNG_NSMB(v);
+                        uint tID = tileIDwithAfterStep(v);
+                        if (tID != tiles[i])
+                        {
+                            match = false;
+                            break;
+                        }
                     }
                 }
                 // If not match, remove this entry from the list of possible 'intermediate' RNG values.
