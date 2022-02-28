@@ -135,27 +135,13 @@ namespace NSMB_RNG
         public static List<uint>? calculatePossibleSeeds()
         {
             Console.WriteLine("Instructions:");
-            Console.WriteLine("1a) Create a save file where 1-2 is unlocked.");
-            Console.WriteLine("1b) Set the system clock to some value, and write down that date and time. (The seconds cound should be zero.)");
-            Console.WriteLine("1c) Open the game, and take note of how many seconds passed between setting the system clock and the time the red Nintendo logo appears.");
-            Console.WriteLine("1d) Load the save file from step 1a before the cutscene begins.");
-            Console.WriteLine("-- This is necessary in order to ensure that you can enter 1-2 with zero random numbers being generated between booting the game and entering the level.");
-            Console.WriteLine("2a) Enter 1-2. This must be the first level (including special levels such as toad house) that the game loads.");
-            Console.WriteLine("2b) Pause the game before the camera begins scrolling down.");
-            Console.WriteLine("2c) Visually identify the first 7 randomized tiles in the first, top row of tiles. Refer to the tiles.png file for clarification and for the tile names used by the program.");
-            Console.WriteLine("-- Double or triple-check that you enter the tiles correctly! The process of finding RNG seeds can take a long time, and will not work at all if any of the entered values are incorrect.");
-            Console.WriteLine("3a) The program will use a lookup table to identify all 'intermediate' RNG values that lead to this sequence of tiles.");
-            Console.WriteLine("-- The 'intermediate' RNG values are tracked for optimization reasons. Actual initial RNG seeds will be calculated later on.");
-            Console.WriteLine("3b) Once the data is retrieved and processed, the program will ask for all tiles in the second row of tiles.");
-            Console.WriteLine("3c) If the number of possible 'intermediate' RNG values is still too large, it will ask for the second-to-last on-screen row, and then the last on-screen row.");
-            Console.WriteLine("4a) The list of 'intermediate' RNG values will be used to calculate a list of initial RNG values. This list will be ~5 times larger.");
-            Console.WriteLine("4b) This list will be saved to a file for use by another part of this program. You may with to save a copy of this file if you intend to go through this process a second time.");
+            Console.WriteLine("1) Enter 1-2 as instructed in the README.txt file.");
+            Console.WriteLine("2) Visually identify the first 7 randomized tiles in the first row of tiles. Refer to the tiles.png file for clarification, and for the tile names used by the program.");
+            Console.WriteLine("3) The program will continue asking for tiles until only one there is only one possible RNG state. (There will be more than one possible seed that leads to that RNG state.)");
             Console.WriteLine("----------------------------\n");
 
-            // Step 2c
+            // Step 2
             int[] inputTiles = getFirstSevenTiles();
-
-            // Step 3a
             List<uint> lookupResults = lookUpRNGByTiles(inputTiles);
             if (lookupResults.Count == 0) // should never happen
             {
@@ -190,7 +176,7 @@ namespace NSMB_RNG
                 currentValues[index] = v;
             }
 
-            // Step 3b
+            // Step 3
             inputTiles = getAllTiles("second");
             int distinctValues = removeNonmatchingValues(lookupResults, currentValues, inputTiles);
             if (distinctValues == 0) // should never happen
@@ -199,10 +185,10 @@ namespace NSMB_RNG
                 return null;
             }
 
-            // Step 3c: Determine if the list is small enough (meaning, only 1 distinct value).
+            // Determine if the list is small enough (meaning, only 1 distinct value).
             if (distinctValues != 1)
             {
-                // If not, ask for second-to-last row and basically repeat step 3b.
+                // If not, ask for second-to-last row and basically repeat step 3.
                 for (int index = 0; index < currentValues.Count; index++)
                 {
                     for (int i = 0; i < TILES_PER_ROW * (TILES_PER_SCREEN_VERTICAL - 4); i++)
@@ -230,7 +216,7 @@ namespace NSMB_RNG
                 }
             }
 
-            // Step 4a: If the list is large, warn the user and offer to quit.
+            // If the list is large, warn the user and offer to quit.
             if (lookupResults.Count > 10) // 10 is probably not large enough to bother warning about... but really I don't expect 10 to be possible
             {
                 Console.WriteLine("There are " + lookupResults.Count + " potential 'intermediate' RNG values. The process of going back to initial RNG values may take a while.");
@@ -243,13 +229,6 @@ namespace NSMB_RNG
             List<uint> initials = new List<uint>();
             foreach (uint v in lookupResults)
                 initials.AddRange(reverseStep(v));
-
-            // Step 4b: Save the list of initial RNG values.
-            FileStream fs = File.Open("initialValues.bin", FileMode.Create); // creates new or truncates
-            foreach (uint v in initials)
-                fs.Write(BitConverter.GetBytes(v));
-            fs.Close();
-            Console.WriteLine("Success! " + initials.Count + " values written to initialValues.bin.");
 
             return initials;
         }
