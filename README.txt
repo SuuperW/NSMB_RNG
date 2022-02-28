@@ -12,7 +12,7 @@ In order to control the RNG seed, we first need to determine the system's MAC ad
 --- How to use NSMB_RNG ---
 In order to determine which RNG seed your system generated, you will have to:
  0) Create a save file with World 1-2 unlocked. The step can be done only once; the rest need to be done every time you want to look at a new seed.
- 1) Set the current date/time to some value. What it is doesn't matter, but write it down and always use the same date/time every time you do this.
+ 1) Set the current date/time to some value. What it is doesn't matter, but write it down and always use the same date/time every time you do this. NOTE: At least on some systems, if the current time already matches the hour and minute you set, it will not actually set the time despite what the confirmation message says.
  2) Open NSMB some number of seconds after setting the system's time, and then do not have any controller buttons pressed as the game starts. Again, this number of seconds doesn't matter as long as it is the same every time.
  3) The RNG seed is calculated about half a second before the red Nintendo logo appears. Write down the date/time of the system at that point. Use a stopwatch, or something similar, to know how many seconds passed between setting the system time and the RNG seed being calculated. Note that when calculating the RNG seed, the game rounds DOWN to the nearest second. Also note that when you set the DS's time, the seconds are set to 0.000.
  4) Open the save file from step 0 before the cutscene begins.
