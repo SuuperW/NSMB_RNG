@@ -21,13 +21,13 @@ namespace NSMB_RNG
                 this.desiredSeeds.Add(s);
 
             minTimer0 = 0;
-            maxTimer0 = 0x5FF; // Idk if that's right. Idk what timer0 is.
+            maxTimer0 = 0x5ff; // Idk if that's right. Idk what timer0 is.
             minVCount = 0;
             maxVCount = 263; // 262?
-            minVFrame = 1; // Lowest I've seen is 4.
-            maxVFrame = 8; // Highest I've seen is 5.
+            minVFrame = 2; // Lowest I've seen is 4.
+            maxVFrame = 7; // Highest I've seen is 5.
 
-            secondsRange = 0;
+            secondsRange = 1;
         }
 
         public List<SeedInitParams> FindSeeds()

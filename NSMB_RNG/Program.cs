@@ -7,6 +7,7 @@ using NSMB_RNG;
 const string PATH_SETTINGS = "settings.bin";
 
 ulong MAC = 0;
+uint magic = 0;
 
 const string MAIN_MENU = "--- Main menu ---\n" +
     "0) Quit\n" +
@@ -23,11 +24,18 @@ bool loadSettings()
         {
             byte[] buffer = new byte[8];
             int version = fs.ReadByte();
-            if (version == 0)
+            if (version == 1)
             {
+                // MAC
                 int count = fs.Read(buffer, 0, 6);
                 if (count == 6)
                     MAC = BitConverter.ToUInt64(buffer);
+                // magic
+                count = fs.Read(buffer, 0, 4);
+                if (count == 4)
+                    magic = BitConverter.ToUInt32(buffer);
+                else
+                    throw new Exception("bad settings file");
             }
         }
     }
@@ -38,40 +46,10 @@ void saveSettings()
 {
     using (FileStream fs = File.Open(PATH_SETTINGS, FileMode.Create))
     {
-        fs.WriteByte(0); // version
+        fs.WriteByte(1); // version
         fs.Write(BitConverter.GetBytes(MAC), 0, 6);
+        fs.Write(BitConverter.GetBytes(magic), 0, 4);
     }
-}
-
-void findSeedParams()
-{
-    // Read initals.bin
-    FileStream fs = File.OpenRead("initialValues.bin");
-    byte[] data = new byte[1024 * 1];
-    int bytesRead = 0;
-    // The Read method should read all bytes first time, but is not guaranteed to do so.
-    int count;
-    while ((count = fs.Read(data, bytesRead, data.Length - bytesRead)) != 0)
-    {
-        bytesRead += count;
-        if (bytesRead == data.Length)
-            throw new Exception("There shouldn't be any files that big.");
-    }
-    fs.Close();
-    List<uint> values = new List<uint>(bytesRead / sizeof(uint));
-    for (int i = 0; i < bytesRead; i += sizeof(uint))
-        values.Add(BitConverter.ToUInt32(data, i));
-
-    // Find the seed params!
-    SeedInitParams sip = new SeedInitParams(MAC, new DateTime(2000, 1, 1, 0, 0, 16));
-    InitSeedSearcher iss = new InitSeedSearcher(sip, values);
-    iss.secondsRange = 2;
-    List<SeedInitParams> seedParams = iss.FindSeeds();
-    for (int i = 0; i < seedParams.Count; i++)
-    {
-        Console.WriteLine(SystemSeedInitParams.GetMagic(seedParams[i]).ToString("x"));
-    }
-    Console.WriteLine("done");
 }
 
 int getUserMenuSelection(string menu, int maxOption)
@@ -89,6 +67,35 @@ int getUserMenuSelection(string menu, int maxOption)
     }
 }
 
+DateTime getDateTimeFromUser()
+{
+    while (true)
+    {
+        Console.Write("Enter the date/time that RNG was initialized, in your local format: ");
+        if (!DateTime.TryParse(Console.ReadLine(), out DateTime dt))
+            Console.WriteLine("Bad date/time format.");
+        else if (dt.Year < 2000 || dt.Year > 2099)
+            Console.WriteLine("Year must be a valid DS year. (2000-2099)");
+        else
+        {
+            // Show the long date/time to the user for verification.
+            Console.WriteLine("You entered: " + dt.ToLongDateString() + " " + dt.ToLongTimeString());
+            Console.Write("Is this correct? [y/n]: ");
+            // We accept anything other than a no as a yes.
+            string? input = Console.ReadLine();
+            if (string.IsNullOrEmpty(input) || !input.StartsWith('n'))
+                return dt;
+        }
+    }
+}
+
+List<SeedInitParams> getSeedInitParams(DateTime dt, List<uint> seeds)
+{
+    SeedInitParams sip = new SeedInitParams(MAC, dt);
+    InitSeedSearcher iss = new InitSeedSearcher(sip, seeds);
+    return iss.FindSeeds();
+}
+
 int main()
 {
     Console.WriteLine("Welcome to NSMB_RNG.");
@@ -96,7 +103,12 @@ int main()
     Console.WriteLine();
 
     if (loadSettings())
-        Console.WriteLine("MAC address loaded from file.\n");
+    {
+        if (magic != 0)
+            Console.WriteLine("MAC and magic loaded from file.\n");
+        else
+            Console.WriteLine("MAC address loaded from file.\n");
+    }
 
     int menuOption = -1;
     while (menuOption != 0)
@@ -127,6 +139,55 @@ int main()
             MAC = newMAC;
             saveSettings();
             Console.WriteLine("MAC address set and saved to file.\n");
+        }
+        // Choose/find magic
+        else if (menuOption == 2)
+        {
+            if (MAC == 0)
+            {
+                Console.WriteLine("You must set a MAC address first.");
+                continue;
+            }
+
+            DateTime dt = getDateTimeFromUser();
+
+            // choosing system is not yet implemnted
+
+            // Find a magic
+            List<uint>? seeds = TilesFor12.calculatePossibleSeeds();
+            if (seeds != null)
+            {
+                List<SeedInitParams> seedParams = getSeedInitParams(dt, seeds);
+                // Handle case where no params were found
+                while (seedParams.Count == 0)
+                {
+                    Console.WriteLine("Failed to find a magic that results in one of the found seeds.");
+                    Console.WriteLine("This may be because you mis-typed the tiles, or because the date/time you entered was incorrect.");
+                    Console.Write("Do you want to try another date/time? [y/n]: ");
+                    // We accept anything other than a no as a yes.
+                    string? input = Console.ReadLine();
+                    if (string.IsNullOrEmpty(input) || !input.StartsWith('n'))
+                    {
+                        dt = getDateTimeFromUser();
+                        seedParams = getSeedInitParams(dt, seeds);
+                    }
+                    else
+                        break;
+                }
+                // Expected result: only 1 params found. Save the magic.
+                if (seedParams.Count == 1)
+                {
+                    magic = SystemSeedInitParams.GetMagic(seedParams[0]);
+                    saveSettings();
+                    Console.WriteLine("One magic found and saved: " + magic.ToString("x") + "\n");
+                }
+                // If there are more than one, we cannot know which is correct.
+                else if (seedParams.Count > 1)
+                {
+                    Console.WriteLine("More than one possible magic was found. There is no way to know without more information which is correct.");
+                    Console.WriteLine("Since this is a rare occurence, NSMB_RNG will not attempt to find the correct one. Set another date/time or use another tile sequence with the same date/time and try again.\n");
+                }
+            }
         }
     }
 
