@@ -157,6 +157,7 @@ int main()
             List<uint>? seeds = TilesFor12.calculatePossibleSeeds();
             if (seeds != null)
             {
+                Console.WriteLine("Looking for magics. This may take several seconds...");
                 List<SeedInitParams> seedParams = getSeedInitParams(dt, seeds);
                 // Handle case where no params were found
                 while (seedParams.Count == 0)

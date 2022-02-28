@@ -142,6 +142,7 @@ namespace NSMB_RNG
 
             // Step 2
             int[] inputTiles = getFirstSevenTiles();
+            Console.Write("Reading lookup table...");
             List<uint> lookupResults = lookUpRNGByTiles(inputTiles);
             if (lookupResults.Count == 0) // should never happen
             {
@@ -175,9 +176,11 @@ namespace NSMB_RNG
                     v = LCRNG_NSMB(v);
                 currentValues[index] = v;
             }
+            Console.WriteLine("done");
 
             // Step 3
             inputTiles = getAllTiles("second");
+            Console.Write("Calculating...");
             int distinctValues = removeNonmatchingValues(lookupResults, currentValues, inputTiles);
             if (distinctValues == 0) // should never happen
             {
@@ -194,7 +197,10 @@ namespace NSMB_RNG
                     for (int i = 0; i < TILES_PER_ROW * (TILES_PER_SCREEN_VERTICAL - 4); i++)
                         currentValues[i] = LCRNG_NSMB(currentValues[i]);
                 }
+                Console.WriteLine("done");
+
                 inputTiles = getAllTiles("second-to-last");
+                Console.Write("Calculating...");
                 removeNonmatchingValues(lookupResults, currentValues, inputTiles);
                 distinctValues = removeNonmatchingValues(lookupResults, currentValues, inputTiles);
                 if (distinctValues == 0) // should never happen
@@ -205,7 +211,9 @@ namespace NSMB_RNG
                 // Then check again, and maybe ask for last row.
                 if (distinctValues != 1)
                 {
+                    Console.WriteLine("done");
                     inputTiles = getAllTiles("last");
+                    Console.Write("Calculating...");
                     removeNonmatchingValues(lookupResults, currentValues, inputTiles);
                     distinctValues = removeNonmatchingValues(lookupResults, currentValues, inputTiles);
                     if (distinctValues == 0) // should never happen
@@ -215,6 +223,7 @@ namespace NSMB_RNG
                     }
                 }
             }
+            Console.WriteLine("done");
 
             // If the list is large, warn the user and offer to quit.
             if (lookupResults.Count > 10) // 10 is probably not large enough to bother warning about... but really I don't expect 10 to be possible
@@ -230,6 +239,7 @@ namespace NSMB_RNG
             foreach (uint v in lookupResults)
                 initials.AddRange(reverseStep(v));
 
+            Console.WriteLine("Found single RNG state, and " + initials.Count + " possible seeds.");
             return initials;
         }
         private static int[] getFirstSevenTiles()
