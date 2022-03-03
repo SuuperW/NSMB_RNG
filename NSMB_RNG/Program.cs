@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 
 using NSMB_RNG;
 
@@ -96,8 +97,77 @@ List<SeedInitParams> getSeedInitParams(DateTime dt, List<uint> seeds)
     return iss.FindSeeds();
 }
 
+IEnumerable<string> tableFileNames(int digitCount)
+{
+    int[] tileIDs = new int[digitCount];
+    while (true)
+    {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < digitCount; i++)
+            sb.Append(tileIDs[i].ToString());
+        yield return sb.ToString();
+
+        int index = tileIDs.Length - 1;
+        tileIDs[index]++;
+        while (tileIDs[index] > 5)
+        {
+            tileIDs[index] = 0;
+            index--;
+            if (index < 0)
+                yield break;
+            tileIDs[index]++;
+        }
+    }
+}
+
 int main()
 {
+    string oldTable = "C:/tmp/data/init12/";
+    string newTable = "C:/tmp/data/table2/";
+    int fileCount = 0;
+    const int MAX_FILES = 5;
+    foreach (string dn in tableFileNames(3))
+    {
+        Directory.CreateDirectory(newTable + dn);
+        foreach (string fn in tableFileNames(4))
+        {
+            FileStream ifs = File.OpenRead(oldTable + dn + "/" + fn);
+            FileStream ofs = File.Open(newTable + dn + "/" + fn, FileMode.Create);
+
+            byte[] buffer = new byte[4];
+            int rCount = ifs.Read(buffer, 0, 4);
+            uint last = 0;
+            while (rCount != 0)
+            {
+                uint v = BitConverter.ToUInt32(buffer);
+                uint m5 = v % 5;
+                // If mod 5 is 2, we won't include it in the new table.
+                // This value will be found using the new table because v + 0x33333333*4 must also exist in this file.
+                // When reading the new table, any value greater than 0x33333333*4 will count as also being that value minus 0x33...
+                // That new value (which newValue % 5 == 2) will then be given to reverseStep, which will determine if it should be there.
+                if (m5 == 3)
+                {
+                    v = v / 5;
+                    uint diff = v - last;
+                    last = v;
+                    // Since we divided by 5, we have two spare bits to indicate the size in bytes of this diff.
+                    // This could mean we only use 2 or 3 bytes for each value, but we are going to use 7z to compress the data.
+                    // 7z actually produces smaller files when each value is 4 bytes than when each value is variable size (or constant 3 bytes)
+                    ofs.Write(BitConverter.GetBytes(diff), 0, 4);
+                }
+
+                rCount = ifs.Read(buffer, 0, 4);
+            }
+
+            //fileCount++;
+            //if (fileCount >= MAX_FILES)
+            //    break;
+        }
+        //if (fileCount >= MAX_FILES)
+        //    break;
+    }
+
+    return 0;
     Console.WriteLine("Welcome to NSMB_RNG.");
     Console.WriteLine("Please refer to README.txt for instructions on how to use this program.");
     Console.WriteLine();
