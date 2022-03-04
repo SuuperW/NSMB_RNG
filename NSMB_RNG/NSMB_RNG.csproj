@@ -8,4 +8,8 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="7-Zip.CommandLine" Version="18.1.0" />
+  </ItemGroup>
+
 </Project>

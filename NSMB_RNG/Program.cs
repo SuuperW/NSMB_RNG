@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
-using System.IO.Compression;
 using System.Text;
 
 using NSMB_RNG;
@@ -121,38 +121,40 @@ IEnumerable<string> tableFileNames(int digitCount)
     }
 }
 
+void CreateZip(string name)
+{
+    string targetName = name + ".7z";
+    ProcessStartInfo p = new ProcessStartInfo();
+    p.FileName = "7za.exe";
+    p.Arguments = "a " + targetName + " " + name + "/* -mx=9";
+    p.WindowStyle = ProcessWindowStyle.Hidden;
+    Process x = Process.Start(p);
+    x.WaitForExit();
+}
+
 int main()
 {
     string newTable = "C:/tmp/data/table2/";
     foreach (string dn in tableFileNames(3))
     {
-        const int filesPerArchive = 6 * 6;
-        int count = filesPerArchive;
-        ZipArchive? za = null;
+        string previousArchiveName = "";
         foreach (string fn in tableFileNames(4))
         {
-            string archiveDir = newTable + dn + "/" + fn.Substring(0, 2) + "/";
-            string archiveName = fn.Substring(2, 2);
-            if (count == filesPerArchive)
+            string archiveDir = newTable + dn + "/" + fn.Substring(0, 2);
+            string entryName = fn.Substring(2, 2);
+            string inFileName = newTable + dn + "/" + fn;
+            if (previousArchiveName != archiveDir)
             {
-                // TEST: only do one
-                if (za != null)
-                    return 0;
-                // Reset count and close old archive
-                count = 0;
-                if (za != null)
-                    za.Dispose();
-                // Create new directory if necessary, and create new archive
+                if (!string.IsNullOrEmpty(previousArchiveName))
+                    CreateZip(previousArchiveName);
+                previousArchiveName = archiveDir;
                 Directory.CreateDirectory(archiveDir);
-                za = new ZipArchive(new FileStream(archiveDir + archiveName, FileMode.Create), ZipArchiveMode.Create);
             }
-            Console.WriteLine(fn);
-#pragma warning disable CS8604 // Possible null reference argument.
-            za.CreateEntryFromFile(newTable + dn + "/" + fn, fn, CompressionLevel.SmallestSize);
-#pragma warning restore CS8604 // Possible null reference argument.
-
-            count++;
+            // Move the files to directories, so that we can use an easy 7z command to archive them.
+            File.Move(inFileName, archiveDir + "/" + entryName);
         }
+        // last archive in this dn
+        CreateZip(newTable + dn + "/55");
     }
 
     return 0;
