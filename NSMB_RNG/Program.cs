@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Text;
 
@@ -121,40 +120,54 @@ IEnumerable<string> tableFileNames(int digitCount)
     }
 }
 
-void CreateZip(string name)
-{
-    string targetName = name + ".7z";
-    ProcessStartInfo p = new ProcessStartInfo();
-    p.FileName = "7za.exe";
-    p.Arguments = "a " + targetName + " " + name + "/* -mx=9";
-    p.WindowStyle = ProcessWindowStyle.Hidden;
-    Process x = Process.Start(p);
-    x.WaitForExit();
-}
-
 int main()
 {
-    string newTable = "C:/tmp/data/table2/";
+    string oldTable = "C:/tmp/data/init12/";
+    string newTable = "C:/tmp/data/table3/";
     foreach (string dn in tableFileNames(3))
     {
-        string previousArchiveName = "";
+        Directory.CreateDirectory(newTable + dn);
+        string subDirName = "";
         foreach (string fn in tableFileNames(4))
         {
-            string archiveDir = newTable + dn + "/" + fn.Substring(0, 2);
-            string entryName = fn.Substring(2, 2);
-            string inFileName = newTable + dn + "/" + fn;
-            if (previousArchiveName != archiveDir)
+            FileStream ifs = File.OpenRead(oldTable + dn + "/" + fn);
+            string sdn = fn.Substring(0, 2);
+            string sfn = fn.Substring(2, 2);
+            if (sdn != subDirName)
             {
-                if (!string.IsNullOrEmpty(previousArchiveName))
-                    CreateZip(previousArchiveName);
-                previousArchiveName = archiveDir;
-                Directory.CreateDirectory(archiveDir);
+                Directory.CreateDirectory(newTable + dn + "/" + sdn);
+                subDirName = sdn;
             }
-            // Move the files to directories, so that we can use an easy 7z command to archive them.
-            File.Move(inFileName, archiveDir + "/" + entryName);
+            FileStream ofs = File.Open(newTable + dn + "/" + sdn + "/" + sfn, FileMode.Create);
+
+            byte[] buffer = new byte[4];
+            int rCount = ifs.Read(buffer, 0, 4);
+            uint last = 0;
+            while (rCount != 0)
+            {
+                uint v = BitConverter.ToUInt32(buffer);
+                uint m5 = v % 5;
+                // If mod 5 is 2, we won't include it in the new table.
+                // This value will be found using the new table because v + 0x33333333*4 must also exist in this file.
+                // When reading the new table, any value greater than 0x33333333*4 will count as also being that value minus 0x33...
+                // That new value (which newValue % 5 == 2) will then be given to reverseStep, which will determine if it should be there.
+                if (m5 == 3)
+                {
+                    v = v / 5;
+                    uint diff = v - last;
+                    last = v;
+                    // Since we divided by 5, we have two spare bits to indicate the size in bytes of this diff.
+                    // This could mean we only use 2 or 3 bytes for each value, but we are going to use 7z to compress the data.
+                    // 7z actually produces smaller files when each value is 4 bytes than when each value is variable size (or constant 3 bytes)
+                    ofs.Write(BitConverter.GetBytes(diff), 0, 4);
+                }
+
+                rCount = ifs.Read(buffer, 0, 4);
+            }
+
+            ifs.Close();
+            ofs.Close();
         }
-        // last archive in this dn
-        CreateZip(newTable + dn + "/55");
     }
 
     return 0;
