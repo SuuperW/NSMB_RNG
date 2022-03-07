@@ -81,9 +81,7 @@ DateTime getDateTimeFromUser()
             // Show the long date/time to the user for verification.
             Console.WriteLine("You entered: " + dt.ToLongDateString() + " " + dt.ToLongTimeString());
             Console.Write("Is this correct? [y/n]: ");
-            // We accept anything other than a no as a yes.
-            string? input = Console.ReadLine();
-            if (string.IsNullOrEmpty(input) || !input.StartsWith('n'))
+            if (UI.AskYesNo())
                 return dt;
         }
     }
@@ -165,9 +163,7 @@ int main()
                     Console.WriteLine("Failed to find a magic that results in one of the found seeds.");
                     Console.WriteLine("This may be because you mis-typed the tiles, or because the date/time you entered was incorrect.");
                     Console.Write("Do you want to try another date/time? [y/n]: ");
-                    // We accept anything other than a no as a yes.
-                    string? input = Console.ReadLine();
-                    if (string.IsNullOrEmpty(input) || !input.StartsWith('n'))
+                    if (UI.AskYesNo())
                     {
                         dt = getDateTimeFromUser();
                         seedParams = getSeedInitParams(dt, seeds);

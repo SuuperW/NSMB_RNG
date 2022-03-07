@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 
 namespace NSMB_RNG
@@ -144,9 +145,9 @@ namespace NSMB_RNG
             int[] inputTiles = getFirstSevenTiles();
             Console.Write("Reading lookup table...");
             List<uint> lookupResults = lookUpRNGByTiles(inputTiles);
-            if (lookupResults.Count == 0) // should never happen
+            if (lookupResults.Count == 0)
             {
-                Console.WriteLine("There are no RNG values that lead to the given set of tiles. Maybe you mis-typed one?");
+                Console.WriteLine("Error: Could not retrieve data from lookup table.");
                 return null;
             }
             // processing data
@@ -308,29 +309,6 @@ namespace NSMB_RNG
             else
                 return null;
         }
-        private static List<uint> lookUpRNGByTiles(int[] firstSeven)
-        {
-            string path = "path/to/my/files/";
-            string folder = firstSeven[0].ToString() + firstSeven[1].ToString() + firstSeven[2].ToString() + "/";
-            string file = firstSeven[3].ToString() + firstSeven[4].ToString() + firstSeven[5].ToString() + firstSeven[6].ToString();
-            FileStream fs = File.OpenRead(path + folder + file);
-            byte[] data = new byte[1024 * 210]; // all files are under 210KB
-            int bytesRead = 0;
-            // The Read method should read all bytes first time, but is not guaranteed to do so.
-            int count;
-            while ((count = fs.Read(data, bytesRead, data.Length - bytesRead)) != 0)
-            {
-                bytesRead += count;
-                if (bytesRead == data.Length)
-                    throw new Exception("There shouldn't be any files that big.");
-            }
-            fs.Close();
-
-            List<uint> values = new List<uint>(bytesRead / sizeof(uint));
-            for (int i = 0; i < bytesRead; i += sizeof(uint))
-                values.Add(BitConverter.ToUInt32(data, i));
-            return values;
-        }
         /// <summary>
         /// Returns the number of distinct values remaining in currentValues.
         /// </summary>
@@ -381,6 +359,69 @@ namespace NSMB_RNG
             }
             return distinctValues.Count;
         }
+
+
+        private static List<uint> lookUpRNGByTiles(int[] firstSeven)
+        {
+            string folder = firstSeven[0].ToString() + firstSeven[1].ToString() + firstSeven[2].ToString() + "/" +
+                firstSeven[3].ToString() + firstSeven[4].ToString() + "/";
+            string file = firstSeven[5].ToString() + firstSeven[6].ToString();
+            string filePath = "lookup/" + folder + file;
+            if (!File.Exists(filePath))
+            {
+                Console.WriteLine("The lookup file for this pattern was not found. Do you want to download it? [y/n]: ");
+                if (!UI.AskYesNo())
+                    return new List<uint>();
+                if (!DownloadChunk(filePath))
+                    return new List<uint>();
+            }
+            FileStream fs = File.OpenRead(filePath);
+            byte[] data = new byte[1024 * 210]; // all files are under 210KB
+            int bytesRead = 0;
+            // The Read method should read all bytes first time, but is not guaranteed to do so.
+            int count;
+            while ((count = fs.Read(data, bytesRead, data.Length - bytesRead)) != 0)
+            {
+                bytesRead += count;
+                if (bytesRead == data.Length)
+                    throw new Exception("There shouldn't be any files that big.");
+            }
+            fs.Close();
+
+            List<uint> values = new List<uint>(bytesRead / sizeof(uint));
+            for (int i = 0; i < bytesRead; i += sizeof(uint))
+                values.Add(BitConverter.ToUInt32(data, i));
+            return values;
+        }
+        private static bool ExtractFile(string source, string destination)
+        {
+            // If the directory doesn't exist, create it.
+            if (!Directory.Exists(destination))
+                Directory.CreateDirectory(destination);
+
+            string zPath = "7za.exe";
+            try
+            {
+                ProcessStartInfo psi = new ProcessStartInfo();
+                psi.WindowStyle = ProcessWindowStyle.Hidden;
+                psi.FileName = zPath;
+                psi.Arguments = "x " + source + " -o" + destination;
+                Process? process = Process.Start(psi);
+                if (process != null)
+                    process.WaitForExit();
+            }
+            catch
+            {
+                return false;
+            }
+
+            return File.Exists(destination + "/00");
+        }
+        private static bool DownloadChunk(string file)
+        {
+            throw new NotImplementedException();
+        }
+
 
         public static void printTilesFromSeed(uint seed)
         {
