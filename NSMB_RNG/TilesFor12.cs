@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace NSMB_RNG
 {
@@ -364,15 +366,15 @@ namespace NSMB_RNG
         private static List<uint> lookUpRNGByTiles(int[] firstSeven)
         {
             string folder = firstSeven[0].ToString() + firstSeven[1].ToString() + firstSeven[2].ToString() + "/" +
-                firstSeven[3].ToString() + firstSeven[4].ToString() + "/";
-            string file = firstSeven[5].ToString() + firstSeven[6].ToString();
+                firstSeven[3].ToString() + firstSeven[4].ToString();
+            string file = "/" + firstSeven[5].ToString() + firstSeven[6].ToString();
             string filePath = "lookup/" + folder + file;
             if (!File.Exists(filePath))
             {
-                Console.WriteLine("The lookup file for this pattern was not found. Do you want to download it? [y/n]: ");
+                Console.Write("The lookup file for this pattern was not found. Do you want to download it? [y/n]: ");
                 if (!UI.AskYesNo())
                     return new List<uint>();
-                if (!DownloadChunk(filePath))
+                if (!DownloadChunk(folder).Result)
                     return new List<uint>();
             }
             FileStream fs = File.OpenRead(filePath);
@@ -431,9 +433,30 @@ namespace NSMB_RNG
 
             return File.Exists(destination + "/00");
         }
-        private static bool DownloadChunk(string file)
+        static HttpClient? client;
+        private async static Task<bool> DownloadChunk(string file)
         {
-            throw new NotImplementedException();
+            if (client == null)
+                client = new HttpClient();
+            string archivePath = "lookup/" + file + ".7z";
+
+            // Download .7z
+            Directory.CreateDirectory("lookup/" + file);
+            Uri uri = new Uri("https://github.com/SuuperW/NSMB_RNG/raw/vLookup/" + archivePath);
+            using (HttpResponseMessage response = await client.GetAsync(uri))
+            {
+                if (!response.IsSuccessStatusCode)
+                    return false;
+                using (FileStream fs = new FileStream(archivePath, FileMode.CreateNew))
+                    await response.Content.CopyToAsync(fs);
+            }
+
+            // Extract contents of .7z archive and delete archive
+            if (!ExtractFile(archivePath, "lookup/" + file))
+                return false;
+            File.Delete(archivePath);
+
+            return true;
         }
 
 
