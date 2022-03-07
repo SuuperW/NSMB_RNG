@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 
 using NSMB_RNG;
 
@@ -96,8 +97,95 @@ List<SeedInitParams> getSeedInitParams(DateTime dt, List<uint> seeds)
     return iss.FindSeeds();
 }
 
+IEnumerable<string> tableFileNames(int digitCount)
+{
+    int[] tileIDs = new int[digitCount];
+    while (true)
+    {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < digitCount; i++)
+            sb.Append(tileIDs[i].ToString());
+        yield return sb.ToString();
+
+        int index = tileIDs.Length - 1;
+        tileIDs[index]++;
+        while (tileIDs[index] > 5)
+        {
+            tileIDs[index] = 0;
+            index--;
+            if (index < 0)
+                yield break;
+            tileIDs[index]++;
+        }
+    }
+}
+
+uint LCRNG_NSMB(uint v)
+{
+    ulong a = ((ulong)0x0019660D * v + 0x3C6EF35F);
+    return (uint)(a + (a >> 32));
+}
+
 int main()
 {
+    string oldTable = "C:/tmp/data/init12/";
+    string newTable = "C:/tmp/data/lookup/";
+    foreach (string dn in tableFileNames(3))
+    {
+        Directory.CreateDirectory(newTable + dn);
+        string subDirName = "";
+        foreach (string fn in tableFileNames(4))
+        {
+            FileStream ifs = File.OpenRead(oldTable + dn + "/" + fn);
+            string sdn = fn.Substring(0, 2);
+            string sfn = fn.Substring(2, 2);
+            if (sdn != subDirName)
+            {
+                Directory.CreateDirectory(newTable + dn + "/" + sdn);
+                subDirName = sdn;
+            }
+            FileStream ofs = File.Open(newTable + dn + "/" + sdn + "/" + sfn, FileMode.Create);
+
+            byte[] buffer = new byte[4];
+            int rCount = ifs.Read(buffer, 0, 4);
+            uint last = 0;
+            uint exceptionValue = 0;
+            while (rCount != 0)
+            {
+                uint v = BitConverter.ToUInt32(buffer);
+                uint m5 = v % 5;
+                // If mod 5 is 2, we won't include it in the new table.
+                // This value will be found using the new table because v + 0x33333333*4 must also exist in this file,
+                //    becasue they both lead to the same RNG pattern... unless LCRNG_NSMB(v) % 5 is also 2.
+                //    In this case, we will include this value at the end of the file in a special format.
+                //    There are 97 of these values, all of which lead to unique first seven tile patterns.
+                if (m5 == 3)
+                {
+                    v = v / 5;
+                    uint diff = v - last;
+                    last = v;
+                    // Since we divided by 5, we have two spare bits to indicate the size in bytes of this diff.
+                    // This could mean we only use 2 or 3 bytes for each value, but we are going to use 7z to compress the data.
+                    // 7z actually produces smaller files when each value is 4 bytes than when each value is variable size (or constant 3 bytes)
+                    ofs.Write(BitConverter.GetBytes(diff));
+                }
+                else
+                {
+                    if (LCRNG_NSMB(v) != LCRNG_NSMB(v + (uint)0x3333_3333 * 4))
+                        exceptionValue = v;
+                }
+
+                rCount = ifs.Read(buffer, 0, 4);
+            }
+            if (exceptionValue != 0)
+                ofs.Write(BitConverter.GetBytes(exceptionValue & 0x8000_0000));
+
+            ifs.Close();
+            ofs.Close();
+        }
+    }
+
+    return 0;
     Console.WriteLine("Welcome to NSMB_RNG.");
     Console.WriteLine("Please refer to README.txt for instructions on how to use this program.");
     Console.WriteLine();
