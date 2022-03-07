@@ -393,19 +393,39 @@ namespace NSMB_RNG
             // The file contains a list of 4-byte values, but these are not exactly the values we want.
             // To get the values we want, we have to first multiply the value by 5, then add it to the previous value.
             // The "previous" value starts at 3, since almost all values that we want equal 3 when taken mod 5.
-            // The remainder of the values we want are 2 mod 5, and will be equal to a value that is in the list minus 0x33333333*4.
-            // Not all values that fit in a uint and match a value as specified should be in the list, since they are not possible results of NSMB's RNG function,
-            // but including them will not cause any issues beyond performance, which should be minor.
+            // The remainder of the values we want are 2 mod 5:
+            // 1) Most of these are equal to some value from the list minus c (= 0x33333333*4).
+            //    To find these, we subtract c from values in the range c -> c + m (= 0x19660D, from LCRNG_NSMB),
+            //    and then verify that it leads to the same RNG value.
+            // 2) The remainder of these are ones where LCRNB_NSMB(x) % 5 is also equal to 2.
+            //    These are encoded in the files as the last value in the file, if the high bit is set.
             List<uint> values = new List<uint>(bytesRead / sizeof(uint));
             uint lastV = 3;
-            uint diffForMod2 = (uint)0x3333_3333 * 4;
-            for (int i = 0; i < bytesRead; i += sizeof(uint))
+            uint c = (uint)0x3333_3333 * 4;
+            uint m = 0x19660D;
+            for (int i = 0; i < bytesRead - sizeof(uint); i += sizeof(uint))
             {
-
                 lastV += BitConverter.ToUInt32(data, i) * 5;
                 values.Add(lastV);
-                if (lastV > diffForMod2)
-                        values.Add(lastV - diffForMod2);
+                if (lastV > c && lastV < c + m)
+                {
+                    if (LCRNG_NSMB(lastV) == LCRNG_NSMB(lastV - c))
+                        values.Add(lastV - c);
+                }
+            }
+            // Check for the last value being included by (2) in comments above
+            uint lastValueInFile = BitConverter.ToUInt32(data, data.Length - sizeof(uint));
+            if ((lastValueInFile & 0x8000_0000) != 0)
+                values.Add(lastValueInFile & 0x7fff_ffff);
+            else
+            {
+                lastV += lastValueInFile * 5;
+                values.Add(lastV);
+                if (lastV > c && lastV < c + m)
+                {
+                    if (LCRNG_NSMB(lastV) == LCRNG_NSMB(lastV - c))
+                        values.Add(lastV - c);
+                }
             }
             return values;
         }
