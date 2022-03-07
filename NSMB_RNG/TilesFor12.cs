@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NSMB_RNG
@@ -179,7 +180,7 @@ namespace NSMB_RNG
                     v = LCRNG_NSMB(v);
                 currentValues[index] = v;
             }
-            Console.WriteLine("done");
+            Console.Write("done\n\n");
 
             // Step 3
             inputTiles = getAllTiles("second");
@@ -371,7 +372,7 @@ namespace NSMB_RNG
             string filePath = "lookup/" + folder + file;
             if (!File.Exists(filePath))
             {
-                Console.Write("The lookup file for this pattern was not found. Do you want to download it? [y/n]: ");
+                Console.Write("\nThe lookup file for this pattern was not found. Do you want to download it?\nDownloads are in chunks of up to 1.6MB. [y/n]: ");
                 if (!UI.AskYesNo())
                     return new List<uint>();
                 if (!DownloadChunk(folder).Result)
@@ -440,6 +441,7 @@ namespace NSMB_RNG
             {
                 ProcessStartInfo psi = new ProcessStartInfo();
                 psi.WindowStyle = ProcessWindowStyle.Hidden;
+                psi.RedirectStandardOutput = true;
                 psi.FileName = zPath;
                 psi.Arguments = "x " + source + " -o" + destination;
                 Process? process = Process.Start(psi);
@@ -461,17 +463,28 @@ namespace NSMB_RNG
             string archivePath = "lookup/" + file + ".7z";
 
             // Download .7z
+            Console.WriteLine("Downloading archive file...");
             Directory.CreateDirectory("lookup/" + file);
             Uri uri = new Uri("https://github.com/SuuperW/NSMB_RNG/raw/vLookup/" + archivePath);
-            using (HttpResponseMessage response = await client.GetAsync(uri))
+            using (HttpResponseMessage response = await client.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead))
             {
                 if (!response.IsSuccessStatusCode)
                     return false;
+                long contentLength = response.Content.Headers.ContentLength ?? long.MaxValue;
                 using (FileStream fs = new FileStream(archivePath, FileMode.CreateNew))
-                    await response.Content.CopyToAsync(fs);
+                {
+                    var t = response.Content.CopyToAsync(fs);
+                    Thread.Sleep(100);
+                    while (!t.IsCompleted)
+                    {
+                        Console.WriteLine((fs.Length / contentLength * 100).ToString() + "%");
+                        Thread.Sleep(500);
+                    }
+                }
             }
 
             // Extract contents of .7z archive and delete archive
+            Console.Write("Done downloading. Extracting archive file contents...");
             if (!ExtractFile(archivePath, "lookup/" + file))
                 return false;
             File.Delete(archivePath);
