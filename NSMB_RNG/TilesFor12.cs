@@ -388,9 +388,23 @@ namespace NSMB_RNG
             }
             fs.Close();
 
+            // The file contains a list of 4-byte values, but these are not exactly the values we want.
+            // To get the values we want, we have to first multiply the value by 5, then add it to the previous value.
+            // The "previous" value starts at 3, since almost all values that we want equal 3 when taken mod 5.
+            // The remainder of the values we want are 2 mod 5, and will be equal to a value that is in the list minus 0x33333333*4.
+            // Not all values that fit in a uint and match a value as specified should be in the list, since they are not possible results of NSMB's RNG function,
+            // but including them will not cause any issues beyond performance, which should be minor.
             List<uint> values = new List<uint>(bytesRead / sizeof(uint));
+            uint lastV = 3;
+            uint diffForMod2 = (uint)0x3333_3333 * 4;
             for (int i = 0; i < bytesRead; i += sizeof(uint))
-                values.Add(BitConverter.ToUInt32(data, i));
+            {
+
+                lastV += BitConverter.ToUInt32(data, i) * 5;
+                values.Add(lastV);
+                if (lastV > diffForMod2)
+                        values.Add(lastV - diffForMod2);
+            }
             return values;
         }
         private static bool ExtractFile(string source, string destination)
