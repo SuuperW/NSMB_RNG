@@ -138,7 +138,7 @@ int main()
     foreach (string dn in tableFileNames(3))
     {
         foreach (string fn in tableFileNames(2))
-            CreateZip(newTable + dn + "/" + fn);
+            Directory.Delete(newTable + dn + "/" + fn, true);
     }
 
     return 0;
