@@ -199,7 +199,7 @@ namespace NSMB_RNG
                 for (int index = 0; index < currentValues.Count; index++)
                 {
                     for (int i = 0; i < TILES_PER_ROW * (TILES_PER_SCREEN_VERTICAL - 4); i++)
-                        currentValues[i] = LCRNG_NSMB(currentValues[i]);
+                        currentValues[index] = LCRNG_NSMB(currentValues[index]);
                 }
                 Console.WriteLine("done");
 
@@ -317,8 +317,8 @@ namespace NSMB_RNG
         /// </summary>
         private static int removeNonmatchingValues(List<uint> lookupResults, List<uint> currentValues, int[] tiles)
         {
-            int currentIndex = 0;
-            while (currentIndex < lookupResults.Count)
+            int currentIndex = lookupResults.Count - 1;
+            while (currentIndex >= 0)
             {
                 // Check if this value matches the input for 11 tiles.
                 uint v = currentValues[currentIndex];
@@ -341,24 +341,24 @@ namespace NSMB_RNG
                 {
                     lookupResults.RemoveAt(currentIndex);
                     currentValues.RemoveAt(currentIndex);
-                    continue;
                 }
-                // Move to the next row
-                for (int i = tiles.Length; i < TILES_PER_ROW; i++)
-                    v = LCRNG_NSMB(v);
-                // Update
-                currentValues[currentIndex] = v;
-                currentIndex++;
+                else
+                    currentValues[currentIndex] = v;
+
+                currentIndex--;
             }
 
             // Find values that have converged
             HashSet<uint> distinctValues = new HashSet<uint>();
             for (int i = 0; i < currentValues.Count; i++)
             {
-                if (distinctValues.Contains(currentValues[i]))
-                    currentValues[i] = 0; // 0 is not a possible result of LCRNG_NSMB
-                else
-                    distinctValues.Add(currentValues[i]);
+                if (currentValues[i] != 0) // 0 means it was previously found to have converged with another value
+                {
+                    if (distinctValues.Contains(currentValues[i]))
+                        currentValues[i] = 0; // choose 0 because it is not a possible result of LCRNG_NSMB
+                    else
+                        distinctValues.Add(currentValues[i]);
+                }
             }
             return distinctValues.Count;
         }
