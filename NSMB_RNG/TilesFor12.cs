@@ -141,7 +141,7 @@ namespace NSMB_RNG
             Console.WriteLine("Instructions:");
             Console.WriteLine("1) Enter 1-2 as instructed in the README.txt file.");
             Console.WriteLine("2) Visually identify the first 7 randomized tiles in the first row of tiles. Refer to the tiles.png file for clarification, and for the tile names used by the program.");
-            Console.WriteLine("3) The program will continue asking for tiles until only one there is only one possible RNG state. (There will be more than one possible seed that leads to that RNG state.)");
+            Console.WriteLine("3) Then the entire second row.");
             Console.WriteLine("----------------------------\n");
 
             // Step 2
@@ -186,62 +186,20 @@ namespace NSMB_RNG
             inputTiles = getAllTiles("second");
             Console.Write("Calculating...");
             int distinctValues = removeNonmatchingValues(lookupResults, currentValues, inputTiles);
+            Console.WriteLine("done");
             if (distinctValues == 0) // should never happen
             {
                 Console.WriteLine("There are no RNG values that lead to the given set of tiles. Maybe you mis-typed one?");
                 return null;
             }
 
-            // Determine if the list is small enough (meaning, only 1 distinct value).
-            if (distinctValues != 1)
-            {
-                // If not, ask for second-to-last row and basically repeat step 3.
-                for (int index = 0; index < currentValues.Count; index++)
-                {
-                    for (int i = 0; i < TILES_PER_ROW * (TILES_PER_SCREEN_VERTICAL - 4); i++)
-                        currentValues[index] = LCRNG_NSMB(currentValues[index]);
-                }
-                Console.WriteLine("done");
-
-                inputTiles = getAllTiles("second-to-last");
-                Console.Write("Calculating...");
-                distinctValues = removeNonmatchingValues(lookupResults, currentValues, inputTiles);
-                if (distinctValues == 0) // should never happen
-                {
-                    Console.WriteLine("There are no RNG values that lead to the given set of tiles. Maybe you mis-typed one?");
-                    return null;
-                }
-                // Then check again, and maybe ask for last row.
-                if (distinctValues != 1)
-                {
-                    Console.WriteLine("done");
-                    inputTiles = getAllTiles("last");
-                    Console.Write("Calculating...");
-                    distinctValues = removeNonmatchingValues(lookupResults, currentValues, inputTiles);
-                    if (distinctValues == 0) // should never happen
-                    {
-                        Console.WriteLine("There are no RNG values that lead to the given set of tiles. Maybe you mis-typed one?");
-                        return null;
-                    }
-                }
-            }
-            Console.WriteLine("done");
-
-            // If the list is large, warn the user and offer to quit.
-            if (lookupResults.Count > 10) // 10 is probably not large enough to bother warning about... but really I don't expect 10 to be possible
-            {
-                Console.WriteLine("There are " + lookupResults.Count + " potential 'intermediate' RNG values. The process of going back to initial RNG values may take a while.");
-                Console.Write("You can quit and try for a different seed if you want. Quit? [y/n]: ");
-                string? quit = Console.ReadLine();
-                if (!string.IsNullOrEmpty(quit) && quit[0] == 'y')
-                    return null;
-            }
             // Calculate all possible initial RNG values.
+            Console.Write("Found " + lookupResults.Count + " 'intermediate' RNG values, ");
             List<uint> initials = new List<uint>();
             foreach (uint v in lookupResults)
                 initials.AddRange(reverseStep(v));
 
-            Console.WriteLine("Found single RNG state, and " + initials.Count + " possible seeds.");
+            Console.WriteLine("and " + initials.Count + " possible seeds.");
             return initials;
         }
         private static int[] getFirstSevenTiles()
