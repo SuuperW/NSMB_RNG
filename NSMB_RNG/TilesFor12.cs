@@ -205,7 +205,6 @@ namespace NSMB_RNG
 
                 inputTiles = getAllTiles("second-to-last");
                 Console.Write("Calculating...");
-                removeNonmatchingValues(lookupResults, currentValues, inputTiles);
                 distinctValues = removeNonmatchingValues(lookupResults, currentValues, inputTiles);
                 if (distinctValues == 0) // should never happen
                 {
@@ -218,7 +217,6 @@ namespace NSMB_RNG
                     Console.WriteLine("done");
                     inputTiles = getAllTiles("last");
                     Console.Write("Calculating...");
-                    removeNonmatchingValues(lookupResults, currentValues, inputTiles);
                     distinctValues = removeNonmatchingValues(lookupResults, currentValues, inputTiles);
                     if (distinctValues == 0) // should never happen
                     {
@@ -282,8 +280,8 @@ namespace NSMB_RNG
             else if (rawInput.Length == count)
             {
                 rawInput = rawInput.ToUpper();
-                tilesIntArray = new int[7];
-                for (int i = 0; i < 7; i++)
+                tilesIntArray = new int[count];
+                for (int i = 0; i < count; i++)
                 {
                     tilesIntArray[i] = Array.IndexOf(tileLetters, rawInput[i]);
                     if (tilesIntArray[i] == -1)
@@ -293,12 +291,12 @@ namespace NSMB_RNG
             else
             {
                 string[] tilesStrArray = rawInput.ToUpper().Split(' ');
-                if (tilesStrArray.Length != 7)
+                if (tilesStrArray.Length != count)
                     inputIsValid = false;
                 else
                 {
-                    tilesIntArray = new int[7];
-                    for (int i = 0; i < 7; i++)
+                    tilesIntArray = new int[count];
+                    for (int i = 0; i < count; i++)
                     {
                         tilesIntArray[i] = Array.IndexOf(tileLetters, tilesStrArray[i][0]);
                         if (tilesIntArray[i] == -1)
