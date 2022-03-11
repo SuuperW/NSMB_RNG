@@ -455,7 +455,7 @@ namespace NSMB_RNG
             for (int y = 0; y < tiles.Length + 1; y++)
             {
                 if (y == 2)
-                    Console.WriteLine("-----------");
+                    Console.WriteLine("---------------------");
                 else
                 {
                     int tilesToOutput = y == 0 ? 7 : 11;

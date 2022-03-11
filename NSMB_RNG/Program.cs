@@ -14,6 +14,7 @@ const string MAIN_MENU = "--- Main menu ---\n" +
     "1) Input MAC address\n" +
     "2) Choose or calculate a magic\n" +
     "3) Find a date/time for good seed\n" +
+    "4) Calculate tile pattern\n" +
     "Select an option: ";
 
 bool loadSettings()
@@ -111,7 +112,7 @@ int main()
     int menuOption = -1;
     while (menuOption != 0)
     {
-        menuOption = getUserMenuSelection(MAIN_MENU, 3);
+        menuOption = getUserMenuSelection(MAIN_MENU, 4);
         // Input MAC address
         if (menuOption == 1)
         {
@@ -143,7 +144,7 @@ int main()
         {
             if (MAC == 0)
             {
-                Console.WriteLine("You must set a MAC address first.");
+                Console.WriteLine("You must set a MAC address first.\n");
                 continue;
             }
 
@@ -176,15 +177,36 @@ int main()
                 {
                     magic = SystemSeedInitParams.GetMagic(seedParams[0]);
                     saveSettings();
-                    Console.WriteLine("One magic found and saved: " + magic.ToString("x") + "\n");
+                    Console.WriteLine("One magic found and saved: " + magic.ToString("x"));
+                    Console.WriteLine("It might be a good idea to confirm this magic by using option 4: Calculate tile pattern.\n");
                 }
                 // If there are more than one, we cannot know which is correct.
                 else if (seedParams.Count > 1)
                 {
-                    Console.WriteLine("More than one possible magic was found. There is no way to know without more information which is correct.");
-                    Console.WriteLine("Since this is a rare occurence, NSMB_RNG will not attempt to find the correct one. Set another date/time or use another tile sequence with the same date/time and try again.\n");
+                    Console.WriteLine("More than one possible magic was found. (This is rare.) You will have to get another tile pattern.");
+                    Console.Write("Found magics: " + SystemSeedInitParams.GetMagic(seedParams[0]).ToString("x"));
+                    for (int i = 1; i < seedParams.Count; i++)
+                        Console.Write(", " + SystemSeedInitParams.GetMagic(seedParams[i]).ToString("x"));
+                    Console.WriteLine();
                 }
             }
+        }
+
+        else if (menuOption == 4)
+        {
+            if (MAC == 0 || magic == 0)
+            {
+                Console.WriteLine("You must set both a MAC address and a magic before using this option.\n");
+                continue;
+            }
+
+            DateTime dt = getDateTimeFromUser();
+            SeedInitParams sip = new SeedInitParams(MAC, dt);
+            new SystemSeedInitParams(magic).SetSeedParams(sip);
+            uint seed = sip.GetSeed();
+
+            TilesFor12.printTilesFromSeed(seed);
+            Console.WriteLine("Note: Because magics can vary slightly between boots, you are not guaranteed to get this pattern every time.\n");
         }
     }
 
