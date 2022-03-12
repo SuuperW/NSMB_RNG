@@ -31,7 +31,7 @@ namespace NSMB_RNG
             magic = magic | ((uint)seedParams.Timer0 << 0);
             magic = magic | ((uint)seedParams.VCount << 12);
             magic = magic | (seedParams.VFrame << 24);
-            magic = magic | ((seedParams.is3DS ? 1u : 0u) << 31);
+            magic = magic | ((seedParams.Is3DS ? 1u : 0u) << 31);
             return magic;
         }
 
@@ -40,7 +40,7 @@ namespace NSMB_RNG
             seedParams.Timer0 = Timer0;
             seedParams.VCount = VCount;
             seedParams.VFrame = VFrame;
-            seedParams.is3DS = Is3DS;
+            seedParams.Is3DS = Is3DS;
         }
 
         //public static SystemSeedInitParams DeSmuME_Personal = new SystemSeedInitParams(0x518, 0x28, 5);

@@ -34,7 +34,18 @@ namespace NSMB_RNG
         private void* msg;
         const int msgSize = 32;
 
-        public bool is3DS = false;
+        private bool _is3DS;
+        public bool Is3DS
+        {
+            get => _is3DS;
+            set
+            {
+                _is3DS = value;
+                // Hour format depends on is3DS, but can be read correctly without regard to is3DS.
+                // This is entirely based on pprng, though. I haven't figured out 3DS RNG init yet.
+                Hour = Hour;
+            }
+        }
 
         public ushort Timer0
         {
@@ -87,13 +98,13 @@ namespace NSMB_RNG
             get
             {
                 byte v = ((byte*)msg)[16];
-                if (v >= 0x40) v -= 0x40;
+                v &= 0xBF;
                 return FromBCD(v);
             }
             set
             {
                 byte v = ToBCD(value);
-                if (!is3DS && value >= 12) v += 0x40;
+                if (!_is3DS && value >= 12) v += 0x40;
                 ((byte*)msg)[16] = v;
             } 
         }
@@ -134,7 +145,7 @@ namespace NSMB_RNG
                 zeroMe[i] = 0;
 
             VFrame = 0; // we have set this before setting the MAC, because of the way the setters handle their overlap
-            is3DS = _3DS;
+            Is3DS = _3DS;
             Buttons = 0;
 
             SetMAC(MACAddress);
@@ -151,7 +162,7 @@ namespace NSMB_RNG
                 thisMsg[i] = otherMsg[i];
 
             _mac = other._mac;
-            is3DS = other.is3DS;
+            Is3DS = other.Is3DS;
         }
 
         ~SeedInitParams()
