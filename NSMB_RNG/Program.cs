@@ -241,6 +241,39 @@ void calculateMagic()
 
 }
 
+DateTime findGoodDateTime(int seconds, uint buttonsHeld, ulong mac, uint magic)
+{
+    HashSet<uint> desiredSeeds = new HashSet<uint>() {
+        0xaa99ad81, 0x2aa12d89, 0xa2a1a589, 0xaaa3ad8b, 0xaa21ad09, 0xcaa1cd89, 0xaca1af89, 0x11281410,
+        0x4433471b, 0xc43ac722, 0x3c3b3f23, 0x43bb46a3, 0x443d4725, 0x643b6723, 0x463b4923, 0xaac1ada9,
+        0xddcce0b4, 0xd5d4d8bc, 0x5dd460bc, 0xddd6e0be, 0xdd54e03c, 0xfdd500bc, 0xdfd4e2bc, 0x445b4743,
+        0x77667a4e, 0xf76dfa55, 0x6f6e7256, 0x76ee79d6, 0x77707a58, 0x976e9a56, 0x796e7c56, 0xddf4e0dc,
+        0x110013e8, 0x910793ef, 0x09080bf0, 0x130815f0, 0x310833f0, 0x10881370, 0x110a13f2, 0x778e7a76
+    };
+
+    DateTime dt = new DateTime(2000, 1, 1, 0, 0, 0).AddSeconds(seconds);
+    SeedInitParams sip = new SeedInitParams(mac, dt);
+    new SystemSeedInitParams(magic).SetSeedParams(sip);
+    sip.Buttons = buttonsHeld;
+
+    // loop through all minutes with the given seconds count
+    bool match = false;
+    while (!match && dt.Year < 2100)
+    {
+        int currentYear = dt.Year;
+        Console.WriteLine("Searching in year " + currentYear);
+        while (dt.Year == currentYear)
+        {
+            if (desiredSeeds.Contains(sip.GetSeed()))
+                return dt;
+            dt = dt.AddMinutes(1);
+            sip.SetDateTime(dt);
+        }
+    }
+
+    // No match
+    return new DateTime(1, 1, 1);
+}
 void menuFindGoodDateTime()
 {
     // choose seconds
@@ -285,44 +318,19 @@ void menuFindGoodDateTime()
     bool autoIncrementSeconds = UI.AskYesNo();
 
     // the big loop
-    HashSet<uint> desiredSeeds = new HashSet<uint>() {
-        0xaa99ad81, 0x2aa12d89, 0xa2a1a589, 0xaaa3ad8b, 0xaa21ad09, 0xcaa1cd89, 0xaca1af89, 0x11281410,
-        0x4433471b, 0xc43ac722, 0x3c3b3f23, 0x43bb46a3, 0x443d4725, 0x643b6723, 0x463b4923, 0xaac1ada9,
-        0xddcce0b4, 0xd5d4d8bc, 0x5dd460bc, 0xddd6e0be, 0xdd54e03c, 0xfdd500bc, 0xdfd4e2bc, 0x445b4743,
-        0x77667a4e, 0xf76dfa55, 0x6f6e7256, 0x76ee79d6, 0x77707a58, 0x976e9a56, 0x796e7c56, 0xddf4e0dc,
-        0x110013e8, 0x910793ef, 0x09080bf0, 0x130815f0, 0x310833f0, 0x10881370, 0x110a13f2, 0x778e7a76
-    };
     while (true)
     {
-        DateTime dt = new DateTime(2008, 1, 1, 0, 0, 0).AddSeconds(seconds);
-        SeedInitParams sip = new SeedInitParams(MAC, dt);
-        new SystemSeedInitParams(magic).SetSeedParams(sip);
-        sip.Buttons = buttonsHeld;
-
-        // loop through all minutes with the given seconds count
-        bool match = false;
-        while (!match && dt.Year < 2100)
-        {
-            int currentYear = dt.Year;
-            Console.WriteLine("Searching in year " + currentYear);
-            while (dt.Year == currentYear)
-            {
-                if (desiredSeeds.Contains(sip.GetSeed()))
-                {
-                    match = true;
-                    break;
-                }
-                dt = dt.AddMinutes(1);
-                sip.SetDateTime(dt);
-            }
-        }
+        DateTime dt = findGoodDateTime(seconds, buttonsHeld, MAC, magic);
 
         // Did we find a match?
-        if (match)
+        if (dt.Year >= 2000)
         {
             Console.WriteLine("Found a good date/time!");
             Console.WriteLine(dt.ToLongDateString() + " " + dt.ToLongTimeString());
             Console.WriteLine("Expected tile pattern: ");
+            SeedInitParams sip = new SeedInitParams(MAC, dt);
+            new SystemSeedInitParams(magic).SetSeedParams(sip);
+            sip.Buttons = buttonsHeld;
             TilesFor12.printTilesFromSeed(sip.GetSeed());
             break;
         }
