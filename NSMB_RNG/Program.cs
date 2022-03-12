@@ -241,6 +241,105 @@ void calculateMagic()
 
 }
 
+void menuFindGoodDateTime()
+{
+    // choose seconds
+    int seconds = getUserMenuSelection("Enter the number of seconds you want to have between setting the date/time and loading the game: ", 999);
+
+    // choose buttons
+    StringBuilder buttonNames = new StringBuilder();
+    foreach (var kvp in SeedInitParams.buttons)
+        buttonNames.Append(kvp.Key).Append(' ');
+    buttonNames.Length--;
+
+    string? buttonsSelection = null;
+    List<string> buttonsList = new List<string>();
+    while (buttonsSelection == null)
+    {
+        Console.WriteLine("Enter the buttons you will hold during game start-up, separated by spaces, or leave blank for no buttons.");
+        Console.WriteLine("Button names: " + buttonNames.ToString());
+        Console.Write("Buttons to hold: ");
+        while (buttonsSelection == null)
+            buttonsSelection = Console.ReadLine();
+        
+        foreach (string s in buttonsSelection.Split(' ', StringSplitOptions.RemoveEmptyEntries))
+        {
+            string properName = s.Substring(0, 1).ToUpper() + s.Substring(1).ToLower();
+            if (SeedInitParams.buttons.ContainsKey(properName))
+                buttonsList.Add(properName);
+            else
+            {
+                buttonsList.Clear();
+                buttonsSelection = null;
+                break;
+            }
+        }
+    }
+
+    uint buttonsHeld = 0;
+    foreach (string s in buttonsList)
+        buttonsHeld |= SeedInitParams.buttons[s];
+
+    // choose auto-second-increment option
+    Console.Write("Do you want NSMB_RNG to automatically increment the seconds since boot and try again, in the event that no good date/time is found? [y/n]: ");
+    bool autoIncrementSeconds = UI.AskYesNo();
+
+    // the big loop
+    HashSet<uint> desiredSeeds = new HashSet<uint>() {
+        0xaa99ad81, 0x2aa12d89, 0xa2a1a589, 0xaaa3ad8b, 0xaa21ad09, 0xcaa1cd89, 0xaca1af89, 0x11281410,
+        0x4433471b, 0xc43ac722, 0x3c3b3f23, 0x43bb46a3, 0x443d4725, 0x643b6723, 0x463b4923, 0xaac1ada9,
+        0xddcce0b4, 0xd5d4d8bc, 0x5dd460bc, 0xddd6e0be, 0xdd54e03c, 0xfdd500bc, 0xdfd4e2bc, 0x445b4743,
+        0x77667a4e, 0xf76dfa55, 0x6f6e7256, 0x76ee79d6, 0x77707a58, 0x976e9a56, 0x796e7c56, 0xddf4e0dc,
+        0x110013e8, 0x910793ef, 0x09080bf0, 0x130815f0, 0x310833f0, 0x10881370, 0x110a13f2, 0x778e7a76
+    };
+    while (true)
+    {
+        DateTime dt = new DateTime(2008, 1, 1, 0, 0, 0).AddSeconds(seconds);
+        SeedInitParams sip = new SeedInitParams(MAC, dt);
+        new SystemSeedInitParams(magic).SetSeedParams(sip);
+        sip.Buttons = buttonsHeld;
+
+        // loop through all minutes with the given seconds count
+        bool match = false;
+        while (!match && dt.Year < 2100)
+        {
+            int currentYear = dt.Year;
+            Console.WriteLine("Searching in year " + currentYear);
+            while (dt.Year == currentYear)
+            {
+                if (desiredSeeds.Contains(sip.GetSeed()))
+                {
+                    match = true;
+                    break;
+                }
+                dt = dt.AddMinutes(1);
+                sip.SetDateTime(dt);
+            }
+        }
+
+        // Did we find a match?
+        if (match)
+        {
+            Console.WriteLine("Found a good date/time!");
+            Console.WriteLine(dt.ToLongDateString() + " " + dt.ToLongTimeString());
+            Console.WriteLine("Expected tile pattern: ");
+            TilesFor12.printTilesFromSeed(sip.GetSeed());
+            break;
+        }
+        else
+        {
+            if (autoIncrementSeconds)
+                seconds++;
+            else
+            {
+                Console.WriteLine("Done searching all possible date/times with the given secounds count. No matches found.");
+                Console.WriteLine("Try again with another seconds count, or with different buttons held.");
+                break;
+            }
+        }
+    }
+}
+
 void menuCalculateTilePattern()
 {
     DateTime dt = getDateTimeFromUser();
@@ -288,7 +387,18 @@ int main()
             else
                 Console.WriteLine("Magic set.\n");
         }
-
+        // find a good date/time
+        else if (menuOption == 3)
+        {
+            if (MAC == 0 || magic == 0)
+            {
+                Console.WriteLine("You must set both a MAC address and a magic before using this option.\n");
+                continue;
+            }
+            else
+                menuFindGoodDateTime();
+        }
+        // display a tile pattern
         else if (menuOption == 4)
         {
             if (MAC == 0 || magic == 0)

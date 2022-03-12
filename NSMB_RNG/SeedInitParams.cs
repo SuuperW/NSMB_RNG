@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
@@ -21,6 +22,13 @@ namespace NSMB_RNG
         const uint X = 0x0400;
         const uint Y = 0x0800;
         const uint Debug = 0x2000;
+        public static Dictionary<string, uint> buttons = new Dictionary<string, uint>()
+        {
+            { "A", A }, { "B", B }, { "X", X }, { "Y", Y },
+            { "Start", Start }, { "Select", Select },
+            { "L", L }, { "R", R },
+            { "Up", Up }, { "Down", Down },{ "Right", Right }, { "Left", A }
+        };
 
         private ReadOnlySpan<byte> msgSpan => new ReadOnlySpan<byte>(msg, 32);
         private void* msg;
