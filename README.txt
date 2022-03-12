@@ -24,7 +24,7 @@ You will have to repeat the above steps 1-7 multiple times in the following step
  1) Give NSMB_RNG your system's MAC address. This can be found somewhere under internet settings.
  2) Load NSMB and look at the first few tiles several times. Find a sequence that is relatively common, and take a picture of that sequence.
  3) Determine your system's "magic":
-  A) Select the option to choose a amgic. If NSMB_RNG already has magics for your system, select your system. You will be given a list of magics with their corresponding tile patterns. If any of the tile patterns match what you got, select that magic.
+  A) Select the option to choose a magic. If NSMB_RNG already has magics for your system, select your system. You will be given a list of magics with their corresponding tile patterns. If any of the tile patterns match what you got, select that magic.
   B) If NSMB_RNG does not have magics for your system, or if they do not match the tile sequence you have:
    I) Follow the promts, which will ask you to input your tile sequence. NSMB_RNG will use the tile sequence to determine which seeds you might have.
    II) Once the seeds have been found, NSMB_RNG will attempt to calculate a magic.

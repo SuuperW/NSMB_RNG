@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -131,6 +132,26 @@ namespace NSMB_RNG
             }
 
             return tiles;
+        }
+
+        public static string getFirstRowPattern(uint seed)
+        {
+            // Do pre-randomized-tiles rng steps
+            uint v = seed;
+            for (int i = 0; i < STEPS_BEFORE; i++)
+                v = LCRNG_NSMB(v);
+
+            // Create string
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < 7; i++)
+            {
+                v = LCRNG_NSMB(v);
+                uint tID = tileIDwithAfterStep(v);
+                sb.Append(tileLetters[tID]).Append(' ');
+            }
+            sb.Length--;
+
+            return sb.ToString();
         }
 
         /// <summary>

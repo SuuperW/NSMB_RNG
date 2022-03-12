@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
+using System.Text.Json;
 
 using NSMB_RNG;
 
@@ -121,6 +123,81 @@ void menuSetMac()
     Console.WriteLine("MAC address set and saved to file.\n");
 }
 
+// menuChooseOrCalculateMagic
+uint chooseMagic()
+{
+    // read file
+    FileStream fs = File.OpenRead("systems.json");
+    Dictionary<string, string[]>? systems = JsonSerializer.Deserialize<Dictionary<string, string[]>>(fs);
+    fs.Close();
+    if (systems == null)
+    {
+        Console.WriteLine("Failed to read systems.json.");
+        return 0;
+    }
+
+    // output list
+    Console.Write("Enter your system type. Valid options are: ");
+    StringBuilder sb = new StringBuilder();
+    foreach (string systemName in systems.Keys)
+        sb.Append(systemName).Append(", ");
+    sb.Append("other");
+    Console.WriteLine(sb.ToString());
+    Console.WriteLine("Note: 3DS-like systems and virtual console are not supported, as their RNG initialization procedures are unknown.");
+
+    // case-insensitive, and 'other' option
+    Dictionary<string, string[]> systemsCaseInsensitive = new Dictionary<string, string[]>();
+    foreach (var kvp in systems)
+        systemsCaseInsensitive.Add(kvp.Key.ToLower(), kvp.Value);
+    systemsCaseInsensitive.Add("other", new string[] { });
+
+    // system selection
+    string[] magicsArray;
+    while (true)
+    {
+        Console.Write("System type: ");
+        string? chosenSystem = Console.ReadLine();
+        if (chosenSystem == null || !systemsCaseInsensitive.ContainsKey(chosenSystem.ToLower()))
+            Console.WriteLine("Invalid system type.");
+        else
+        {
+            magicsArray = systemsCaseInsensitive[chosenSystem.ToLower()];
+            break;
+        }
+    }
+    if (magicsArray.Length == 0)
+        return 0;
+
+    // date/time
+    Console.WriteLine("To determine which magic you got, compare your tiles with the ones given for each magic.");
+    Console.WriteLine("To calculate which tiles each magic should give, first choose a time.");
+    DateTime dt = getDateTimeFromUser();
+
+    // create patterns
+    List<uint> magics = new List<uint>();
+    List<string> tilePatterns = new List<string>();
+    foreach (string str in magicsArray)
+    {
+        uint m = Convert.ToUInt32(str, 16);
+        magics.Add(m);
+
+        SeedInitParams sip = new SeedInitParams(MAC, dt);
+        new SystemSeedInitParams(m).SetSeedParams(sip);
+        uint seed = sip.GetSeed();
+        tilePatterns.Add(TilesFor12.getFirstRowPattern(seed));
+    }
+
+    // magic selection
+    for (int i = 0; i < magics.Count; i++)
+    {
+        Console.WriteLine("#" + i.ToString() + ": " + magics[i].ToString("x"));
+        Console.WriteLine(tilePatterns[i]);
+        Console.WriteLine();
+    }
+    int selection = getUserMenuSelection("Enter a magic's #: ", magics.Count - 1);
+
+    return magics[selection];
+}
 void calculateMagic()
 {
     DateTime dt = getDateTimeFromUser();
@@ -205,9 +282,11 @@ int main()
                 continue;
             }
 
-            // choosing system is not yet implemnted
-
-            calculateMagic();
+            magic = chooseMagic();
+            if (magic == 0)
+                calculateMagic();
+            else
+                Console.WriteLine("Magic set.\n");
         }
 
         else if (menuOption == 4)
