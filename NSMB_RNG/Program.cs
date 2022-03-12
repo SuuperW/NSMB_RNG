@@ -385,7 +385,10 @@ int main()
             if (magic == 0)
                 calculateMagic();
             else
-                Console.WriteLine("Magic set.\n");
+            {
+                saveSettings();
+                Console.WriteLine("Magic set and saved.\n");
+            }
         }
         // find a good date/time
         else if (menuOption == 3)
