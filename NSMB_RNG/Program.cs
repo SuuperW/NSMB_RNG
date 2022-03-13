@@ -284,11 +284,16 @@ void menuFindGoodDateTime()
     Console.Write("Do you want NSMB_RNG to automatically increment the seconds since boot and try again, in the event that no good date/time is found? [y/n]: ");
     bool autoIncrementSeconds = UI.AskYesNo();
 
+    // thread count
+    int threadCount = getUserMenuSelection("Number of threads to use (default " + Environment.ProcessorCount + "): ", 100);
+    if (threadCount == 0)
+        threadCount = Environment.ProcessorCount;
+
     // the big loop
     while (true)
     {
         DateTimeSearcher dts = new DateTimeSearcher(seconds, buttonsHeld, MAC, magic);
-        DateTime dt = dts.findGoodDateTime();
+        DateTime dt = dts.findGoodDateTime(threadCount);
 
         // Did we find a match?
         if (dt.Year >= 2000)
