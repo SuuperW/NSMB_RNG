@@ -32,8 +32,8 @@ You will have to repeat the above steps 1-7 multiple times in the following step
  4) Choose the option to find a date/time that gives a good seed. Follow the promts. (It will ask for seconds, buttons held, whether to auto-increment seconds after exhausting the DS's date range, and thread count.)
  5) If a good date/time is found, NSMB_RNG will output the tile sequence that the calculated seed should give. If not, try again with another seconds and button combination. There is approximately a 50% chance of any given second count and buttons combination containing a good date/time.
  6) Use that date/time, load NSMB, and look at the tiles in World 1-2. You may need a few tries to get the desired seed. Once you have confirmed that you have the correct seed, you can quit to the main menu and start a run.
- 7) Optional: Choose the opiton in NSMB_RNG to find a number of double jumps in World 1-1. Re-load World 1-2 and follow the prompt to input the tile sequence seen in World 1-2. If you do not control your double jumps in 1-1 there is a 1/8 chance that the red ? block in 1-2 will not give a shell.
+ 7) Optional: Choose the opiton in NSMB_RNG to find a number of double jumps in World 1-1. Follow the prompt to input the tile sequence seen in World 1-2.
 
 Once you have the right seed, you can quit to main menu and start a new file as many times as you want without losing good RNG, as long as you do not re-boot the game. Every time you do boot the game, repeat step 6. If you want to guarantee a shell in 1-2, repeat step 7 before each attempt.
 
-NSMB_RNG will save a file named settings.bin which may contain the MAC address you gave, chosen magic, and previously found date/times for good seeds. This file will be loaded when NSMB_RNG starts next time. You can copy/rename this file to keep info for multiple systems.
+NSMB_RNG will save a file named settings.bin which may contain the MAC address you gave and your magic. This file will be loaded when NSMB_RNG starts next time. You can copy/rename this file to keep info for multiple systems.

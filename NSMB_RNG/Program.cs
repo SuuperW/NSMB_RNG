@@ -55,41 +55,6 @@ void saveSettings()
     }
 }
 
-int getUserMenuSelection(string menu, int maxOption)
-{
-    while (true)
-    {
-        Console.Write(menu);
-        string? userInput = Console.ReadLine();
-        if (!int.TryParse(userInput, out int menuOption))
-            Console.WriteLine("ERROR: Input was not an integer.");
-        else if (menuOption > maxOption || menuOption < 0)
-            Console.WriteLine("ERROR: Input is not a valid selection.");
-        else
-            return menuOption;
-    }
-}
-
-DateTime getDateTimeFromUser()
-{
-    while (true)
-    {
-        Console.Write("Enter the date/time that RNG was initialized, in your local format: ");
-        if (!DateTime.TryParse(Console.ReadLine(), out DateTime dt))
-            Console.WriteLine("Bad date/time format.");
-        else if (dt.Year < 2000 || dt.Year > 2099)
-            Console.WriteLine("Year must be a valid DS year. (2000-2099)");
-        else
-        {
-            // Show the long date/time to the user for verification.
-            Console.WriteLine("You entered: " + dt.ToLongDateString() + " " + dt.ToLongTimeString());
-            Console.Write("Is this correct? [y/n]: ");
-            if (UI.AskYesNo())
-                return dt;
-        }
-    }
-}
-
 List<SeedInitParams> getSeedInitParams(DateTime dt, List<uint> seeds)
 {
     SeedInitParams sip = new SeedInitParams(MAC, dt);
@@ -171,7 +136,7 @@ uint chooseMagic()
     // date/time
     Console.WriteLine("To determine which magic you got, compare your tiles with the ones given for each magic.");
     Console.WriteLine("To calculate which tiles each magic should give, first choose a time.");
-    DateTime dt = getDateTimeFromUser();
+    DateTime dt = UI.GetDateTimeFromUser();
 
     // create patterns
     List<uint> magics = new List<uint>();
@@ -194,13 +159,13 @@ uint chooseMagic()
         Console.WriteLine(tilePatterns[i]);
         Console.WriteLine();
     }
-    int selection = getUserMenuSelection("Enter a magic's #: ", magics.Count - 1);
+    int selection = UI.GetUserMenuSelection("Enter a magic's #: ", magics.Count - 1);
 
     return magics[selection];
 }
 void calculateMagic()
 {
-    DateTime dt = getDateTimeFromUser();
+    DateTime dt = UI.GetDateTimeFromUser();
     List<uint>? seeds = TilesFor12.calculatePossibleSeeds();
     if (seeds != null)
     {
@@ -214,7 +179,7 @@ void calculateMagic()
             Console.Write("Do you want to try another date/time? [y/n]: ");
             if (UI.AskYesNo())
             {
-                dt = getDateTimeFromUser();
+                dt = UI.GetDateTimeFromUser();
                 seedParams = getSeedInitParams(dt, seeds);
             }
             else
@@ -244,7 +209,7 @@ void calculateMagic()
 void menuFindGoodDateTime()
 {
     // choose seconds
-    int seconds = getUserMenuSelection("Enter the number of seconds you want to have between setting the date/time and loading the game: ", 999);
+    int seconds = UI.GetUserMenuSelection("Enter the number of seconds you want to have between setting the date/time and loading the game: ", 999);
 
     // choose buttons
     StringBuilder buttonNames = new StringBuilder();
@@ -285,7 +250,7 @@ void menuFindGoodDateTime()
     bool autoIncrementSeconds = UI.AskYesNo();
 
     // thread count
-    int threadCount = getUserMenuSelection("Number of threads to use (default " + Environment.ProcessorCount + "): ", 100);
+    int threadCount = UI.GetUserMenuSelection("Number of threads to use (default " + Environment.ProcessorCount + "): ", 100);
     if (threadCount == 0)
         threadCount = Environment.ProcessorCount;
 
@@ -323,7 +288,7 @@ void menuFindGoodDateTime()
 
 void menuCalculateTilePattern()
 {
-    DateTime dt = getDateTimeFromUser();
+    DateTime dt = UI.GetDateTimeFromUser();
     SeedInitParams sip = new SeedInitParams(MAC, dt);
     new SystemSeedInitParams(magic).SetSeedParams(sip);
     uint seed = sip.GetSeed();
@@ -349,7 +314,7 @@ int main()
     int menuOption = -1;
     while (menuOption != 0)
     {
-        menuOption = getUserMenuSelection(MAIN_MENU, 4);
+        menuOption = UI.GetUserMenuSelection(MAIN_MENU, 4);
         // Input MAC address
         if (menuOption == 1)
             menuSetMac();
