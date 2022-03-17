@@ -16,8 +16,7 @@ namespace NSMB_RNG
         const int STEPS_BEFORE = 1937;
         const int TILES_PER_ROW = 27;
         const int TILES_PER_SCREEN_VERTICAL = 12;
-        private static char[] tileLetters = new char[] { 'H', 'E', 'P', 'C', 'B', 'A' };
-        // TODO: Names. Consider changing A to Submarine, H to Bean/Bell/Liver, B to Turtle/Porkchop
+        private static char[] tileLetters = new char[] { 'B', 'E', 'I', 'C', 'P', 'S' };
 
         private static uint LCRNG_NSMB(uint v)
         {
