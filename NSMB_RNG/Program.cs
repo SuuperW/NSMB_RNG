@@ -17,6 +17,7 @@ const string MAIN_MENU = "--- Main menu ---\n" +
     "2) Choose or calculate a magic\n" +
     "3) Find a date/time for good seed\n" +
     "4) Calculate tile pattern\n" +
+    "5) Get desired number of double jumps for 1-1\n" +
     "Select an option: ";
 
 bool loadSettings()
@@ -297,6 +298,19 @@ void menuCalculateTilePattern()
     Console.WriteLine("Note: Because magics can vary slightly between boots, you are not guaranteed to get this pattern every time.\n");
 }
 
+void menuDoubleJumps()
+{
+    Console.WriteLine("This assumes that you already have a good seed!");
+    Console.WriteLine("1) Go to 1-2 as instructed in the README.txt file. You MUST pause.");
+    Console.WriteLine("2) Enter the position (1-8) of the first 'S' tile in the first row of tiles.");
+    Console.WriteLine("3) Quit directly to the main menu. Do not go to the overworld.");
+    int tilePosition = UI.GetUserMenuSelection("'S' tile position: ", 8);
+    int[] doubleJumpCounts = new int[] { 2, 3, 3, 4, 1, 2, 4, 6 };
+    int djCount = doubleJumpCounts[tilePosition];
+    Console.WriteLine("\nYou can do any number of double jumps except " + djCount + " (or " + (djCount + 8) + ", " + (djCount + 16) + ", etc.).");
+    Console.WriteLine("Note: 7 and 8 double jumps will always work, regardless of tile position.\n");
+}
+
 int main()
 {
     Console.WriteLine("Welcome to NSMB_RNG.");
@@ -314,7 +328,7 @@ int main()
     int menuOption = -1;
     while (menuOption != 0)
     {
-        menuOption = UI.GetUserMenuSelection(MAIN_MENU, 4);
+        menuOption = UI.GetUserMenuSelection(MAIN_MENU, 5);
         // Input MAC address
         if (menuOption == 1)
             menuSetMac();
@@ -357,6 +371,11 @@ int main()
             }
             else
                 menuCalculateTilePattern();
+        }
+        // double jumps
+        else if (menuOption == 5)
+        {
+            menuDoubleJumps();
         }
     }
 
