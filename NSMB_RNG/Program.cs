@@ -281,7 +281,7 @@ void menuFindGoodDateTime()
         buttonsHeld |= SeedInitParams.buttons[s];
 
     // choose auto-second-increment option
-    Console.Write("Do you want NSMB_RNG to automatically increment the seconds since boot and try again, in the event that no good date/time is found? [y/n]: ");
+    Console.Write("Do you want to automatically increment the seconds try again, in the event that no good date/time is found? [y/n]: ");
     bool autoIncrementSeconds = UI.AskYesNo();
 
     // thread count
