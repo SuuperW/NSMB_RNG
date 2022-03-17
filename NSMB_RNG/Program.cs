@@ -89,8 +89,8 @@ void menuSetMac()
     Console.WriteLine("MAC address set and saved to file.\n");
 }
 
-// menuChooseOrCalculateMagic
-uint chooseMagic()
+// Returns a list of magics associated with this system, if there are any.
+List<uint> chooseSystem()
 {
     // read file
     FileStream fs = File.OpenRead("systems.json");
@@ -99,7 +99,7 @@ uint chooseMagic()
     if (systems == null)
     {
         Console.WriteLine("Failed to read systems.json.");
-        return 0;
+        return new List<uint>();
     }
 
     // output list
@@ -132,42 +132,40 @@ uint chooseMagic()
         }
     }
     if (magicsArray.Length == 0)
-        return 0;
-
-    // date/time
-    Console.WriteLine("To determine which magic you got, compare your tiles with the ones given for each magic.");
-    Console.WriteLine("To calculate which tiles each magic should give, first choose a time.");
-    DateTime dt = UI.GetDateTimeFromUser();
+        return new List<uint>();
 
     // create patterns
     List<uint> magics = new List<uint>();
-    List<string> tilePatterns = new List<string>();
     foreach (string str in magicsArray)
     {
         uint m = Convert.ToUInt32(str, 16);
         magics.Add(m);
-
-        SeedInitParams sip = new SeedInitParams(MAC, dt);
-        new SystemSeedInitParams(m).SetSeedParams(sip);
-        uint seed = sip.GetSeed();
-        tilePatterns.Add(TilesFor12.getFirstRowPattern(seed));
     }
-
-    // magic selection
-    for (int i = 0; i < magics.Count; i++)
-    {
-        Console.WriteLine("#" + i.ToString() + ": " + magics[i].ToString("x"));
-        Console.WriteLine(tilePatterns[i]);
-        Console.WriteLine();
-    }
-    int selection = UI.GetUserMenuSelection("Enter a magic's #: ", magics.Count - 1);
-
-    return magics[selection];
+    return magics;
 }
-void calculateMagic()
+void getMagic(List<uint> knownMagics)
 {
     DateTime dt = UI.GetDateTimeFromUser();
-    List<uint>? seeds = TilesFor12.calculatePossibleSeeds();
+
+    // First 7 tiles, which might match a known magic.
+    Console.WriteLine("\nEnter 1-2 as instructed in the README.txt file, and visually identify the first 7 randomized tiles in the first row of tiles.");
+    Console.WriteLine("Refer to the tiles.png file for clarification, and for the tile names used by the program.");
+    Console.WriteLine("----------------------------\n");
+    int[] inputTiles = TilesFor12.getFirstSevenTiles();
+    // Check if a known magic gives this tile pattern
+    uint matchedMagic = findMatchingMagic(knownMagics, inputTiles, dt);
+    if (matchedMagic != 0)
+    {
+        magic = matchedMagic;
+        saveSettings();
+        Console.WriteLine("Tile pattern matched with known magic. Magic saved.\n");
+        return;
+    }
+    else if (knownMagics.Count != 0)
+        Console.WriteLine("Tile pattern does not match any known magics. Magic must be calculated.");
+
+    // No match with a known magic. Calculate the seed, then calculate magic based on seed.
+    List<uint>? seeds = TilesFor12.calculatePossibleSeeds(inputTiles);
     if (seeds != null)
     {
         Console.WriteLine("Looking for magics. This may take several seconds...");
@@ -205,6 +203,33 @@ void calculateMagic()
         }
     }
 
+}
+uint findMatchingMagic(List<uint> knownMagics, int[] first7Tiles, DateTime dt)
+{
+    foreach (uint m in knownMagics)
+    {
+        // create pattern
+        SeedInitParams sip = new SeedInitParams(MAC, dt);
+        new SystemSeedInitParams(m).SetSeedParams(sip);
+        uint seed = sip.GetSeed();
+        int[] pattern = TilesFor12.getFirstRowPattern(seed);
+
+        // compare
+        bool match = true;
+        for (int i = 0; i < 7; i++)
+        {
+            if (pattern[i] != first7Tiles[i])
+            {
+                match = false;
+                break;
+            }
+        }
+        if (match)
+            return m;
+    }
+
+    // No match
+    return 0;
 }
 
 void menuFindGoodDateTime()
@@ -341,14 +366,8 @@ int main()
                 continue;
             }
 
-            magic = chooseMagic();
-            if (magic == 0)
-                calculateMagic();
-            else
-            {
-                saveSettings();
-                Console.WriteLine("Magic set and saved.\n");
-            }
+            List<uint> knownMagics = chooseSystem();
+            getMagic(knownMagics);
         }
         // find a good date/time
         else if (menuOption == 3)

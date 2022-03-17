@@ -133,39 +133,33 @@ namespace NSMB_RNG
             return tiles;
         }
 
-        public static string getFirstRowPattern(uint seed)
+        public static int[] getFirstRowPattern(uint seed)
         {
             // Do pre-randomized-tiles rng steps
             uint v = seed;
             for (int i = 0; i < STEPS_BEFORE; i++)
                 v = LCRNG_NSMB(v);
 
-            // Create string
-            StringBuilder sb = new StringBuilder();
+            // Create pattern
+            int[] tiles = new int[7];
             for (int i = 0; i < 7; i++)
             {
                 v = LCRNG_NSMB(v);
-                uint tID = tileIDwithAfterStep(v);
-                sb.Append(tileLetters[tID]).Append(' ');
+                tiles[i] = (int)tileIDwithAfterStep(v);
             }
-            sb.Length--;
 
-            return sb.ToString();
+            return tiles;
         }
 
         /// <summary>
-        /// This method will prompt the user to input various information in order to perform the calculation.
+        /// Return a list of possible seeds, based on a tile pattern.
+        /// The first 7 tiles should be given as the parameter. Use TilesFor12.getFirstSevenTiles() for this. (This is because they should have already been obtained for comparison with known magics.)
+        /// This method will prompt the user for the second row.
         /// </summary>
-        public static List<uint>? calculatePossibleSeeds()
+        public static List<uint>? calculatePossibleSeeds(int[] first7Tiles)
         {
-            Console.WriteLine("Instructions:");
-            Console.WriteLine("1) Enter 1-2 as instructed in the README.txt file.");
-            Console.WriteLine("2) Visually identify the first 7 randomized tiles in the first row of tiles. Refer to the tiles.png file for clarification, and for the tile names used by the program.");
-            Console.WriteLine("3) Then the entire second row.");
-            Console.WriteLine("----------------------------\n");
-
             // Step 2
-            int[] inputTiles = getFirstSevenTiles();
+            int[] inputTiles = first7Tiles;
             Console.Write("Reading lookup table...");
             List<uint> lookupResults = lookUpRNGByTiles(inputTiles);
             if (lookupResults.Count == 0)
@@ -222,7 +216,7 @@ namespace NSMB_RNG
             Console.WriteLine("and " + initials.Count + " possible seeds.");
             return initials;
         }
-        private static int[] getFirstSevenTiles()
+        public static int[] getFirstSevenTiles()
         {
             while (true)
             {
@@ -338,7 +332,6 @@ namespace NSMB_RNG
             }
             return distinctValues.Count;
         }
-
 
         private static List<uint> lookUpRNGByTiles(int[] firstSeven)
         {
