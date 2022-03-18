@@ -342,6 +342,13 @@ int main()
     Console.WriteLine("Please refer to README.txt for instructions on how to use this program.");
     Console.WriteLine();
 
+    // Check for files
+    if (!File.Exists("systems.json"))
+    {
+        Console.WriteLine("WARNING: Could not find file systems.json. File with no data automatically generated.\n");
+        File.WriteAllText("systems.json", "{}");
+    }
+
     if (loadSettings())
     {
         if (magic != 0)
