@@ -11,7 +11,18 @@
   </PropertyGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="xcopy /y $(ProjectDir)7za.exe $(ProjectDir)$(OutDir)&#xD;&#xA;xcopy /y $(ProjectDir)systems.json $(ProjectDir)$(OutDir)&#xD;&#xA;xcopy /y $(ProjectDir)tiles.png $(ProjectDir)$(OutDir)&#xD;&#xA;xcopy /y $(ProjectDir)README.txt $(ProjectDir)$(OutDir)&#xD;&#xA;xcopy /y $(ProjectDir)7z_license.txt $(ProjectDir)$(OutDir)&#xD;&#xA;" />
+    <Exec Command="xcopy /y $(ProjectDir)7za.exe $(ProjectDir)$(OutDir)&#xD;&#xA;xcopy /y $(ProjectDir)systems.json $(ProjectDir)$(OutDir)&#xD;&#xA;xcopy /y $(ProjectDir)tiles.png $(ProjectDir)$(OutDir)&#xD;&#xA;xcopy /y $(SolutionDir)README.txt $(ProjectDir)$(OutDir)&#xD;&#xA;xcopy /y $(ProjectDir)7z_license.txt $(ProjectDir)$(OutDir)&#xD;&#xA;" />
   </Target>
+
+	<Target Name="PrepublishScript" BeforeTargets="PrepareForPublish">
+	  <ItemGroup>
+		<FilesToCopy Include="$(ProjectDir)7za.exe" />
+		<FilesToCopy Include="$(ProjectDir)7z_license.txt" />
+		<FilesToCopy Include="$(ProjectDir)systems.json" />
+		<FilesToCopy Include="$(ProjectDir)tiles.png" />
+		<FilesToCopy Include="$(SolutionDir)README.txt" />
+	  </ItemGroup>
+	  <Copy SourceFiles="@(FilesToCopy)" DestinationFolder="$(PublishDir)" />
+	</Target>
 
 </Project>
