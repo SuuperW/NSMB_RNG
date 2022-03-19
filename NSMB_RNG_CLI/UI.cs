@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NSMB_RNG
+namespace NSMB_RNG_CLI
 {
     internal static class UI
     {

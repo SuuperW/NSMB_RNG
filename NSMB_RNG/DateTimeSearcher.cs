@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace NSMB_RNG
 {
-    internal class DateTimeSearcher
+    public class DateTimeSearcher
     {
         HashSet<uint> seedsForNoMini = new HashSet<uint>() {
             0xaa99ad81, 0x2aa12d89, 0xa2a1a589, 0xaaa3ad8b, 0xaa21ad09, 0xcaa1cd89, 0xaca1af89, 0x11281410,

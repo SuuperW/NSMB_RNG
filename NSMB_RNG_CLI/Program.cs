@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.Json;
 
 using NSMB_RNG;
+using NSMB_RNG_CLI;
 
 Settings settings;
 

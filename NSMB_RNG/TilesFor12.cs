@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace NSMB_RNG
 {
-    internal static class TilesFor12
+    public static class TilesFor12
     {
         // The RNG advances 1937 times between entering 1-2 and randomizing the first visible tile.
         // There are 27 tiles per row of tiles in the area of interest.
@@ -341,9 +341,9 @@ namespace NSMB_RNG
             string filePath = "lookup/" + folder + file;
             if (!File.Exists(filePath))
             {
-                Console.Write("\nThe lookup file for this pattern was not found. Do you want to download it?\nDownloads are in chunks of up to 1.6MB. [y/n]: ");
-                if (!UI.AskYesNo())
-                    return new List<uint>();
+                //Console.Write("\nThe lookup file for this pattern was not found. Do you want to download it?\nDownloads are in chunks of up to 1.6MB. [y/n]: ");
+                //if (!UI.AskYesNo())
+                //    return new List<uint>();
                 if (!DownloadChunk(folder).Result)
                     return new List<uint>();
             }

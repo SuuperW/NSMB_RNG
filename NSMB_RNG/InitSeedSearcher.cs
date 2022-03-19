@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace NSMB_RNG
 {
-    internal class InitSeedSearcher
+    public class InitSeedSearcher
     {
         public int minTimer0, maxTimer0;
         public int minVCount, maxVCount;

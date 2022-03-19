@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace NSMB_RNG
 {
-    internal class SystemSeedInitParams
+    public class SystemSeedInitParams
     {
         public ushort Timer0;
         public ushort VCount;
