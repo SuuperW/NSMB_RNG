@@ -289,7 +289,9 @@ void menuFindGoodDateTime()
     while (true)
     {
         DateTimeSearcher dts = new DateTimeSearcher(seconds, buttonsHeld, MAC, magic, wantMini);
-        DateTime dt = dts.findGoodDateTime(threadCount);
+        Console.WriteLine("Searching with seconds = " + seconds.ToString());
+        DateTime dt = dts.findGoodDateTime(threadCount, true);
+        Console.WriteLine();
 
         // Did we find a match?
         if (dt.Year >= 2000)

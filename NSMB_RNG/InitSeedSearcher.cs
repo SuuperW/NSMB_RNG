@@ -30,7 +30,7 @@ namespace NSMB_RNG
             secondsRange = 1;
         }
 
-        public List<SeedInitParams> FindSeeds()
+        public List<SeedInitParams> FindSeeds(bool reportProgress = false)
         {
             // We will iterate over the chosen range for timer0, vcount, vframe, and seconds.
             List<SeedInitParams> list = new List<SeedInitParams>();
@@ -56,7 +56,8 @@ namespace NSMB_RNG
                 seedParams.SetDateTime(dt);
 
                 // Progress reporting
-                Console.WriteLine("Searched second " + secs);
+                if (reportProgress)
+                    Console.WriteLine("Searched second " + secs);
             }
 
             return list;

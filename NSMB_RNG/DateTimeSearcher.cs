@@ -61,7 +61,7 @@ namespace NSMB_RNG
             return new DateTime(1, 1, 1);
         }
 
-        public DateTime findGoodDateTime(int threads = 8)
+        public DateTime findGoodDateTime(int threads = 8, bool progressBar = false)
         {
             // Start threads
             Task<DateTime>[] searchers = new Task<DateTime>[threads];
@@ -76,7 +76,6 @@ namespace NSMB_RNG
 
                 searchers[i] = Task.Run<DateTime>(() => worker(startYear, endYear - startYear));
             }
-            Console.Write("Searching with seconds=" + seconds.ToString());
 
             // Wait for completion
             bool allCompleted = false;
@@ -84,7 +83,8 @@ namespace NSMB_RNG
             while (!allCompleted)
             {
                 Thread.Sleep(1000);
-                Console.Write('.');
+                if (progressBar)
+                    Console.Write('.');
                 allCompleted = true;
                 foreach (Task<DateTime> t in searchers)
                 {
@@ -106,7 +106,6 @@ namespace NSMB_RNG
                         allCompleted = false;
                 }
             }
-            Console.WriteLine();
 
             return result;
         }
