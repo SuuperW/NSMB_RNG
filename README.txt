@@ -1,3 +1,5 @@
+There is a pre-built version (1.0) for Windows x64 on the Release branch. You can download it here: https://github.com/SuuperW/NSMB_RNG/raw/Release/NSMB_RNG_v1.0.zip
+
 --- Purpose of NSMB_RNG ---
 The purpose of NSMB_RNG is to allow speedrunners to play the any% category without worrying about getting unlucky. This can be done because the game's random number generator has a bug (or maybe it's a "feature", Idk) that makes it possible for the random numbers that are generated to repeat in short patterns. One of these patterns gives highly desireable random numbers.
 
