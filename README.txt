@@ -26,11 +26,7 @@ You will have to repeat the above steps 1-7 multiple times in the following step
  1) Give NSMB_RNG your system's MAC address. This can be found somewhere under internet settings.
  2) Load NSMB and look at the first few tiles several times. Find a sequence that is relatively common, and take a picture of that sequence.
  3) Determine your system's "magic":
-  A) Select the option to choose a magic. If NSMB_RNG already has magics for your system, select your system. You will be given a list of magics with their corresponding tile patterns. If any of the tile patterns match what you got, select that magic.
-  B) If NSMB_RNG does not have magics for your system, or if they do not match the tile sequence you have:
-   I) Follow the promts, which will ask you to input your tile sequence. NSMB_RNG will use the tile sequence to determine which seeds you might have.
-   II) Once the seeds have been found, NSMB_RNG will attempt to calculate a magic.
-   III) Optionally, confirm this magic by choosing the option to calculate the sequence of tiles that you should see, and comparing with one of the other possible tile sequences (or with another date/time).
+  A) Select the option to choose a magic, and select your system type (or "other" if it is not in the list of options). Follow the promts, which will ask you to input your tile sequence. (This will be compared with known magics, if there are any for your chosen system. If no match is found, NSMB_RNG will have to calculate your seed and then calculate your magic.)
  4) Choose the option to find a date/time that gives a good seed. Follow the promts. (It will ask for seconds, buttons held, whether to auto-increment seconds after exhausting the DS's date range, and thread count.)
  5) If a good date/time is found, NSMB_RNG will output the tile sequence that the calculated seed should give. If not, try again with another seconds and button combination. There is approximately a 50% chance of any given second count and buttons combination containing a good date/time.
  6) Use that date/time, load NSMB, and look at the tiles in World 1-2. You may need a few tries to get the desired seed. Once you have confirmed that you have the correct seed, you can quit to the main menu and start a run.
