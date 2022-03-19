@@ -6,11 +6,7 @@ using System.Text.Json;
 
 using NSMB_RNG;
 
-const string PATH_SETTINGS = "settings.bin";
-
-ulong MAC = 0;
-uint magic = 0;
-bool wantMini = false;
+Settings settings;
 
 const string MAIN_MENU = "--- Main menu ---\n" +
     "0) Quit\n" +
@@ -21,45 +17,9 @@ const string MAIN_MENU = "--- Main menu ---\n" +
     "5) Get desired number of double jumps for 1-1\n" +
     "Select an option: ";
 
-bool loadSettings()
-{
-    if (File.Exists(PATH_SETTINGS))
-    {
-        using (FileStream fs = File.OpenRead(PATH_SETTINGS))
-        {
-            byte[] buffer = new byte[8];
-            int version = fs.ReadByte();
-            if (version == 1)
-            {
-                // MAC
-                int count = fs.Read(buffer, 0, 6);
-                if (count == 6)
-                    MAC = BitConverter.ToUInt64(buffer);
-                // magic
-                count = fs.Read(buffer, 0, 4);
-                if (count == 4)
-                    magic = BitConverter.ToUInt32(buffer);
-                else
-                    throw new Exception("bad settings file");
-            }
-        }
-    }
-
-    return MAC != 0;
-}
-void saveSettings()
-{
-    using (FileStream fs = File.Open(PATH_SETTINGS, FileMode.Create))
-    {
-        fs.WriteByte(1); // version
-        fs.Write(BitConverter.GetBytes(MAC), 0, 6);
-        fs.Write(BitConverter.GetBytes(magic), 0, 4);
-    }
-}
-
 List<SeedInitParams> getSeedInitParams(DateTime dt, List<uint> seeds)
 {
-    SeedInitParams sip = new SeedInitParams(MAC, dt);
+    SeedInitParams sip = new SeedInitParams(settings.MAC, dt);
     InitSeedSearcher iss = new InitSeedSearcher(sip, seeds);
     return iss.FindSeeds();
 }
@@ -85,8 +45,8 @@ void menuSetMac()
         try { newMAC = Convert.ToUInt64(userInput, 16); }
         catch { Console.WriteLine("ERROR: Could not read MAC address."); }
     }
-    MAC = newMAC;
-    saveSettings();
+    settings.MAC = newMAC;
+    settings.saveSettings();
     Console.WriteLine("MAC address set and saved to file.\n");
 }
 
@@ -157,8 +117,8 @@ void getMagic(List<uint> knownMagics)
     uint matchedMagic = findMatchingMagic(knownMagics, inputTiles, dt);
     if (matchedMagic != 0)
     {
-        magic = matchedMagic;
-        saveSettings();
+        settings.magic = matchedMagic;
+        settings.saveSettings();
         Console.WriteLine("Tile pattern matched with known magic. Magic saved.\n");
         return;
     }
@@ -188,9 +148,9 @@ void getMagic(List<uint> knownMagics)
         // Expected result: only 1 params found. Save the magic.
         if (seedParams.Count == 1)
         {
-            magic = SystemSeedInitParams.GetMagic(seedParams[0]);
-            saveSettings();
-            Console.WriteLine("One magic found and saved: " + magic.ToString("x"));
+            settings.magic = SystemSeedInitParams.GetMagic(seedParams[0]);
+            settings.saveSettings();
+            Console.WriteLine("One magic found and saved: " + settings.magic.ToString("x"));
             Console.WriteLine("It might be a good idea to confirm this magic by using option 4: Calculate tile pattern.\n");
         }
         // If there are more than one, we cannot know which is correct.
@@ -210,7 +170,7 @@ uint findMatchingMagic(List<uint> knownMagics, int[] first7Tiles, DateTime dt)
     foreach (uint m in knownMagics)
     {
         // create pattern
-        SeedInitParams sip = new SeedInitParams(MAC, dt);
+        SeedInitParams sip = new SeedInitParams(settings.MAC, dt);
         new SystemSeedInitParams(m).SetSeedParams(sip);
         uint seed = sip.GetSeed();
         int[] pattern = TilesFor12.getFirstRowPattern(seed);
@@ -237,7 +197,7 @@ void menuFindGoodDateTime()
 {
     // mini?
     Console.WriteLine("Do you want to attempt mini route? [y/n]: ");
-    wantMini = UI.AskYesNo();
+    settings.wantMini = UI.AskYesNo();
 
     // choose seconds
     int seconds = UI.GetUserMenuSelection("Enter the number of seconds you want to have between setting the date/time and loading the game: ", 999);
@@ -288,7 +248,7 @@ void menuFindGoodDateTime()
     // the big loop
     while (true)
     {
-        DateTimeSearcher dts = new DateTimeSearcher(seconds, buttonsHeld, MAC, magic, wantMini);
+        DateTimeSearcher dts = new DateTimeSearcher(seconds, buttonsHeld, settings.MAC, settings.magic, settings.wantMini);
         Console.WriteLine("Searching with seconds = " + seconds.ToString());
         DateTime dt = dts.findGoodDateTime(threadCount, true);
         Console.WriteLine();
@@ -299,10 +259,11 @@ void menuFindGoodDateTime()
             Console.WriteLine("Found a good date/time!");
             Console.WriteLine(dt.ToLongDateString() + " " + dt.ToLongTimeString());
             Console.WriteLine("Expected tile pattern: ");
-            SeedInitParams sip = new SeedInitParams(MAC, dt);
-            new SystemSeedInitParams(magic).SetSeedParams(sip);
+            SeedInitParams sip = new SeedInitParams(settings.MAC, dt);
+            new SystemSeedInitParams(settings.magic).SetSeedParams(sip);
             sip.Buttons = buttonsHeld;
             TilesFor12.printTilesFromSeed(sip.GetSeed());
+            settings.saveSettings(); // for wantMini
             break;
         }
         else
@@ -322,8 +283,8 @@ void menuFindGoodDateTime()
 void menuCalculateTilePattern()
 {
     DateTime dt = UI.GetDateTimeFromUser();
-    SeedInitParams sip = new SeedInitParams(MAC, dt);
-    new SystemSeedInitParams(magic).SetSeedParams(sip);
+    SeedInitParams sip = new SeedInitParams(settings.MAC, dt);
+    new SystemSeedInitParams(settings.magic).SetSeedParams(sip);
     uint seed = sip.GetSeed();
 
     TilesFor12.printTilesFromSeed(seed);
@@ -333,11 +294,6 @@ void menuCalculateTilePattern()
 void menuDoubleJumps()
 {
     Console.WriteLine("This assumes that you already have a good seed!");
-
-    // mini?
-    Console.WriteLine("Do you want to attempt mini route? [y/n]: ");
-    wantMini = UI.AskYesNo();
-
     Console.WriteLine("1) Go to 1-2 as instructed in the README.txt file. You MUST pause.");
     Console.WriteLine("2) Enter the position (1-8) of the first 'P' tile in the first row of tiles.");
     Console.WriteLine("3) Quit directly to the main menu. Do not go to the overworld.");
@@ -346,7 +302,7 @@ void menuDoubleJumps()
     int[] doubleJumpCountsNoMini = new int[] { 2, 4, 6, 2, 3, 3, 4, 1, 2 };
     int[] doubleJumpCountsMini1 = new int[]  { 1, 0, 2, 2, 0, 0, 1, 4, 1 };
     int[] doubleJumpCountsMini2 = new int[]  { 4, 3, 5, 7, 5, 3, 6, 7, 4 };
-    if (wantMini)
+    if (settings.wantMini)
     {
         Console.WriteLine("\nYou can do " + doubleJumpCountsMini1[tilePosition] + " or " + doubleJumpCountsMini2[tilePosition] + " double jumps.");
         Console.WriteLine("Adding 8, 16, etc, to either of those numbers will also work.\n");
@@ -372,13 +328,11 @@ int main()
         File.WriteAllText("systems.json", "{}");
     }
 
-    if (loadSettings())
-    {
-        if (magic != 0)
-            Console.WriteLine("MAC and magic loaded from file.\n");
-        else
-            Console.WriteLine("MAC address loaded from file.\n");
-    }
+    settings = Settings.loadSettings();
+    if (settings.magic != 0)
+        Console.WriteLine("MAC and magic loaded from file.\n");
+    else if (settings.MAC != 0)
+        Console.WriteLine("MAC address loaded from file.\n");
 
     int menuOption = -1;
     while (menuOption != 0)
@@ -390,7 +344,7 @@ int main()
         // Choose/find magic
         else if (menuOption == 2)
         {
-            if (MAC == 0)
+            if (settings.MAC == 0)
             {
                 Console.WriteLine("You must set a MAC address first.\n");
                 continue;
@@ -402,7 +356,7 @@ int main()
         // find a good date/time
         else if (menuOption == 3)
         {
-            if (MAC == 0 || magic == 0)
+            if (settings.MAC == 0 || settings.magic == 0)
             {
                 Console.WriteLine("You must set both a MAC address and a magic before using this option.\n");
                 continue;
@@ -413,7 +367,7 @@ int main()
         // display a tile pattern
         else if (menuOption == 4)
         {
-            if (MAC == 0 || magic == 0)
+            if (settings.MAC == 0 || settings.magic == 0)
             {
                 Console.WriteLine("You must set both a MAC address and a magic before using this option.\n");
                 continue;
