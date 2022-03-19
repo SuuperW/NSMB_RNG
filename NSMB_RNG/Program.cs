@@ -304,7 +304,7 @@ void menuFindGoodDateTime()
                 seconds++;
             else
             {
-                Console.WriteLine("Done searching all possible date/times with the given secounds count. No matches found.");
+                Console.WriteLine("Done searching all possible date/times with the given seconds count. No matches found.");
                 Console.WriteLine("Try again with another seconds count, or with different buttons held.");
                 break;
             }
