@@ -330,7 +330,8 @@ void menuDoubleJumps()
     Console.WriteLine("2) Enter the position (1-8) of the first 'S' tile in the first row of tiles.");
     Console.WriteLine("3) Quit directly to the main menu. Do not go to the overworld.");
     int tilePosition = UI.GetUserMenuSelection("'S' tile position: ", 8);
-    int[] doubleJumpCounts = new int[] { 2, 3, 3, 4, 1, 2, 4, 6 };
+    // This array has indexes 0-8. [0] is equal to [8], of course.
+    int[] doubleJumpCounts = new int[] { 6, 2, 3, 3, 4, 1, 2, 4, 6 };
     int djCount = doubleJumpCounts[tilePosition];
     Console.WriteLine("\nYou can do any number of double jumps except " + djCount + " (or " + (djCount + 8) + ", " + (djCount + 16) + ", etc.).");
     Console.WriteLine("Note: 7 and 8 double jumps will always work, regardless of tile position.\n");
