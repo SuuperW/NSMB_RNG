@@ -438,7 +438,7 @@ namespace NSMB_RNG
             sf.WaitForInit();
 
             int[] inputTiles = getAllTiles("second");
-            return calculatePossibleSeeds(inputTiles);
+            return sf.calculatePossibleSeeds(inputTiles);
         }
         public static int[] getFirstSevenTiles()
         {
