@@ -103,5 +103,19 @@ namespace NSMB_RNG_GUI
             if (inputIsValid) return userPattern;
             else return new List<int>();
         }
+
+        public bool update(byte[] pattern)
+        {
+            if (pattern.Length != TileCount) return false;
+
+            for (int i = 0; i < pattern.Length; i++)
+            {
+                pbxArray[i].BackgroundImage = tiles[pattern[i]];
+                pbxArray[i].Visible = true;
+            }
+            pbxArray[pbxArray.Length - 1].Visible = false;
+
+            return true;
+        }
     }
 }

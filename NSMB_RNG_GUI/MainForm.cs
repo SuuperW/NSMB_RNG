@@ -100,6 +100,14 @@ namespace NSMB_RNG_GUI
             else
                 a();
         }
+        private void setMatchText(string str)
+        {
+            Action a = () => { lblMatch.Text = str; };
+            if (InvokeRequired)
+                Invoke(a);
+            else
+                a();
+        }
 
         private void txtMAC_TextChanged(object sender, EventArgs e)
         {
@@ -197,65 +205,102 @@ namespace NSMB_RNG_GUI
             // Find seeds and magic
             if (userPattern.Count == 11)
             {
-                if (seedFinder == null)
-                {
-                    lblMatch.Text = "Error: Idk."; // it should never happen
-                    return;
-                }
-
-                // Find seeds
-                List<uint> seeds = seedFinder.calculatePossibleSeeds(userPattern.ToArray());
-                if (seeds.Count == 0)
-                {
-                    lblMatch.Text = "No seeds found. Verify that you entered the correct tiles.";
-                    return;
-                }
-
-                // Find magic
-                SeedInitParams sip = new SeedInitParams(settings.MAC, dt);
-                InitSeedSearcher iss = new InitSeedSearcher(sip, seeds);
-                List<SeedInitParams> seedParams = iss.FindSeeds();
-                if (seedParams.Count == 0)
-                    lblMatch.Text = "No magic found. Verify that you entered the correct tiles, MAC address, date, and time.";
-                // Expected result: only 1 params found. Save the magic.
-                else if (seedParams.Count == 1)
-                {
-                    settings.magic = SystemSeedInitParams.GetMagic(seedParams[0]);
-                    settings.saveSettings();
-                    lblMatch.Text = "Found magic.";
-                }
-                // If there are more than one, we cannot know which is correct.
-                else if (seedParams.Count > 1)
-                {
-                    lblMatch.Text = "Multiple magics found there's no way to know which one is correct.";
-                }
+                performMagicSearch(userPattern.ToArray());
             }
         }
 
         private void createSeedFinder(List<int> userPattern)
         {
+            progressBar.Visible = true;
+
+            Action seedFinderReady = () =>
+            {
+                if (seedFinder == null || seedFinder.error)
+                {
+                    setWorkStatus("Failed to load lookup data.");
+                    seedFinder = null;
+                }
+                else
+                    setWorkStatus("Lookup complete.");
+                Invoke(() => progressBar.Visible = false);
+            };
             setWorkStatus("Loading lookup data...");
             Thread t = new Thread(() => { 
                 seedFinder = new TilesFor12.SeedFinder(userPattern.ToArray());
-                seedFinder.DownloadProgress += (progress) =>
+                // If it didn't have to download, then it ran syncronously.
+                if (!seedFinder.isReady)
                 {
-                    if (progress < 100)
-                        setWorkStatus("Downloading lookup... " + Math.Round(progress).ToString() + "%");
-                    else
-                        setWorkStatus("Extracting files...");
-                };
-                seedFinder.Ready += () =>
-                {
-                    if (seedFinder.error)
+                    seedFinder.DownloadProgress += (progress) =>
                     {
-                        setWorkStatus("Failed to load lookup data.");
-                        seedFinder = null;
-                    }
-                    else
-                        setWorkStatus("Lookup complete.");
-                };
+                        if (progress < 100)
+                            setWorkStatus("Downloading lookup... " + Math.Round(progress).ToString() + "%");
+                        else
+                            setWorkStatus("Extracting files...");
+                    };
+                    seedFinder.Ready += seedFinderReady;
+                }
+                else
+                    seedFinderReady();
             });
             t.Start();
+        }
+
+        private void performMagicSearch(int[] secondRow)
+        {
+            Thread t = new Thread(() =>
+            {
+                if (seedFinder == null)
+                {
+                    setMatchText("Error: Idk."); // it should never happen
+                    return;
+                }
+
+                Invoke(() => progressBar.Visible = true);
+
+                // Find seeds
+                setMatchText("Finding seeds...");
+                List<uint> seeds = seedFinder.calculatePossibleSeeds(secondRow);
+                if (seeds.Count == 0)
+                    setMatchText("No seeds found. Verify that you entered the correct tiles.");
+                else
+                {
+                    // Find magic
+                    setMatchText("Finding magics...");
+                    SeedInitParams sip = new SeedInitParams(settings.MAC, dt);
+                    InitSeedSearcher iss = new InitSeedSearcher(sip, seeds);
+                    List<SeedInitParams> seedParams = iss.FindSeeds();
+                    if (seedParams.Count == 0)
+                        setMatchText("No magic found. Verify that you entered the correct tiles, MAC address, date, and time.");
+                    // Expected result: only 1 params found. Save the magic.
+                    else if (seedParams.Count == 1)
+                    {
+                        settings.magic = SystemSeedInitParams.GetMagic(seedParams[0]);
+                        settings.saveSettings();
+                        setMatchText("Found magic. Expected tile pattern shown.");
+                        Invoke(() => displayExpectedPattern());
+                    }
+                    // If there are more than one, we cannot know which is correct.
+                    else if (seedParams.Count > 1)
+                    {
+                        setMatchText("Multiple magics found there's no way to know which one is correct.");
+                    }
+                }
+
+                Invoke(() => progressBar.Visible = false);
+            });
+            t.Start();
+        }
+
+        private void displayExpectedPattern()
+        {
+            SeedInitParams sip = new SeedInitParams(settings.MAC, dt);
+            new SystemSeedInitParams(settings.magic).SetSeedParams(sip);
+            byte[][] pattern = TilesFor12.calculateTileRows(sip.GetSeed());
+
+            tileDisplay1.update(pattern[0]);
+            tileDisplay2.update(pattern[1]);
+            tileDisplay3.update(pattern[2]);
+            tileDisplay4.update(pattern[3]);
         }
 
         private void dtpDateTime_Leave(object sender, EventArgs e)

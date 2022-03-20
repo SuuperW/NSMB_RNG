@@ -47,6 +47,9 @@ namespace NSMB_RNG_GUI
             this.lblWorkStatus = new System.Windows.Forms.Label();
             this.tileDisplay1 = new NSMB_RNG_GUI.tileDisplay();
             this.tileDisplay2 = new NSMB_RNG_GUI.tileDisplay();
+            this.tileDisplay3 = new NSMB_RNG_GUI.tileDisplay();
+            this.tileDisplay4 = new NSMB_RNG_GUI.tileDisplay();
+            this.progressBar = new System.Windows.Forms.ProgressBar();
             ((System.ComponentModel.ISupportInitialize)(this.pbxMAC)).BeginInit();
             this.SuspendLayout();
             // 
@@ -214,11 +217,39 @@ namespace NSMB_RNG_GUI
             this.tileDisplay2.TabIndex = 16;
             this.tileDisplay2.TileCount = 11;
             // 
+            // tileDisplay3
+            // 
+            this.tileDisplay3.Location = new System.Drawing.Point(12, 187);
+            this.tileDisplay3.Name = "tileDisplay3";
+            this.tileDisplay3.Size = new System.Drawing.Size(384, 32);
+            this.tileDisplay3.TabIndex = 16;
+            this.tileDisplay3.TileCount = 11;
+            // 
+            // tileDisplay4
+            // 
+            this.tileDisplay4.Location = new System.Drawing.Point(12, 219);
+            this.tileDisplay4.Name = "tileDisplay4";
+            this.tileDisplay4.Size = new System.Drawing.Size(384, 32);
+            this.tileDisplay4.TabIndex = 16;
+            this.tileDisplay4.TileCount = 11;
+            // 
+            // progressBar
+            // 
+            this.progressBar.Location = new System.Drawing.Point(154, 169);
+            this.progressBar.Name = "progressBar";
+            this.progressBar.Size = new System.Drawing.Size(100, 15);
+            this.progressBar.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
+            this.progressBar.TabIndex = 17;
+            this.progressBar.Visible = false;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(408, 263);
+            this.ClientSize = new System.Drawing.Size(408, 282);
+            this.Controls.Add(this.progressBar);
+            this.Controls.Add(this.tileDisplay4);
+            this.Controls.Add(this.tileDisplay3);
             this.Controls.Add(this.tileDisplay2);
             this.Controls.Add(this.tileDisplay1);
             this.Controls.Add(this.lblWorkStatus);
@@ -263,5 +294,8 @@ namespace NSMB_RNG_GUI
         private Label lblWorkStatus;
         private tileDisplay tileDisplay1;
         private tileDisplay tileDisplay2;
+        private tileDisplay tileDisplay3;
+        private tileDisplay tileDisplay4;
+        private ProgressBar progressBar;
     }
 }
