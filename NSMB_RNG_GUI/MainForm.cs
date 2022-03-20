@@ -2,13 +2,21 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 
+using NSMB_RNG;
+
 namespace NSMB_RNG_GUI
 {
     public partial class MainForm : Form
     {
+        Settings settings;
+
         public MainForm()
         {
             InitializeComponent();
+
+            settings = Settings.loadSettings();
+            txtMAC.Text = settings.MAC.ToString("X").PadLeft(12, '0');
+            chkMini.Checked = settings.wantMini;
         }
 
         private void txtMAC_TextChanged(object sender, EventArgs e)
@@ -36,6 +44,14 @@ namespace NSMB_RNG_GUI
             }
 
             pbxMAC.BackColor = Color.Green;
+            settings.MAC = newMAC;
+            settings.saveSettings();
+        }
+
+        private void chkMini_CheckedChanged(object sender, EventArgs e)
+        {
+            settings.wantMini = chkMini.Checked;
+            settings.saveSettings();
         }
     }
 }

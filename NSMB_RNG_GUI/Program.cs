@@ -1,3 +1,6 @@
+using System;
+using System.Windows.Forms;
+
 namespace NSMB_RNG_GUI
 {
     internal static class Program

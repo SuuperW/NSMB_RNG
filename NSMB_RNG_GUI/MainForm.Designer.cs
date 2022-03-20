@@ -33,6 +33,7 @@ namespace NSMB_RNG_GUI
             this.label1 = new System.Windows.Forms.Label();
             this.txtMAC = new System.Windows.Forms.TextBox();
             this.pbxMAC = new System.Windows.Forms.PictureBox();
+            this.chkMini = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.pbxMAC)).BeginInit();
             this.SuspendLayout();
             // 
@@ -61,11 +62,23 @@ namespace NSMB_RNG_GUI
             this.pbxMAC.TabIndex = 2;
             this.pbxMAC.TabStop = false;
             // 
+            // chkMini
+            // 
+            this.chkMini.AutoSize = true;
+            this.chkMini.Location = new System.Drawing.Point(246, 14);
+            this.chkMini.Name = "chkMini";
+            this.chkMini.Size = new System.Drawing.Size(81, 19);
+            this.chkMini.TabIndex = 3;
+            this.chkMini.Text = "mini route";
+            this.chkMini.UseVisualStyleBackColor = true;
+            this.chkMini.CheckedChanged += new System.EventHandler(this.chkMini_CheckedChanged);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.chkMini);
             this.Controls.Add(this.pbxMAC);
             this.Controls.Add(this.txtMAC);
             this.Controls.Add(this.label1);
@@ -82,5 +95,6 @@ namespace NSMB_RNG_GUI
         private Label label1;
         private TextBox txtMAC;
         private PictureBox pbxMAC;
+        private CheckBox chkMini;
     }
 }
