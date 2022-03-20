@@ -166,7 +166,6 @@ namespace NSMB_RNG
                     ProcessStartInfo psi = new ProcessStartInfo();
                     psi.WindowStyle = ProcessWindowStyle.Hidden;
                     psi.UseShellExecute = true;
-                    psi.RedirectStandardOutput = true;
                     psi.FileName = zPath;
                     psi.Arguments = "x " + source + " -o" + destination;
                     Process? process = Process.Start(psi);
@@ -188,22 +187,25 @@ namespace NSMB_RNG
                 string archivePath = "lookup/" + file + ".7z";
 
                 // Download .7z
-                if (cli) Console.WriteLine("Downloading archive file...");
-                Directory.CreateDirectory("lookup/" + file);
-                Uri uri = new Uri("https://github.com/SuuperW/NSMB_RNG/raw/vLookup/" + archivePath);
-                using (HttpResponseMessage response = await client.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead))
+                if (!File.Exists(archivePath))
                 {
-                    if (!response.IsSuccessStatusCode)
-                        return false;
-                    long contentLength = response.Content.Headers.ContentLength ?? long.MaxValue;
-                    using (FileStream fs = new FileStream(archivePath, FileMode.CreateNew))
+                    if (cli) Console.WriteLine("Downloading archive file...");
+                    Directory.CreateDirectory("lookup/" + file);
+                    Uri uri = new Uri("https://github.com/SuuperW/NSMB_RNG/raw/vLookup/" + archivePath);
+                    using (HttpResponseMessage response = await client.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead))
                     {
-                        var t = response.Content.CopyToAsync(fs);
-                        Thread.Sleep(100);
-                        while (!t.IsCompleted)
+                        if (!response.IsSuccessStatusCode)
+                            return false;
+                        long contentLength = response.Content.Headers.ContentLength ?? long.MaxValue;
+                        using (FileStream fs = new FileStream(archivePath, FileMode.CreateNew))
                         {
-                            if (cli) Console.WriteLine((fs.Length / contentLength * 100).ToString() + "%");
-                            Thread.Sleep(500);
+                            var t = response.Content.CopyToAsync(fs);
+                            Thread.Sleep(100);
+                            while (!t.IsCompleted)
+                            {
+                                if (cli) Console.WriteLine((fs.Length / contentLength * 100).ToString() + "%");
+                                Thread.Sleep(500);
+                            }
                         }
                     }
                 }
