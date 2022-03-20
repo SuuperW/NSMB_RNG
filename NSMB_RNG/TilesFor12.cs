@@ -15,6 +15,7 @@ namespace NSMB_RNG
         {
             public bool error = false;
             public bool isReady = false;
+            public bool isComplete = false;
             private bool cli;
 
             private List<uint> lookupResults;
@@ -90,6 +91,7 @@ namespace NSMB_RNG
                 if (distinctValues == 0) // should never happen except in the case of user error
                 {
                     if (cli) Console.WriteLine("There are no RNG values that lead to the given set of tiles. Maybe you mis-typed one?");
+                    isComplete = true;
                     return new List<uint>();
                 }
 
@@ -100,6 +102,7 @@ namespace NSMB_RNG
                     initials.AddRange(reverseStep(v));
 
                 if (cli) Console.WriteLine("and " + initials.Count + " possible seeds.");
+                isComplete = true;
                 return initials;
             }
 

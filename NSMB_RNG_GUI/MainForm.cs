@@ -152,7 +152,7 @@ namespace NSMB_RNG_GUI
 
         private void txtFirst7_TextChanged(object sender, EventArgs e)
         {
-            txtSecondRow.Enabled = false;
+            if (sender != txtSecondRow) txtSecondRow.Enabled = false;
 
             // Display+get pattern
             List<int> userPattern = tileDisplay1.update(txtFirst7.Text);
@@ -204,8 +204,14 @@ namespace NSMB_RNG_GUI
 
             // Find seeds and magic
             if (userPattern.Count == 11)
-            {
                 performMagicSearch(userPattern.ToArray());
+            // Do we need to re-initialize the seed finder?
+            else
+            {
+                if (seedFinder != null && seedFinder.isComplete)
+                    txtFirst7_TextChanged(sender, e);
+                tileDisplay3.update("");
+                tileDisplay4.update("");
             }
         }
 
