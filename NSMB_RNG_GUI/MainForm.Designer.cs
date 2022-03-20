@@ -93,7 +93,7 @@ namespace NSMB_RNG_GUI
             this.chkMini.Location = new System.Drawing.Point(169, 43);
             this.chkMini.Name = "chkMini";
             this.chkMini.Size = new System.Drawing.Size(81, 19);
-            this.chkMini.TabIndex = 3;
+            this.chkMini.TabIndex = 4;
             this.chkMini.Text = "mini route";
             this.chkMini.UseVisualStyleBackColor = true;
             this.chkMini.CheckedChanged += new System.EventHandler(this.chkMini_CheckedChanged);
@@ -104,7 +104,7 @@ namespace NSMB_RNG_GUI
             this.label2.Location = new System.Drawing.Point(12, 105);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(65, 15);
-            this.label2.TabIndex = 4;
+            this.label2.TabIndex = 8;
             this.label2.Text = "First 7 tiles:";
             // 
             // txtFirst7
@@ -112,7 +112,7 @@ namespace NSMB_RNG_GUI
             this.txtFirst7.Location = new System.Drawing.Point(83, 102);
             this.txtFirst7.Name = "txtFirst7";
             this.txtFirst7.Size = new System.Drawing.Size(100, 23);
-            this.txtFirst7.TabIndex = 5;
+            this.txtFirst7.TabIndex = 9;
             this.txtFirst7.TextChanged += new System.EventHandler(this.txtFirst7_TextChanged);
             this.txtFirst7.Enter += new System.EventHandler(this.txtFirst7_Enter);
             // 
@@ -229,7 +229,7 @@ namespace NSMB_RNG_GUI
             this.cbxSystem.Location = new System.Drawing.Point(66, 41);
             this.cbxSystem.Name = "cbxSystem";
             this.cbxSystem.Size = new System.Drawing.Size(84, 23);
-            this.cbxSystem.TabIndex = 7;
+            this.cbxSystem.TabIndex = 3;
             // 
             // label3
             // 
@@ -237,7 +237,7 @@ namespace NSMB_RNG_GUI
             this.label3.Location = new System.Drawing.Point(12, 44);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(48, 15);
-            this.label3.TabIndex = 8;
+            this.label3.TabIndex = 2;
             this.label3.Text = "System:";
             // 
             // lblFirstTooLong
@@ -246,7 +246,7 @@ namespace NSMB_RNG_GUI
             this.lblFirstTooLong.Location = new System.Drawing.Point(204, 110);
             this.lblFirstTooLong.Name = "lblFirstTooLong";
             this.lblFirstTooLong.Size = new System.Drawing.Size(82, 15);
-            this.lblFirstTooLong.TabIndex = 9;
+            this.lblFirstTooLong.TabIndex = 10;
             this.lblFirstTooLong.Text = "too many tiles";
             this.lblFirstTooLong.Visible = false;
             // 
@@ -256,7 +256,7 @@ namespace NSMB_RNG_GUI
             this.label4.Location = new System.Drawing.Point(12, 76);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(66, 15);
-            this.label4.TabIndex = 10;
+            this.label4.TabIndex = 5;
             this.label4.Text = "Date/Time:";
             // 
             // dtpDate
@@ -267,7 +267,7 @@ namespace NSMB_RNG_GUI
             this.dtpDate.MinDate = new System.DateTime(2000, 1, 1, 0, 0, 0, 0);
             this.dtpDate.Name = "dtpDate";
             this.dtpDate.Size = new System.Drawing.Size(99, 23);
-            this.dtpDate.TabIndex = 11;
+            this.dtpDate.TabIndex = 6;
             this.dtpDate.Value = new System.DateTime(2000, 1, 1, 0, 0, 0, 0);
             this.dtpDate.Leave += new System.EventHandler(this.dtpDateTime_Leave);
             // 
@@ -280,7 +280,7 @@ namespace NSMB_RNG_GUI
             this.dtpTime.Name = "dtpTime";
             this.dtpTime.ShowUpDown = true;
             this.dtpTime.Size = new System.Drawing.Size(99, 23);
-            this.dtpTime.TabIndex = 11;
+            this.dtpTime.TabIndex = 7;
             this.dtpTime.Value = new System.DateTime(2000, 1, 1, 0, 0, 0, 0);
             this.dtpTime.Leave += new System.EventHandler(this.dtpDateTime_Leave);
             // 
@@ -290,7 +290,7 @@ namespace NSMB_RNG_GUI
             this.lblMatch.Location = new System.Drawing.Point(12, 236);
             this.lblMatch.Name = "lblMatch";
             this.lblMatch.Size = new System.Drawing.Size(41, 15);
-            this.lblMatch.TabIndex = 12;
+            this.lblMatch.TabIndex = 11;
             this.lblMatch.Text = "match";
             this.lblMatch.Visible = false;
             // 
