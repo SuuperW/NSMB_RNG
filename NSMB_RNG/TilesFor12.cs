@@ -14,60 +14,72 @@ namespace NSMB_RNG
         public class SeedFinder
         {
             public bool error = false;
+            public bool isReady = false;
             private bool cli;
 
             private List<uint> lookupResults;
             private List<uint> currentValues;
 
-            private SeedFinder(bool cli)
+            public event Action<double>? DownloadProgress;
+            public event Action? Ready;
+            private Task initTask;
+
+            public SeedFinder(int[] first7Tiles, bool cli = false)
             {
                 this.cli = cli;
                 lookupResults = new List<uint>();
                 currentValues = new List<uint>();
+
+                initTask = Init(first7Tiles);
             }
 
-            public async static Task<SeedFinder> Create(int[] first7Tiles, bool cli = false)
-            {
-                SeedFinder sf = new SeedFinder(cli);
-
+            private async Task Init(int[] first7Tiles)
+            { 
                 int[] inputTiles = first7Tiles;
                 if (cli) Console.Write("Reading lookup table...");
-                sf.lookupResults = await sf.lookUpRNGByTiles(inputTiles);
-                if (sf.lookupResults.Count == 0)
+                lookupResults = await lookUpRNGByTiles(inputTiles);
+                if (lookupResults.Count == 0)
                 {
-                    sf.error = true;
+                    error = true;
                     if (cli) Console.WriteLine("Error: Could not retrieve data from lookup table.");
-                    return sf;
+                    return;
                 }
                 // processing data
-                foreach (uint v in sf.lookupResults)
+                foreach (uint v in lookupResults)
                 {
                     uint r = v;
                     for (int i = 0; i < STEPS_BEFORE - 1; i++)
                         r = LCRNG_NSMB(r);
-                    sf.currentValues.Add(r);
+                    currentValues.Add(r);
                 }
                 // Verify that the found values are good and move to second row.
-                for (int index = 0; index < sf.currentValues.Count; index++)
+                for (int index = 0; index < currentValues.Count; index++)
                 {
-                    uint v = sf.currentValues[index];
+                    uint v = currentValues[index];
                     for (int i = 0; i < 7; i++)
                     {
                         v = LCRNG_NSMB(v);
                         uint tID = tileIDwithAfterStep(v);
                         if (tID != inputTiles[i])
                         {
-                            sf.error = true;
+                            error = true;
                             if (cli) Console.WriteLine("It appears that the lookup table is corrupted.");
-                            return sf;
+                            return;
                         }
                     }
                     for (int i = 7; i < TILES_PER_ROW; i++)
                         v = LCRNG_NSMB(v);
-                    sf.currentValues[index] = v;
+                    currentValues[index] = v;
                 }
                 if (cli) Console.Write("done\n\n");
-                return sf;
+
+                isReady = true;
+                if (Ready != null) Ready.Invoke();
+            }
+
+            public void WaitForInit()
+            {
+                initTask.Wait();
             }
 
             public List<uint> calculatePossibleSeeds(int[] secondRow)
@@ -190,6 +202,7 @@ namespace NSMB_RNG
                 if (!File.Exists(archivePath))
                 {
                     if (cli) Console.WriteLine("Downloading archive file...");
+                    else if (DownloadProgress != null) DownloadProgress.Invoke(0.0);
                     Directory.CreateDirectory("lookup/" + file);
                     Uri uri = new Uri("https://github.com/SuuperW/NSMB_RNG/raw/vLookup/" + archivePath);
                     using (HttpResponseMessage response = await client.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead))
@@ -203,7 +216,9 @@ namespace NSMB_RNG
                             Thread.Sleep(100);
                             while (!t.IsCompleted)
                             {
-                                if (cli) Console.WriteLine((fs.Length / contentLength * 100).ToString() + "%");
+                                double progress = fs.Length / contentLength * 100;
+                                if (cli) Console.WriteLine(progress.ToString() + "%");
+                                else if (DownloadProgress != null) DownloadProgress.Invoke(progress);
                                 Thread.Sleep(500);
                             }
                         }
@@ -212,6 +227,7 @@ namespace NSMB_RNG
 
                 // Extract contents of .7z archive and delete archive
                 if (cli) Console.Write("Done downloading. Extracting archive file contents...");
+                else if (DownloadProgress != null) DownloadProgress.Invoke(100.0);
                 if (!ExtractFile(archivePath, "lookup/" + file))
                     return false;
                 File.Delete(archivePath);
@@ -419,10 +435,11 @@ namespace NSMB_RNG
         /// </summary>
         public static List<uint>? calculatePossibleSeeds(int[] first7Tiles)
         {
-            SeedFinder sf = SeedFinder.Create(first7Tiles, true).Result;
+            SeedFinder sf = new SeedFinder(first7Tiles, true);
+            sf.WaitForInit();
 
             int[] inputTiles = getAllTiles("second");
-            return sf.calculatePossibleSeeds(inputTiles);
+            return calculatePossibleSeeds(inputTiles);
         }
         public static int[] getFirstSevenTiles()
         {

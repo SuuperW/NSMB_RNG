@@ -182,7 +182,6 @@ namespace NSMB_RNG_GUI
                     lblMatch.Text = "Enter 11 tiles from second row.";
                     txtSecondRow.Enabled = true;
                     createSeedFinder(userPattern);
-                    setWorkStatus("Loading lookup data...");
                 }
                 lblMatch.Visible = true;
             }
@@ -271,8 +270,26 @@ namespace NSMB_RNG_GUI
 
         private async void createSeedFinder(List<int> userPattern)
         {
-            seedFinder = null;
-            seedFinder = await TilesFor12.SeedFinder.Create(userPattern.ToArray());
+            setWorkStatus("Loading lookup data...");
+
+            seedFinder = new TilesFor12.SeedFinder(userPattern.ToArray());
+            seedFinder.DownloadProgress += (progress) =>
+            {
+                if (progress < 100)
+                    setWorkStatus("Downloading lookup... " + Math.Round(progress).ToString());
+                else
+                    setWorkStatus("Extracting files...");
+            };
+            seedFinder.Ready += () =>
+            {
+                if (seedFinder.error)
+                {
+                    setWorkStatus("Failed to load lookup data.");
+                    seedFinder = null;
+                }
+                else
+                    setWorkStatus("Lookup complete.");
+            };
         }
 
         private void dtpDateTime_Leave(object sender, EventArgs e)
