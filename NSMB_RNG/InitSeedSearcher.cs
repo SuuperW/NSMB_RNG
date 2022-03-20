@@ -25,7 +25,7 @@ namespace NSMB_RNG
             minVCount = 0;
             maxVCount = 263; // 262?
             minVFrame = 2; // Lowest I've seen is 4.
-            maxVFrame = 7; // Highest I've seen is 5.
+            maxVFrame = 7; // Highest I've seen is 6.
 
             secondsRange = 1;
         }
