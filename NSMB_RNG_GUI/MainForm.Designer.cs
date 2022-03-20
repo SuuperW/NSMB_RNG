@@ -50,6 +50,7 @@ namespace NSMB_RNG_GUI
             this.label4 = new System.Windows.Forms.Label();
             this.dtpDate = new System.Windows.Forms.DateTimePicker();
             this.dtpTime = new System.Windows.Forms.DateTimePicker();
+            this.lblMatch = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pbxMAC)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbxTile11)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbxTile12)).BeginInit();
@@ -113,6 +114,7 @@ namespace NSMB_RNG_GUI
             this.txtFirst7.Size = new System.Drawing.Size(100, 23);
             this.txtFirst7.TabIndex = 5;
             this.txtFirst7.TextChanged += new System.EventHandler(this.txtFirst7_TextChanged);
+            this.txtFirst7.Enter += new System.EventHandler(this.txtFirst7_Enter);
             // 
             // pbxTile11
             // 
@@ -223,8 +225,7 @@ namespace NSMB_RNG_GUI
             this.cbxSystem.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cbxSystem.FormattingEnabled = true;
             this.cbxSystem.Items.AddRange(new object[] {
-            "other",
-            "DSi"});
+            "other"});
             this.cbxSystem.Location = new System.Drawing.Point(66, 41);
             this.cbxSystem.Name = "cbxSystem";
             this.cbxSystem.Size = new System.Drawing.Size(84, 23);
@@ -276,15 +277,27 @@ namespace NSMB_RNG_GUI
             this.dtpTime.MaxDate = new System.DateTime(2099, 12, 31, 0, 0, 0, 0);
             this.dtpTime.MinDate = new System.DateTime(2000, 1, 1, 0, 0, 0, 0);
             this.dtpTime.Name = "dtpTime";
+            this.dtpTime.ShowUpDown = true;
             this.dtpTime.Size = new System.Drawing.Size(99, 23);
             this.dtpTime.TabIndex = 11;
             this.dtpTime.Value = new System.DateTime(2000, 1, 1, 0, 0, 0, 0);
+            // 
+            // lblMatch
+            // 
+            this.lblMatch.AutoSize = true;
+            this.lblMatch.Location = new System.Drawing.Point(12, 236);
+            this.lblMatch.Name = "lblMatch";
+            this.lblMatch.Size = new System.Drawing.Size(41, 15);
+            this.lblMatch.TabIndex = 12;
+            this.lblMatch.Text = "match";
+            this.lblMatch.Visible = false;
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(403, 307);
+            this.Controls.Add(this.lblMatch);
             this.Controls.Add(this.dtpTime);
             this.Controls.Add(this.dtpDate);
             this.Controls.Add(this.label4);
@@ -343,5 +356,6 @@ namespace NSMB_RNG_GUI
         private Label label4;
         private DateTimePicker dtpDate;
         private DateTimePicker dtpTime;
+        private Label lblMatch;
     }
 }
