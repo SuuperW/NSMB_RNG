@@ -10,6 +10,7 @@ namespace NSMB_RNG
         public ulong MAC = 0;
         public uint magic = 0;
         public bool wantMini = false;
+        public DateTime dt;
 
         private Settings() { }
 
@@ -36,11 +37,22 @@ namespace NSMB_RNG
                         else
                             throw new Exception("bad settings file");
                     }
-                    if (version == 2)
+                    if (version >= 2)
                     {
                         // wantMini
                         state.wantMini = fs.ReadByte() != 0;
                     }
+                    if (version == 3)
+                    {
+                        // date
+                        int count = fs.Read(buffer, 0, 6);
+                        if (count == 6)
+                            state.dt = new DateTime(2000 + buffer[0], buffer[1], buffer[2], buffer[3], buffer[4], buffer[5]);
+                        else
+                            throw new Exception("bad settings file");
+                    }
+                    else
+                        state.dt = new DateTime(2000, 1, 1, 0, 0, 5);
                 }
             }
 
@@ -51,10 +63,17 @@ namespace NSMB_RNG
         {
             using (FileStream fs = File.Open(PATH_SETTINGS, FileMode.Create))
             {
-                fs.WriteByte(2); // version
+                fs.WriteByte(3); // version
                 fs.Write(BitConverter.GetBytes(MAC), 0, 6);
                 fs.Write(BitConverter.GetBytes(magic), 0, 4);
                 fs.WriteByte(wantMini ? (byte)1 : (byte)0);
+
+                fs.WriteByte((byte)(dt.Year - 2000));
+                fs.WriteByte((byte)(dt.Month));
+                fs.WriteByte((byte)(dt.Day));
+                fs.WriteByte((byte)(dt.Hour));
+                fs.WriteByte((byte)(dt.Minute));
+                fs.WriteByte((byte)(dt.Second));
             }
         }
 

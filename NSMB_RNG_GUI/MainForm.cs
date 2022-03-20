@@ -53,6 +53,8 @@ namespace NSMB_RNG_GUI
             txtMAC.Text = settings.MAC.ToString("X").PadLeft(12, '0');
             chkMini.Checked = settings.wantMini;
             cbxSystem.SelectedIndex = 0;
+            dtpDate.Value = settings.dt.Date;
+            dtpTime.Value = settings.dt;
 
             pbxFirst = new PictureBox[] { pbxTile11, pbxTile12, pbxTile13, pbxTile14, pbxTile15, pbxTile16, pbxTile17, pbxTile1End };
         }
@@ -179,6 +181,12 @@ namespace NSMB_RNG_GUI
             {
                 lblMatch.Visible = false;
             }
+        }
+
+        private void dtpDateTime_ValueChanged(object sender, EventArgs e)
+        {
+            settings.dt = dt;
+            settings.saveSettings();
         }
     }
 }
