@@ -13,10 +13,21 @@ namespace NSMB_RNG_GUI
     {
         Settings settings;
         PictureBox[] pbxFirst;
+        PictureBox[] pbxSecond;
         Bitmap[] tiles = new Bitmap[] { Properties.Resources.tileB, Properties.Resources.tileE, Properties.Resources.tileI,
             Properties.Resources.tileC, Properties.Resources.tileP, Properties.Resources.tileS };
 
         Dictionary<string, List<uint>> systems;
+        List<uint> knownMagics
+        {
+            get
+            {
+                if (systems.ContainsKey(cbxSystem.Text))
+                    return systems[cbxSystem.Text];
+                else
+                    return new List<uint>();
+            }
+        }
         List<int[]> knownMagicPatterns = new List<int[]>();
 
         private DateTime dt => dtpDate.Value.AddHours(dtpTime.Value.Hour).AddMinutes(dtpTime.Value.Minute).AddSeconds(dtpTime.Value.Second);
@@ -58,6 +69,7 @@ namespace NSMB_RNG_GUI
             dtpTime.Value = settings.dt;
 
             pbxFirst = new PictureBox[] { pbxTile11, pbxTile12, pbxTile13, pbxTile14, pbxTile15, pbxTile16, pbxTile17, pbxTile1End };
+            pbxSecond = new PictureBox[] { pbxTile21, pbxTile22, pbxTile23, pbxTile24, pbxTile25, pbxTile26, pbxTile27, pbxTile28, pbxTile29, pbxTile210, pbxTile211, pbxTile2End };
 
             isLoaded = true;
         }
@@ -121,71 +133,92 @@ namespace NSMB_RNG_GUI
 
         private void txtFirst7_TextChanged(object sender, EventArgs e)
         {
+            txtSecondRow.Enabled = false;
+
             // Display+get pattern
-            string upper = txtFirst7.Text.ToUpper();
+            List<int> userPattern = parseTiles(txtFirst7.Text, pbxFirst);
+
+            // Compare with known magics
+            List<int> matches = new List<int>();
+            for (int patternIndex = 0; patternIndex < knownMagicPatterns.Count; patternIndex++)
+            {
+                int[] pattern = knownMagicPatterns[patternIndex];
+                bool match = true;
+                for (int i = 0; i < userPattern.Count; i++)
+                {
+                    if (pattern[i] != userPattern[i])
+                    {
+                        match = false;
+                        break;
+                    }
+                }
+                if (match)
+                    matches.Add(patternIndex);
+            }
+            // Display matching results
+            if (userPattern.Count > 0 && matches.Count == 1)
+            {
+                lblMatch.Text = "Magic found.";
+                lblMatch.Visible = true;
+                settings.magic = knownMagics[matches[0]];
+                settings.saveSettings();
+            }
+            else if (matches.Count == 0)
+            {
+                if (userPattern.Count < 7)
+                    lblMatch.Text = "No matching known magics. Enter all 7 tiles.";
+                else
+                {
+                    lblMatch.Text = "Enter 11 tiles from second row.";
+                    txtSecondRow.Enabled = true;
+                }
+                lblMatch.Visible = true;
+            }
+            else
+                lblMatch.Visible = false;
+        }
+        private void txtSecondRow_TextChanged(object sender, EventArgs e)
+        {
+            // Display+get pattern
+            List<int> userPattern = parseTiles(txtSecondRow.Text, pbxSecond);
+
+        }
+        private List<int> parseTiles(string input, PictureBox[] pbxArray)
+        {
+            string upper = input.ToUpper();
             bool inputIsValid = true;
-            int[] userPattern = new int[7];
+            int maxLength = pbxArray.Length - 1;
+            List<int> userPattern = new List<int>(maxLength);
+            int pi = 0;
             for (int i = 0; i < upper.Length; i++)
             {
+                if (upper[i] == ' ')
+                    continue;
+
                 int index = Array.IndexOf(TilesFor12.tileLetters, upper[i]);
-                if (index == -1 || i >= 7)
+                if (index == -1 || pi >= maxLength)
                 {
-                    pbxFirst[i].BackgroundImage = null;
-                    pbxFirst[i].Visible = true;
-                    for (int j = i + 1; j < pbxFirst.Length; j++)
-                        pbxFirst[j].Visible = false;
+                    pbxArray[pi].BackgroundImage = null;
+                    pbxArray[pi].Visible = true;
+                    pi++;
                     inputIsValid = false;
                     break;
                 }
                 else
                 {
-                    pbxFirst[i].BackgroundImage = tiles[index];
-                    pbxFirst[i].Visible = true;
-                    userPattern[i] = index;
+                    pbxArray[pi].BackgroundImage = tiles[index];
+                    pbxArray[pi].Visible = true;
+                    userPattern.Add(index);
+                    pi++;
                 }
             }
 
-            lblFirstTooLong.Visible = upper.Length >= pbxFirst.Length;
-            for (int i = upper.Length; i < pbxFirst.Length; i++)
-                pbxFirst[i].Visible = false;
+            lblFirstTooLong.Visible = pi >= pbxArray.Length;
+            for (int i = pi; i < pbxArray.Length; i++)
+                pbxArray[i].Visible = false;
 
-            // Compare with known magics
-            if (inputIsValid)
-            {
-                List<int> matches = new List<int>();
-                for (int patternIndex = 0; patternIndex < knownMagicPatterns.Count; patternIndex++)
-                {
-                    int[] pattern = knownMagicPatterns[patternIndex];
-                    bool match = true;
-                    for (int i = 0; i < upper.Length && i < userPattern.Length; i++)
-                    {
-                        if (pattern[i] != userPattern[i])
-                        {
-                            match = false;
-                            break;
-                        }
-                    }
-                    if (match)
-                        matches.Add(patternIndex);
-                }
-                // Display matching results
-                if (matches.Count == 1)
-                {
-                    lblMatch.Text = "Magic found.";
-                    lblMatch.Visible = true;
-                }
-                else if (matches.Count == 0)
-                {
-                    lblMatch.Text = "No matching known magics. Enter all tiles.";
-                    lblMatch.Visible = true;
-                }
-                else
-                    lblMatch.Visible = false;
-            }
-            else
-            {
-                lblMatch.Visible = false;
-            }
+            if (inputIsValid) return userPattern;
+            else return new List<int>();
         }
 
         private void dtpDateTime_Leave(object sender, EventArgs e)
