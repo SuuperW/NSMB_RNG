@@ -37,9 +37,9 @@ namespace NSMB_RNG
             DateTime dt = seedParams.GetDateTime();
             for (int secs = 0; secs < secondsRange; secs++)
             {
-                for (ushort timer0 = (ushort)minTimer0; timer0 <= maxTimer0; timer0++)
+                for (int timer0 = minTimer0; timer0 <= maxTimer0; timer0++)
                 {
-                    seedParams.Timer0 = timer0;
+                    seedParams.Timer0 = (ushort)timer0;
                     for (ushort vCount = (ushort)minVCount; vCount <= maxVCount; vCount++)
                     {
                         seedParams.VCount = vCount;
