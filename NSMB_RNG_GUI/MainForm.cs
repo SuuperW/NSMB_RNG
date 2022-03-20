@@ -30,6 +30,8 @@ namespace NSMB_RNG_GUI
         }
         List<int[]> knownMagicPatterns = new List<int[]>();
 
+        TilesFor12.SeedFinder? seedFinder = null;
+
         private DateTime dt => dtpDate.Value.AddHours(dtpTime.Value.Hour).AddMinutes(dtpTime.Value.Minute).AddSeconds(dtpTime.Value.Second);
 
         bool isLoaded = false;
@@ -89,6 +91,15 @@ namespace NSMB_RNG_GUI
             }
         }
 
+        private void setWorkStatus(string str)
+        {
+            int oldWidth = lblWorkStatus.Width;
+            lblWorkStatus.Text = str;
+            lblWorkStatus.Location = new Point(lblWorkStatus.Location.X + oldWidth - lblWorkStatus.Width, lblWorkStatus.Location.Y);
+            
+            lblWorkStatus.Visible = !string.IsNullOrEmpty(str);
+        }
+
         private void txtMAC_TextChanged(object sender, EventArgs e)
         {
             pbxMAC.Visible = true;
@@ -125,7 +136,6 @@ namespace NSMB_RNG_GUI
             if (isLoaded)
                 settings.saveSettings();
         }
-
         private void txtFirst7_Enter(object sender, EventArgs e)
         {
             updateMagicPatterns();
@@ -171,6 +181,8 @@ namespace NSMB_RNG_GUI
                 {
                     lblMatch.Text = "Enter 11 tiles from second row.";
                     txtSecondRow.Enabled = true;
+                    createSeedFinder(userPattern);
+                    setWorkStatus("Loading lookup data...");
                 }
                 lblMatch.Visible = true;
             }
@@ -182,6 +194,42 @@ namespace NSMB_RNG_GUI
             // Display+get pattern
             List<int> userPattern = parseTiles(txtSecondRow.Text, pbxSecond);
 
+            // Find seeds and magic
+            if (userPattern.Count == 11)
+            {
+                if (seedFinder == null)
+                {
+                    lblMatch.Text = "Error: Idk."; // it should never happen
+                    return;
+                }
+
+                // Find seeds
+                List<uint> seeds = seedFinder.calculatePossibleSeeds(userPattern.ToArray());
+                if (seeds.Count == 0)
+                {
+                    lblMatch.Text = "No seeds found. Verify that you entered the correct tiles.";
+                    return;
+                }
+
+                // Find magic
+                SeedInitParams sip = new SeedInitParams(settings.MAC, dt);
+                InitSeedSearcher iss = new InitSeedSearcher(sip, seeds);
+                List<SeedInitParams> seedParams = iss.FindSeeds();
+                if (seedParams.Count == 0)
+                    lblMatch.Text = "No magic found. Verify that you entered the correct tiles, MAC address, date, and time.";
+                // Expected result: only 1 params found. Save the magic.
+                else if (seedParams.Count == 1)
+                {
+                    settings.magic = SystemSeedInitParams.GetMagic(seedParams[0]);
+                    settings.saveSettings();
+                    lblMatch.Text = "Found magic.";
+                }
+                // If there are more than one, we cannot know which is correct.
+                else if (seedParams.Count > 1)
+                {
+                    lblMatch.Text = "Multiple magics found there's no way to know which one is correct.";
+                }
+            }
         }
         private List<int> parseTiles(string input, PictureBox[] pbxArray)
         {
@@ -219,6 +267,12 @@ namespace NSMB_RNG_GUI
 
             if (inputIsValid) return userPattern;
             else return new List<int>();
+        }
+
+        private async void createSeedFinder(List<int> userPattern)
+        {
+            seedFinder = null;
+            seedFinder = await TilesFor12.SeedFinder.Create(userPattern.ToArray());
         }
 
         private void dtpDateTime_Leave(object sender, EventArgs e)

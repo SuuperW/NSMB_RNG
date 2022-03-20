@@ -65,6 +65,7 @@ namespace NSMB_RNG_GUI
             this.pbxTile2End = new System.Windows.Forms.PictureBox();
             this.label5 = new System.Windows.Forms.Label();
             this.txtSecondRow = new System.Windows.Forms.TextBox();
+            this.lblWorkStatus = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pbxMAC)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbxTile11)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbxTile12)).BeginInit();
@@ -495,11 +496,23 @@ namespace NSMB_RNG_GUI
             this.txtSecondRow.TextChanged += new System.EventHandler(this.txtSecondRow_TextChanged);
             this.txtSecondRow.Enter += new System.EventHandler(this.txtFirst7_Enter);
             // 
+            // lblWorkStatus
+            // 
+            this.lblWorkStatus.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblWorkStatus.AutoSize = true;
+            this.lblWorkStatus.Location = new System.Drawing.Point(346, 172);
+            this.lblWorkStatus.Name = "lblWorkStatus";
+            this.lblWorkStatus.Size = new System.Drawing.Size(50, 15);
+            this.lblWorkStatus.TabIndex = 14;
+            this.lblWorkStatus.Text = "working";
+            this.lblWorkStatus.Visible = false;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(408, 207);
+            this.Controls.Add(this.lblWorkStatus);
             this.Controls.Add(this.lblMatch);
             this.Controls.Add(this.dtpTime);
             this.Controls.Add(this.dtpDate);
@@ -600,5 +613,6 @@ namespace NSMB_RNG_GUI
         private PictureBox pbxTile2End;
         private Label label5;
         private TextBox txtSecondRow;
+        private Label lblWorkStatus;
     }
 }
