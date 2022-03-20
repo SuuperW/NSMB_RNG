@@ -28,7 +28,7 @@
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="xcopy $(ProjectDir)$(OutDir). ..\output\$(Configuration) /i /s /y" />
+    <Exec Command="xcopy $(ProjectDir)$(OutDir). ..\output\$(Configuration) /i /s /y&#xD;&#xA;xcopy ..\output\$(Configuration)\7za.exe $(ProjectDir)$(OutDir) /y&#xD;&#xA;xcopy ..\output\$(Configuration)\systems.json $(ProjectDir)$(OutDir) /y" />
   </Target>
 
 </Project>
