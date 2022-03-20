@@ -21,6 +21,7 @@ namespace NSMB_RNG_GUI
 
         private DateTime dt => dtpDate.Value.AddHours(dtpTime.Value.Hour).AddMinutes(dtpTime.Value.Minute).AddSeconds(dtpTime.Value.Second);
 
+        bool isLoaded = false;
         public MainForm()
         {
             InitializeComponent();
@@ -57,6 +58,8 @@ namespace NSMB_RNG_GUI
             dtpTime.Value = settings.dt;
 
             pbxFirst = new PictureBox[] { pbxTile11, pbxTile12, pbxTile13, pbxTile14, pbxTile15, pbxTile16, pbxTile17, pbxTile1End };
+
+            isLoaded = true;
         }
 
         private void updateMagicPatterns()
@@ -100,13 +103,15 @@ namespace NSMB_RNG_GUI
 
             pbxMAC.BackColor = Color.Green;
             settings.MAC = newMAC;
-            settings.saveSettings();
+            if (isLoaded)
+                settings.saveSettings();
         }
 
         private void chkMini_CheckedChanged(object sender, EventArgs e)
         {
             settings.wantMini = chkMini.Checked;
-            settings.saveSettings();
+            if (isLoaded)
+                settings.saveSettings();
         }
 
         private void txtFirst7_Enter(object sender, EventArgs e)
@@ -183,10 +188,12 @@ namespace NSMB_RNG_GUI
             }
         }
 
-        private void dtpDateTime_ValueChanged(object sender, EventArgs e)
+        private void dtpDateTime_Leave(object sender, EventArgs e)
         {
             settings.dt = dt;
-            settings.saveSettings();
+            if (isLoaded)
+                settings.saveSettings();
         }
+
     }
 }

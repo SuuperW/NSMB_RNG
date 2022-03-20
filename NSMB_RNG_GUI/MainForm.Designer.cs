@@ -269,7 +269,7 @@ namespace NSMB_RNG_GUI
             this.dtpDate.Size = new System.Drawing.Size(99, 23);
             this.dtpDate.TabIndex = 11;
             this.dtpDate.Value = new System.DateTime(2000, 1, 1, 0, 0, 0, 0);
-            this.dtpDate.ValueChanged += new System.EventHandler(this.dtpDateTime_ValueChanged);
+            this.dtpDate.Leave += new System.EventHandler(this.dtpDateTime_Leave);
             // 
             // dtpTime
             // 
@@ -282,7 +282,7 @@ namespace NSMB_RNG_GUI
             this.dtpTime.Size = new System.Drawing.Size(99, 23);
             this.dtpTime.TabIndex = 11;
             this.dtpTime.Value = new System.DateTime(2000, 1, 1, 0, 0, 0, 0);
-            this.dtpTime.ValueChanged += new System.EventHandler(this.dtpDateTime_ValueChanged);
+            this.dtpTime.Leave += new System.EventHandler(this.dtpDateTime_Leave);
             // 
             // lblMatch
             // 
