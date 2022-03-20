@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Threading;
 using System.Text.Json;
 using System.Windows.Forms;
 
@@ -93,11 +94,18 @@ namespace NSMB_RNG_GUI
 
         private void setWorkStatus(string str)
         {
-            int oldWidth = lblWorkStatus.Width;
-            lblWorkStatus.Text = str;
-            lblWorkStatus.Location = new Point(lblWorkStatus.Location.X + oldWidth - lblWorkStatus.Width, lblWorkStatus.Location.Y);
-            
-            lblWorkStatus.Visible = !string.IsNullOrEmpty(str);
+            Action a = () =>
+            {
+                int oldWidth = lblWorkStatus.Width;
+                lblWorkStatus.Text = str;
+                lblWorkStatus.Location = new Point(lblWorkStatus.Location.X + oldWidth - lblWorkStatus.Width, lblWorkStatus.Location.Y);
+
+                lblWorkStatus.Visible = !string.IsNullOrEmpty(str);
+            };
+            if (InvokeRequired)
+                Invoke(a);
+            else
+                a();
         }
 
         private void txtMAC_TextChanged(object sender, EventArgs e)
@@ -268,28 +276,30 @@ namespace NSMB_RNG_GUI
             else return new List<int>();
         }
 
-        private async void createSeedFinder(List<int> userPattern)
+        private void createSeedFinder(List<int> userPattern)
         {
             setWorkStatus("Loading lookup data...");
-
-            seedFinder = new TilesFor12.SeedFinder(userPattern.ToArray());
-            seedFinder.DownloadProgress += (progress) =>
-            {
-                if (progress < 100)
-                    setWorkStatus("Downloading lookup... " + Math.Round(progress).ToString());
-                else
-                    setWorkStatus("Extracting files...");
-            };
-            seedFinder.Ready += () =>
-            {
-                if (seedFinder.error)
+            Thread t = new Thread(() => { 
+                seedFinder = new TilesFor12.SeedFinder(userPattern.ToArray());
+                seedFinder.DownloadProgress += (progress) =>
                 {
-                    setWorkStatus("Failed to load lookup data.");
-                    seedFinder = null;
-                }
-                else
-                    setWorkStatus("Lookup complete.");
-            };
+                    if (progress < 100)
+                        setWorkStatus("Downloading lookup... " + Math.Round(progress).ToString() + "%");
+                    else
+                        setWorkStatus("Extracting files...");
+                };
+                seedFinder.Ready += () =>
+                {
+                    if (seedFinder.error)
+                    {
+                        setWorkStatus("Failed to load lookup data.");
+                        seedFinder = null;
+                    }
+                    else
+                        setWorkStatus("Lookup complete.");
+                };
+            });
+            t.Start();
         }
 
         private void dtpDateTime_Leave(object sender, EventArgs e)

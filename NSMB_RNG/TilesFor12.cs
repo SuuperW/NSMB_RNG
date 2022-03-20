@@ -213,13 +213,13 @@ namespace NSMB_RNG
                         using (FileStream fs = new FileStream(archivePath, FileMode.CreateNew))
                         {
                             var t = response.Content.CopyToAsync(fs);
-                            Thread.Sleep(100);
                             while (!t.IsCompleted)
                             {
-                                double progress = fs.Length / contentLength * 100;
+                                double progress = (double)fs.Length / contentLength * 100;
                                 if (cli) Console.WriteLine(progress.ToString() + "%");
                                 else if (DownloadProgress != null) DownloadProgress.Invoke(progress);
-                                Thread.Sleep(500);
+                                Thread.Sleep(100);
+                                Console.WriteLine("test");
                             }
                         }
                     }
