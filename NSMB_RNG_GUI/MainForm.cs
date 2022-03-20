@@ -13,10 +13,6 @@ namespace NSMB_RNG_GUI
     public partial class MainForm : Form
     {
         Settings settings;
-        PictureBox[] pbxFirst;
-        PictureBox[] pbxSecond;
-        Bitmap[] tiles = new Bitmap[] { Properties.Resources.tileB, Properties.Resources.tileE, Properties.Resources.tileI,
-            Properties.Resources.tileC, Properties.Resources.tileP, Properties.Resources.tileS };
 
         Dictionary<string, List<uint>> systems;
         List<uint> knownMagics
@@ -70,9 +66,6 @@ namespace NSMB_RNG_GUI
             cbxSystem.SelectedIndex = 0;
             dtpDate.Value = settings.dt.Date;
             dtpTime.Value = settings.dt;
-
-            pbxFirst = new PictureBox[] { pbxTile11, pbxTile12, pbxTile13, pbxTile14, pbxTile15, pbxTile16, pbxTile17, pbxTile1End };
-            pbxSecond = new PictureBox[] { pbxTile21, pbxTile22, pbxTile23, pbxTile24, pbxTile25, pbxTile26, pbxTile27, pbxTile28, pbxTile29, pbxTile210, pbxTile211, pbxTile2End };
 
             isLoaded = true;
         }
@@ -154,7 +147,7 @@ namespace NSMB_RNG_GUI
             txtSecondRow.Enabled = false;
 
             // Display+get pattern
-            List<int> userPattern = parseTiles(txtFirst7.Text, pbxFirst);
+            List<int> userPattern = tileDisplay1.update(txtFirst7.Text);
 
             // Compare with known magics
             List<int> matches = new List<int>();
@@ -199,7 +192,7 @@ namespace NSMB_RNG_GUI
         private void txtSecondRow_TextChanged(object sender, EventArgs e)
         {
             // Display+get pattern
-            List<int> userPattern = parseTiles(txtSecondRow.Text, pbxSecond);
+            List<int> userPattern = tileDisplay2.update(txtSecondRow.Text);
 
             // Find seeds and magic
             if (userPattern.Count == 11)
@@ -237,43 +230,6 @@ namespace NSMB_RNG_GUI
                     lblMatch.Text = "Multiple magics found there's no way to know which one is correct.";
                 }
             }
-        }
-        private List<int> parseTiles(string input, PictureBox[] pbxArray)
-        {
-            string upper = input.ToUpper();
-            bool inputIsValid = true;
-            int maxLength = pbxArray.Length - 1;
-            List<int> userPattern = new List<int>(maxLength);
-            int pi = 0;
-            for (int i = 0; i < upper.Length; i++)
-            {
-                if (upper[i] == ' ')
-                    continue;
-
-                int index = Array.IndexOf(TilesFor12.tileLetters, upper[i]);
-                if (index == -1 || pi >= maxLength)
-                {
-                    pbxArray[pi].BackgroundImage = null;
-                    pbxArray[pi].Visible = true;
-                    pi++;
-                    inputIsValid = false;
-                    break;
-                }
-                else
-                {
-                    pbxArray[pi].BackgroundImage = tiles[index];
-                    pbxArray[pi].Visible = true;
-                    userPattern.Add(index);
-                    pi++;
-                }
-            }
-
-            lblFirstTooLong.Visible = pi >= pbxArray.Length;
-            for (int i = pi; i < pbxArray.Length; i++)
-                pbxArray[i].Visible = false;
-
-            if (inputIsValid) return userPattern;
-            else return new List<int>();
         }
 
         private void createSeedFinder(List<int> userPattern)

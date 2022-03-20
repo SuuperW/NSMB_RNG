@@ -219,7 +219,6 @@ namespace NSMB_RNG
                                 if (cli) Console.WriteLine(progress.ToString() + "%");
                                 else if (DownloadProgress != null) DownloadProgress.Invoke(progress);
                                 Thread.Sleep(100);
-                                Console.WriteLine("test");
                             }
                         }
                     }
