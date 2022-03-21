@@ -93,7 +93,7 @@ namespace NSMB_RNG_GUI
                 lblWorkStatus.Text = str;
                 lblWorkStatus.Location = new Point(lblWorkStatus.Location.X + oldWidth - lblWorkStatus.Width, lblWorkStatus.Location.Y);
 
-                lblWorkStatus.Visible = !string.IsNullOrEmpty(str);
+                progressBar.Visible = lblWorkStatus.Visible = !string.IsNullOrEmpty(str);
             };
             if (InvokeRequired)
                 Invoke(a);
@@ -223,7 +223,6 @@ namespace NSMB_RNG_GUI
 
         private void createSeedFinder(List<int> userPattern)
         {
-            progressBar.Visible = true;
             seedFinder = null; // This ensures it isn't seen as "ready" between now and initing the new one.
 
             Action seedFinderReady = () =>
@@ -231,14 +230,17 @@ namespace NSMB_RNG_GUI
                 Invoke(() => {
                     if (seedFinder == null || seedFinder.error)
                     {
-                        setWorkStatus("Failed to load lookup data.");
+                        setMatchText("Failed to load lookup data.");
+                        setWorkStatus("");
                         txtSecondRow.Enabled = false;
                         seedFinder = null;
                     }
                     else
-                        setWorkStatus("Lookup complete.");
+                    {
+                        setMatchText("Lookup complete. Enter second row of tiles.");
+                        setWorkStatus("");
+                    }
 
-                    progressBar.Visible = false;
                     txtFirst7.Enabled = true;
                     if (txtSecondRow.Enabled)
                         txtSecondRow_TextChanged(progressBar, new EventArgs());
@@ -275,17 +277,15 @@ namespace NSMB_RNG_GUI
                     return;
                 }
 
-                Invoke(() => progressBar.Visible = true);
-
                 // Find seeds
-                setMatchText("Finding seeds...");
+                setWorkStatus("Finding seeds...");
                 List<uint> seeds = seedFinder.calculatePossibleSeeds(secondRow);
                 if (seeds.Count == 0)
                     setMatchText("No seeds found. Verify that you entered the correct tiles.");
                 else
                 {
                     // Find magic
-                    setMatchText("Finding magics...");
+                    setWorkStatus("Finding magics...");
                     SeedInitParams sip = new SeedInitParams(settings.MAC, dt);
                     InitSeedSearcher iss = new InitSeedSearcher(sip, seeds);
                     List<SeedInitParams> foundParams = iss.FindSeeds();
@@ -310,7 +310,7 @@ namespace NSMB_RNG_GUI
                     // If there are more than one, we cannot know which is correct.
                     else if (foundParams.Count > 1)
                     {
-                        setMatchText("Multiple magics found.\nChoose the system 'temp' and try again with another tile pattern.");
+                        setMatchText("Multiple magics. Choose system 'temp' and try another tile pattern.");
                         // Save magic and slightly-varied magics
                         string[] magics = new string[foundParams.Count * 9];
                         int mID = 0;
@@ -332,10 +332,8 @@ namespace NSMB_RNG_GUI
                     }
                 }
 
-                Invoke(() => {
-                    progressBar.Visible = false;
-                    txtSecondRow.Enabled = true;
-                });
+                Invoke(() => txtSecondRow.Enabled = true);
+                setWorkStatus("");
             });
             t.Start();
         }
