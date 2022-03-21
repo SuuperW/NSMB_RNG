@@ -181,22 +181,27 @@ namespace NSMB_RNG_GUI
                 lblMatch.Visible = true;
                 settings.magic = knownMagics[matches[0]];
                 settings.saveSettings();
-            }
-            else if (matches.Count == 0)
-            {
-                if (userPattern.Count < 7)
-                    lblMatch.Text = "No matching known magics. Enter all 7 tiles.";
-                else
-                {
-                    lblMatch.Text = "Enter 11 tiles from second row.";
-                    txtSecondRow.Enabled = true;
-                    txtFirst7.Enabled = false;
-                    createSeedFinder(userPattern);
-                }
-                lblMatch.Visible = true;
+                btnTimeFinder.Visible = true;
             }
             else
-                lblMatch.Visible = false;
+            {
+                btnTimeFinder.Visible = false;
+                if (matches.Count == 0)
+                {
+                    if (userPattern.Count < 7)
+                        lblMatch.Text = "No matching known magics. Enter all 7 tiles.";
+                    else
+                    {
+                        lblMatch.Text = "Enter 11 tiles from second row.";
+                        txtSecondRow.Enabled = true;
+                        txtFirst7.Enabled = false;
+                        createSeedFinder(userPattern);
+                    }
+                    lblMatch.Visible = true;
+                }
+                else
+                    lblMatch.Visible = false;
+            }
         }
 
         private void txtSecondRow_TextChanged(object sender, EventArgs e)

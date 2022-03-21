@@ -50,6 +50,7 @@ namespace NSMB_RNG_GUI
             this.tileDisplay3 = new NSMB_RNG_GUI.tileDisplay();
             this.tileDisplay4 = new NSMB_RNG_GUI.tileDisplay();
             this.progressBar = new System.Windows.Forms.ProgressBar();
+            this.btnTimeFinder = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pbxMAC)).BeginInit();
             this.SuspendLayout();
             // 
@@ -84,7 +85,7 @@ namespace NSMB_RNG_GUI
             this.chkMini.Location = new System.Drawing.Point(299, 43);
             this.chkMini.Name = "chkMini";
             this.chkMini.Size = new System.Drawing.Size(81, 19);
-            this.chkMini.TabIndex = 4;
+            this.chkMini.TabIndex = 7;
             this.chkMini.Text = "mini route";
             this.chkMini.UseVisualStyleBackColor = true;
             this.chkMini.CheckedChanged += new System.EventHandler(this.chkMini_CheckedChanged);
@@ -133,7 +134,7 @@ namespace NSMB_RNG_GUI
             this.label4.Location = new System.Drawing.Point(12, 47);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(66, 15);
-            this.label4.TabIndex = 5;
+            this.label4.TabIndex = 4;
             this.label4.Text = "Date/Time:";
             // 
             // dtpDate
@@ -144,7 +145,7 @@ namespace NSMB_RNG_GUI
             this.dtpDate.MinDate = new System.DateTime(2000, 1, 1, 0, 0, 0, 0);
             this.dtpDate.Name = "dtpDate";
             this.dtpDate.Size = new System.Drawing.Size(99, 23);
-            this.dtpDate.TabIndex = 6;
+            this.dtpDate.TabIndex = 5;
             this.dtpDate.Value = new System.DateTime(2000, 1, 1, 0, 0, 0, 0);
             this.dtpDate.Leave += new System.EventHandler(this.dtpDateTime_Leave);
             // 
@@ -157,7 +158,7 @@ namespace NSMB_RNG_GUI
             this.dtpTime.Name = "dtpTime";
             this.dtpTime.ShowUpDown = true;
             this.dtpTime.Size = new System.Drawing.Size(99, 23);
-            this.dtpTime.TabIndex = 7;
+            this.dtpTime.TabIndex = 6;
             this.dtpTime.Value = new System.DateTime(2000, 1, 1, 0, 0, 0, 0);
             this.dtpTime.Leave += new System.EventHandler(this.dtpDateTime_Leave);
             // 
@@ -242,11 +243,22 @@ namespace NSMB_RNG_GUI
             this.progressBar.TabIndex = 17;
             this.progressBar.Visible = false;
             // 
+            // btnTimeFinder
+            // 
+            this.btnTimeFinder.Location = new System.Drawing.Point(299, 104);
+            this.btnTimeFinder.Name = "btnTimeFinder";
+            this.btnTimeFinder.Size = new System.Drawing.Size(97, 23);
+            this.btnTimeFinder.TabIndex = 18;
+            this.btnTimeFinder.Text = "Time Finder";
+            this.btnTimeFinder.UseVisualStyleBackColor = true;
+            this.btnTimeFinder.Visible = false;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(408, 282);
+            this.ClientSize = new System.Drawing.Size(408, 263);
+            this.Controls.Add(this.btnTimeFinder);
             this.Controls.Add(this.progressBar);
             this.Controls.Add(this.tileDisplay4);
             this.Controls.Add(this.tileDisplay3);
@@ -268,7 +280,7 @@ namespace NSMB_RNG_GUI
             this.Controls.Add(this.txtMAC);
             this.Controls.Add(this.label1);
             this.Name = "MainForm";
-            this.Text = "NSMB RNG";
+            this.Text = "NSMB RNG Magic Finder";
             ((System.ComponentModel.ISupportInitialize)(this.pbxMAC)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -297,5 +309,6 @@ namespace NSMB_RNG_GUI
         private tileDisplay tileDisplay3;
         private tileDisplay tileDisplay4;
         private ProgressBar progressBar;
+        private Button btnTimeFinder;
     }
 }
