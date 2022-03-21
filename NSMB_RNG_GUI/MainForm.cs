@@ -59,7 +59,7 @@ namespace NSMB_RNG_GUI
             // initialize controls
             txtMAC.Text = settings.MAC.ToString("X").PadLeft(12, '0');
             chkMini.Checked = settings.wantMini;
-            cbxSystem.SelectedIndex = 0;
+            cbxSystem.SelectedItem = settings.systemName;
             dtpDate.Value = settings.dt.Date;
             dtpTime.Value = settings.dt;
 
@@ -362,5 +362,11 @@ namespace NSMB_RNG_GUI
                 settings.saveSettings();
         }
 
+        private void cbxSystem_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            settings.systemName = cbxSystem.Text;
+            if (isLoaded)
+                settings.saveSettings();
+        }
     }
 }

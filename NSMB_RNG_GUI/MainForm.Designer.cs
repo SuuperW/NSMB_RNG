@@ -118,6 +118,7 @@ namespace NSMB_RNG_GUI
             this.cbxSystem.Name = "cbxSystem";
             this.cbxSystem.Size = new System.Drawing.Size(85, 23);
             this.cbxSystem.TabIndex = 3;
+            this.cbxSystem.SelectedIndexChanged += new System.EventHandler(this.cbxSystem_SelectedIndexChanged);
             // 
             // label3
             // 
