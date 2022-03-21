@@ -30,7 +30,7 @@ namespace NSMB_RNG_GUI
         TilesFor12.SeedFinder? seedFinder = null;
         bool SeedFinderReady => seedFinder != null && seedFinder.isReady;
 
-        private DateTime dt => dtpDate.Value.AddHours(dtpTime.Value.Hour).AddMinutes(dtpTime.Value.Minute).AddSeconds(dtpTime.Value.Second);
+        private DateTime dt => dtpDate.Value.Add(dtpTime.Value.TimeOfDay);
 
         bool isLoaded = false;
         public MainForm()
