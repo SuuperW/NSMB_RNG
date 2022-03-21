@@ -28,6 +28,7 @@ namespace NSMB_RNG_GUI
         List<int[]> knownMagicPatterns = new List<int[]>();
 
         TilesFor12.SeedFinder? seedFinder = null;
+        bool SeedFinderReady => seedFinder != null && seedFinder.isReady;
 
         private DateTime dt => dtpDate.Value.AddHours(dtpTime.Value.Hour).AddMinutes(dtpTime.Value.Minute).AddSeconds(dtpTime.Value.Second);
 
@@ -190,6 +191,7 @@ namespace NSMB_RNG_GUI
                 {
                     lblMatch.Text = "Enter 11 tiles from second row.";
                     txtSecondRow.Enabled = true;
+                    txtFirst7.Enabled = false;
                     createSeedFinder(userPattern);
                 }
                 lblMatch.Visible = true;
@@ -197,19 +199,24 @@ namespace NSMB_RNG_GUI
             else
                 lblMatch.Visible = false;
         }
+
         private void txtSecondRow_TextChanged(object sender, EventArgs e)
         {
             // Display+get pattern
             List<int> userPattern = tileDisplay2.update(txtSecondRow.Text);
 
-            // Find seeds and magic
-            if (userPattern.Count == 11)
-                performMagicSearch(userPattern.ToArray());
             // Do we need to re-initialize the seed finder?
+            if (seedFinder != null && seedFinder.isComplete)
+                txtFirst7_TextChanged(sender, e);
+
+            // Find seeds and magic
+            if (userPattern.Count == 11 && SeedFinderReady)
+            {
+                txtSecondRow.Enabled = false;
+                performMagicSearch(userPattern.ToArray());
+            }
             else
             {
-                if (seedFinder != null && seedFinder.isComplete)
-                    txtFirst7_TextChanged(sender, e);
                 tileDisplay3.update("");
                 tileDisplay4.update("");
             }
@@ -218,20 +225,28 @@ namespace NSMB_RNG_GUI
         private void createSeedFinder(List<int> userPattern)
         {
             progressBar.Visible = true;
+            seedFinder = null; // This ensures it isn't seen as "ready" between now and initing the new one.
 
             Action seedFinderReady = () =>
             {
-                if (seedFinder == null || seedFinder.error)
-                {
-                    setWorkStatus("Failed to load lookup data.");
-                    seedFinder = null;
-                }
-                else
-                    setWorkStatus("Lookup complete.");
-                Invoke(() => progressBar.Visible = false);
+                Invoke(() => {
+                    if (seedFinder == null || seedFinder.error)
+                    {
+                        setWorkStatus("Failed to load lookup data.");
+                        txtSecondRow.Enabled = false;
+                        seedFinder = null;
+                    }
+                    else
+                        setWorkStatus("Lookup complete.");
+
+                    progressBar.Visible = false;
+                    txtFirst7.Enabled = true;
+                    if (txtSecondRow.Enabled)
+                        txtSecondRow_TextChanged(progressBar, new EventArgs());
+                });
             };
             setWorkStatus("Loading lookup data...");
-            Thread t = new Thread(() => { 
+            Thread t = new Thread(() => {
                 seedFinder = new TilesFor12.SeedFinder(userPattern.ToArray());
                 // If it didn't have to download, then it ran syncronously.
                 if (!seedFinder.isReady)
@@ -292,7 +307,10 @@ namespace NSMB_RNG_GUI
                     }
                 }
 
-                Invoke(() => progressBar.Visible = false);
+                Invoke(() => {
+                    progressBar.Visible = false;
+                    txtSecondRow.Enabled = true;
+                });
             });
             t.Start();
         }
