@@ -14,13 +14,13 @@ namespace NSMB_RNG_GUI
     {
         Settings settings;
 
-        Dictionary<string, List<uint>> systems;
+        Dictionary<string, string[]> systems;
         List<uint> knownMagics
         {
             get
             {
                 if (systems.ContainsKey(cbxSystem.Text))
-                    return systems[cbxSystem.Text];
+                    return strArrayToMagicList(systems[cbxSystem.Text]);
                 else
                     return new List<uint>();
             }
@@ -42,24 +42,19 @@ namespace NSMB_RNG_GUI
             if (File.Exists("systems.json"))
             {
                 using (FileStream fs = File.OpenRead("systems.json"))
-                {
-                    Dictionary<string, string[]>? systemsStrArray = JsonSerializer.Deserialize<Dictionary<string, string[]>>(fs);
-                    systems = new Dictionary<string, List<uint>>();
-                    if (systemsStrArray != null)
-                    {
-                        foreach (var kvp in systemsStrArray)
-                        {
-                            systems.Add(kvp.Key, new List<uint>());
-                            foreach (string str in kvp.Value)
-                                systems[kvp.Key].Add(Convert.ToUInt32(str, 16));
-                        }
-                    }
-                }
+                    systems = JsonSerializer.Deserialize<Dictionary<string, string[]>>(fs) ?? new Dictionary<string, string[]>();
             }
             else
-                systems = new Dictionary<string, List<uint>>();
+                systems = new Dictionary<string, string[]>();
             foreach (string key in systems.Keys)
                 cbxSystem.Items.Add(key);
+            if (File.Exists("otherMagics.json"))
+            {
+                using (FileStream fs = File.OpenRead("otherMagics.json"))
+                    systems.Add("other", JsonSerializer.Deserialize<string[]>(fs) ?? new string[0]);
+            }
+            else
+                systems.Add("other", new string[0]);
 
             // initialize controls
             txtMAC.Text = settings.MAC.ToString("X").PadLeft(12, '0');
@@ -71,18 +66,22 @@ namespace NSMB_RNG_GUI
             isLoaded = true;
         }
 
+        private List<uint> strArrayToMagicList(string[] strArray)
+        {
+            List<uint> magicList = new List<uint>();
+            foreach (string str in strArray)
+                magicList.Add(Convert.ToUInt32(str, 16));
+            return magicList;
+        }
+
         private void updateMagicPatterns()
         {
             knownMagicPatterns = new List<int[]>();
-            if (cbxSystem.SelectedIndex != 0) // 0 is "other"
+            foreach (uint magic in knownMagics)
             {
-                List<uint> magics = systems[cbxSystem.Text];
-                foreach (uint magic in magics)
-                {
-                    SeedInitParams sip = new SeedInitParams(settings.MAC, dt);
-                    new SystemSeedInitParams(magic).SetSeedParams(sip);
-                    knownMagicPatterns.Add(TilesFor12.getFirstRowPattern(sip.GetSeed()));
-                }
+                SeedInitParams sip = new SeedInitParams(settings.MAC, dt);
+                new SystemSeedInitParams(magic).SetSeedParams(sip);
+                knownMagicPatterns.Add(TilesFor12.getFirstRowPattern(sip.GetSeed()));
             }
         }
 
@@ -289,21 +288,47 @@ namespace NSMB_RNG_GUI
                     setMatchText("Finding magics...");
                     SeedInitParams sip = new SeedInitParams(settings.MAC, dt);
                     InitSeedSearcher iss = new InitSeedSearcher(sip, seeds);
-                    List<SeedInitParams> seedParams = iss.FindSeeds();
-                    if (seedParams.Count == 0)
+                    List<SeedInitParams> foundParams = iss.FindSeeds();
+                    if (foundParams.Count == 0)
                         setMatchText("No magic found. Verify that you entered the correct tiles, MAC address, date, and time.");
                     // Expected result: only 1 params found. Save the magic.
-                    else if (seedParams.Count == 1)
+                    else if (foundParams.Count == 1)
                     {
-                        settings.magic = SystemSeedInitParams.GetMagic(seedParams[0]);
+                        settings.magic = SystemSeedInitParams.GetMagic(foundParams[0]);
                         settings.saveSettings();
-                        setMatchText("Found magic. Expected tile pattern shown.");
+                        // Save this magic so it can be used again later.
+                        string[] newOthers = new string[systems["other"].Length + 1];
+                        Array.Copy(systems["other"], newOthers, systems["other"].Length);
+                        newOthers[newOthers.Length - 1] = settings.magic.ToString("X");
+                        systems["other"] = newOthers;
+                        using (FileStream fs = File.Open("otherMagics.json", FileMode.Create))
+                            JsonSerializer.Serialize<string[]>(fs, systems["other"]);
+                        // Display results
+                        setMatchText("Found and saved magic. Expected tile pattern shown.");
                         Invoke(() => displayExpectedPattern());
                     }
                     // If there are more than one, we cannot know which is correct.
-                    else if (seedParams.Count > 1)
+                    else if (foundParams.Count > 1)
                     {
-                        setMatchText("Multiple magics found there's no way to know which one is correct.");
+                        setMatchText("Multiple magics found.\nChoose the system 'temp' and try again with another tile pattern.");
+                        // Save magic and slightly-varied magics
+                        string[] magics = new string[foundParams.Count * 9];
+                        int mID = 0;
+                        foreach (SeedInitParams p in foundParams)
+                        {
+                            for (int t0 = -1; t0 <= 1; t0++)
+                                for (int vc = -1; vc <= 1; vc++)
+                                {
+                                    SeedInitParams newParams = new SeedInitParams(p);
+                                    newParams.Timer0 += (ushort)t0;
+                                    newParams.VCount += (ushort)vc;
+                                    magics[mID] = SystemSeedInitParams.GetMagic(newParams).ToString("X");
+                                    mID++;
+                                }
+                        }
+                        systems["temp"] = magics;
+                        if (!cbxSystem.Items.Contains("temp"))
+                            Invoke(() => cbxSystem.Items.Add("temp"));
                     }
                 }
 
