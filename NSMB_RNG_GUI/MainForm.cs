@@ -126,13 +126,12 @@ namespace NSMB_RNG_GUI
         private void txtMAC_TextChanged(object sender, EventArgs e)
         {
             pbxMAC.Visible = true;
+            pbxMAC.BackColor = Color.Red;
+            txtFirst7.Enabled = false;
 
             string userInput = txtMAC.Text;
             if (string.IsNullOrEmpty(userInput) || (userInput.Length != 12 && userInput.Length != 17))
-            {
-                pbxMAC.BackColor = Color.Red;
                 return;
-            }
             else if (userInput.Length == 17)
             {
                 string[] MACParts = userInput.Split(userInput[2]);
@@ -141,13 +140,10 @@ namespace NSMB_RNG_GUI
 
             ulong newMAC;
             try { newMAC = Convert.ToUInt64(userInput, 16); }
-            catch
-            {
-                pbxMAC.BackColor = Color.Red;
-                return;
-            }
+            catch { return; }
 
             pbxMAC.BackColor = Color.Green;
+            txtFirst7.Enabled = true;
             settings.MAC = newMAC;
             dirtySettings();
         }
