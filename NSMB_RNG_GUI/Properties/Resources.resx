@@ -139,4 +139,10 @@
   <data name="tooLong" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\tooLong.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="MagicFoundWarning" xml:space="preserve">
+    <value>You are using a magic that wasn't pre-calculated. There's a chance that it is wrong, in which case the time finder will give you the wrong time. In this case, calculate a new magic from whatever tile pattern you actually get with the given date/time.</value>
+  </data>
+  <data name="MagicMatchWarning" xml:space="preserve">
+    <value>There is a (very) small chance that a magic matches your tile pattern even if the magic is wrong. In this case, it will not match with a different date/time.</value>
+  </data>
 </root>

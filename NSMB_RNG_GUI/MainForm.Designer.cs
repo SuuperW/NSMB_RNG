@@ -255,6 +255,7 @@ namespace NSMB_RNG_GUI
             this.btnTimeFinder.Text = "Time Finder";
             this.btnTimeFinder.UseVisualStyleBackColor = true;
             this.btnTimeFinder.Visible = false;
+            this.btnTimeFinder.Click += new System.EventHandler(this.btnTimeFinder_Click);
             // 
             // MainForm
             // 

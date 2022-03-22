@@ -185,11 +185,12 @@ namespace NSMB_RNG_GUI
             // Display matching results
             if (userPattern.Count > 0 && matches.Count == 1)
             {
-                lblMatch.Text = "Magic found.";
-                lblMatch.Visible = true;
                 settings.magic = knownMagics[matches[0]];
                 settings.saveSettings();
                 btnTimeFinder.Visible = true;
+                displayExpectedPattern();
+                lblMatch.Text = "Magic found. Magic's tile pattern shown, check that it matches yours.";
+                lblMatch.Visible = true;
             }
             else
             {
@@ -317,8 +318,9 @@ namespace NSMB_RNG_GUI
                         using (FileStream fs = File.Open("otherMagics.json", FileMode.Create))
                             JsonSerializer.Serialize<string[]>(fs, systems["other"]);
                         // Display results
-                        setMatchText("Found and saved magic. Expected tile pattern shown.");
+                        setMatchText("Found and saved magic for 'other'. Expected tile pattern shown.");
                         Invoke(() => displayExpectedPattern());
+                        btnTimeFinder.Visible = true;
                     }
                     // If there are more than one, we cannot know which is correct.
                     else if (foundParams.Count > 1)
@@ -357,7 +359,6 @@ namespace NSMB_RNG_GUI
             new SystemSeedInitParams(settings.magic).SetSeedParams(sip);
             byte[][] pattern = TilesFor12.calculateTileRows(sip.GetSeed());
 
-            tileDisplay1.update(pattern[0]);
             tileDisplay2.update(pattern[1]);
             tileDisplay3.update(pattern[2]);
             tileDisplay4.update(pattern[3]);
@@ -379,5 +380,17 @@ namespace NSMB_RNG_GUI
             dirtySettings();
         }
 
+        private void btnTimeFinder_Click(object sender, EventArgs e)
+        {
+            // Warning.
+            string prompt;
+            if (lblMatch.Text.Contains("Expected"))
+                prompt = Properties.Resources.MagicFoundWarning;
+            else
+                prompt = Properties.Resources.MagicMatchWarning;
+            MessageBox.Show(prompt, "Just so you know", MessageBoxButtons.OK);
+            
+
+        }
     }
 }
