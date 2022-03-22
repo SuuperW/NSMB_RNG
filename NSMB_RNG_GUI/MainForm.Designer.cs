@@ -33,7 +33,6 @@ namespace NSMB_RNG_GUI
             this.label1 = new System.Windows.Forms.Label();
             this.txtMAC = new System.Windows.Forms.TextBox();
             this.pbxMAC = new System.Windows.Forms.PictureBox();
-            this.chkMini = new System.Windows.Forms.CheckBox();
             this.label2 = new System.Windows.Forms.Label();
             this.txtFirst7 = new System.Windows.Forms.TextBox();
             this.cbxSystem = new System.Windows.Forms.ComboBox();
@@ -78,17 +77,6 @@ namespace NSMB_RNG_GUI
             this.pbxMAC.Size = new System.Drawing.Size(20, 20);
             this.pbxMAC.TabIndex = 2;
             this.pbxMAC.TabStop = false;
-            // 
-            // chkMini
-            // 
-            this.chkMini.AutoSize = true;
-            this.chkMini.Location = new System.Drawing.Point(299, 43);
-            this.chkMini.Name = "chkMini";
-            this.chkMini.Size = new System.Drawing.Size(81, 19);
-            this.chkMini.TabIndex = 7;
-            this.chkMini.Text = "mini route";
-            this.chkMini.UseVisualStyleBackColor = true;
-            this.chkMini.CheckedChanged += new System.EventHandler(this.chkMini_CheckedChanged);
             // 
             // label2
             // 
@@ -279,12 +267,12 @@ namespace NSMB_RNG_GUI
             this.Controls.Add(this.label5);
             this.Controls.Add(this.txtFirst7);
             this.Controls.Add(this.label2);
-            this.Controls.Add(this.chkMini);
             this.Controls.Add(this.pbxMAC);
             this.Controls.Add(this.txtMAC);
             this.Controls.Add(this.label1);
             this.Name = "MainForm";
             this.Text = "NSMB RNG Magic Finder";
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.MainForm_FormClosed);
             ((System.ComponentModel.ISupportInitialize)(this.pbxMAC)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -296,7 +284,6 @@ namespace NSMB_RNG_GUI
         private Label label1;
         private TextBox txtMAC;
         private PictureBox pbxMAC;
-        private CheckBox chkMini;
         private Label label2;
         private TextBox txtFirst7;
         private ComboBox cbxSystem;

@@ -58,7 +58,6 @@ namespace NSMB_RNG_GUI
 
             // initialize controls
             txtMAC.Text = settings.MAC.ToString("X").PadLeft(12, '0');
-            chkMini.Checked = settings.wantMini;
             cbxSystem.SelectedItem = settings.systemName;
             dtpDate.Value = settings.dt.Date;
             dtpTime.Value = settings.dt;
@@ -148,11 +147,6 @@ namespace NSMB_RNG_GUI
             dirtySettings();
         }
 
-        private void chkMini_CheckedChanged(object sender, EventArgs e)
-        {
-            settings.wantMini = chkMini.Checked;
-            dirtySettings();
-        }
         private void txtFirst7_Enter(object sender, EventArgs e)
         {
             updateMagicPatterns();
@@ -389,8 +383,16 @@ namespace NSMB_RNG_GUI
             else
                 prompt = Properties.Resources.MagicMatchWarning;
             MessageBox.Show(prompt, "Just so you know", MessageBoxButtons.OK);
-            
 
+            TimeFinder tfForm = new TimeFinder(settings);
+            tfForm.Show();
+            this.Close();
+        }
+
+        private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            if (Application.OpenForms.Count == 0)
+                Application.Exit();
         }
     }
 }

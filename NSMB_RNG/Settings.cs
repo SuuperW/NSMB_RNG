@@ -14,7 +14,7 @@ namespace NSMB_RNG
         public DateTime dt;
         public string systemName = "";
 
-        private Settings() { }
+        public Settings() { }
 
         public static Settings loadSettings()
         {
@@ -87,7 +87,5 @@ namespace NSMB_RNG
                 fs.Write(systemASCII);
             }
         }
-
-
     }
 }
