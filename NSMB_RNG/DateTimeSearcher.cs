@@ -61,7 +61,7 @@ namespace NSMB_RNG
             return new DateTime(1, 1, 1);
         }
 
-        public DateTime findGoodDateTime(int threads = 8, bool progressBar = false)
+        public async Task<DateTime> findGoodDateTime(int threads)
         {
             // Start threads
             Task<DateTime>[] searchers = new Task<DateTime>[threads];
@@ -82,9 +82,7 @@ namespace NSMB_RNG
             DateTime result = new DateTime(1, 1, 1);
             while (!allCompleted)
             {
-                Thread.Sleep(1000);
-                if (progressBar)
-                    Console.Write('.');
+                await Task.Delay(100);
                 allCompleted = true;
                 foreach (Task<DateTime> t in searchers)
                 {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 using NSMB_RNG;
 using NSMB_RNG_CLI;
@@ -194,10 +195,11 @@ uint findMatchingMagic(List<uint> knownMagics, int[] first7Tiles, DateTime dt)
     return 0;
 }
 
-void menuFindGoodDateTime()
+bool cancelProgressBar = false;
+async Task menuFindGoodDateTime()
 {
     // mini?
-    Console.WriteLine("Do you want to attempt mini route? [y/n]: ");
+    Console.Write("Do you want to attempt mini route? [y/n]: ");
     settings.wantMini = UI.AskYesNo();
 
     // choose seconds
@@ -250,8 +252,13 @@ void menuFindGoodDateTime()
     while (true)
     {
         DateTimeSearcher dts = new DateTimeSearcher(seconds, buttonsHeld, settings.MAC, settings.magic, settings.wantMini);
-        Console.WriteLine("Searching with seconds = " + seconds.ToString());
-        DateTime dt = dts.findGoodDateTime(threadCount, true);
+
+        cancelProgressBar = false;
+        Console.Write("Searching with seconds = " + seconds.ToString());
+        progressBar();
+
+        DateTime dt = await dts.findGoodDateTime(threadCount);
+        cancelProgressBar = true;
         Console.WriteLine();
 
         // Did we find a match?
@@ -278,6 +285,14 @@ void menuFindGoodDateTime()
                 break;
             }
         }
+    }
+}
+async void progressBar()
+{
+    while (!cancelProgressBar)
+    {
+        Console.Write('.');
+        await Task.Delay(1000);
     }
 }
 
@@ -363,7 +378,7 @@ int main()
                 continue;
             }
             else
-                menuFindGoodDateTime();
+                menuFindGoodDateTime().Wait();
         }
         // display a tile pattern
         else if (menuOption == 4)

@@ -56,11 +56,11 @@ namespace NSMB_RNG_GUI
             btnSearch.Enabled = enabled;
         }
 
-        private void btnSearch_Click(object sender, EventArgs e)
+        private async void btnSearch_Click(object sender, EventArgs e)
         {
             UIEnable(false);
             DateTimeSearcher dts = new DateTimeSearcher((int)numSeconds.Value, 0, settings.MAC, settings.magic, chkMini.Checked);
-            DateTime dt = dts.findGoodDateTime((int)numThreads.Value);
+            DateTime dt = await dts.findGoodDateTime((int)numThreads.Value);
             // DateTimeSearcher needs to be updated to not block the thread before the progress bar will work.
             progressBar1.Visible = true;
             lblResults.Text = "Progress";
