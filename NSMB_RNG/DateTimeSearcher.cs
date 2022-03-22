@@ -28,6 +28,9 @@ namespace NSMB_RNG
         private ulong mac;
         private uint magic;
 
+        public event Action<double>? ProgressReport;
+        public event Action<DateTime>? Completed;
+
         public DateTimeSearcher(int seconds, uint buttonsHeld, ulong mac, uint magic, bool wantMini)
         {
             this.seconds = seconds;
@@ -41,7 +44,8 @@ namespace NSMB_RNG
         }
 
         bool cancel = false;
-        private DateTime worker(int startYear, int yearCount)
+        double[] progress = new double[0];
+        private DateTime worker(int startYear, int yearCount, int id)
         {
             DateTime dt = new DateTime(startYear, 1, 1, 0, 0, 0).AddSeconds(seconds);
             SeedInitParams sip = new SeedInitParams(mac, dt);
@@ -49,12 +53,19 @@ namespace NSMB_RNG
             sip.Buttons = buttonsHeld;
 
             // loop through all minutes with the given seconds count
+            double progressPerMonth = 1.0 / yearCount / 12;
             while (!cancel && dt.Year < startYear + yearCount)
             {
-                if (desiredSeeds.Contains(sip.GetSeed()))
-                    return dt;
-                dt = dt.AddMinutes(1);
-                sip.SetDateTime(dt);
+                int currentMonth = dt.Month;
+                while (!cancel && dt.Month == currentMonth)
+                {
+                    if (desiredSeeds.Contains(sip.GetSeed()))
+                        return dt;
+                    dt = dt.AddMinutes(1);
+                    sip.SetDateTime(dt);
+                }
+                progress[id] += progressPerMonth;
+                reportProgress();
             }
 
             // No match
@@ -63,6 +74,9 @@ namespace NSMB_RNG
 
         public async Task<DateTime> findGoodDateTime(int threads)
         {
+            progress = new double[threads];
+            lastProgress = 0.0;
+
             // Start threads
             Task<DateTime>[] searchers = new Task<DateTime>[threads];
             double year = 2000;
@@ -74,7 +88,8 @@ namespace NSMB_RNG
                 if (i == threads - 1) // just to make sure we avoid rounding errors
                     endYear = 2100;
 
-                searchers[i] = Task.Run<DateTime>(() => worker(startYear, endYear - startYear));
+                int id = i; // variables given as parameters must not change between now and task start
+                searchers[i] = Task.Run<DateTime>(() => worker(startYear, endYear - startYear, id));
             }
 
             // Wait for completion
@@ -105,7 +120,23 @@ namespace NSMB_RNG
                 }
             }
 
+            Completed?.Invoke(result);
             return result;
+        }
+
+        double lastProgress = 0.0;
+        public void reportProgress()
+        {
+            double minProgress = double.MaxValue;
+            for (int i = 0; i < progress.Length; i++)
+                if (progress[i] < minProgress)
+                    minProgress = progress[i];
+
+            if (minProgress > lastProgress)
+            {
+                lastProgress = minProgress;
+                ProgressReport?.Invoke(minProgress);
+            }
         }
     }
 }

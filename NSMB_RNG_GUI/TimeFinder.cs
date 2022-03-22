@@ -5,6 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -56,19 +57,23 @@ namespace NSMB_RNG_GUI
             btnSearch.Enabled = enabled;
         }
 
-        private async void btnSearch_Click(object sender, EventArgs e)
+        private void btnSearch_Click(object sender, EventArgs e)
         {
             UIEnable(false);
-            DateTimeSearcher dts = new DateTimeSearcher((int)numSeconds.Value, 0, settings.MAC, settings.magic, chkMini.Checked);
-            DateTime dt = await dts.findGoodDateTime((int)numThreads.Value);
-            // DateTimeSearcher needs to be updated to not block the thread before the progress bar will work.
             progressBar1.Visible = true;
+            progressBar1.Value = 0;
             lblResults.Text = "Progress";
             lblResults.Visible = true;
-            // Once it's done:
-            progressBar1.Visible = false;
-            lblResults.Text = dt.ToLongDateString() + " " + dt.ToLongTimeString();
-            UIEnable(true);
+
+            DateTimeSearcher dts = new DateTimeSearcher((int)numSeconds.Value, 0, settings.MAC, settings.magic, chkMini.Checked);
+            dts.ProgressReport += (p) => Invoke(() => progressBar1.Value = (int)(p * 100));
+            dts.Completed += (dt) =>
+            {
+                progressBar1.Visible = false;
+                lblResults.Text = dt.ToLongDateString() + " " + dt.ToLongTimeString();
+                UIEnable(true);
+            };
+            Task t = dts.findGoodDateTime((int)numThreads.Value);
         }
     }
 }
