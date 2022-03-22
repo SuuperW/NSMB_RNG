@@ -109,6 +109,20 @@ namespace NSMB_RNG_GUI
                 a();
         }
 
+        private void dirtySettings(bool save = true)
+        {
+            if (isLoaded)
+                settings.saveSettings();
+
+            lblMatch.Visible = false;
+            btnTimeFinder.Visible = false;
+            txtSecondRow.Enabled = false;
+
+            tileDisplay2.update("");
+            tileDisplay3.update("");
+            tileDisplay4.update("");
+        }
+
         private void txtMAC_TextChanged(object sender, EventArgs e)
         {
             pbxMAC.Visible = true;
@@ -135,15 +149,13 @@ namespace NSMB_RNG_GUI
 
             pbxMAC.BackColor = Color.Green;
             settings.MAC = newMAC;
-            if (isLoaded)
-                settings.saveSettings();
+            dirtySettings();
         }
 
         private void chkMini_CheckedChanged(object sender, EventArgs e)
         {
             settings.wantMini = chkMini.Checked;
-            if (isLoaded)
-                settings.saveSettings();
+            dirtySettings();
         }
         private void txtFirst7_Enter(object sender, EventArgs e)
         {
@@ -358,15 +370,18 @@ namespace NSMB_RNG_GUI
         private void dtpDateTime_Leave(object sender, EventArgs e)
         {
             settings.dt = dt;
-            if (isLoaded)
-                settings.saveSettings();
+            dirtySettings();
+        }
+        private void dtpDateTime_ValueChanged(object sender, EventArgs e)
+        {
+            dirtySettings(false);
         }
 
         private void cbxSystem_SelectedIndexChanged(object sender, EventArgs e)
         {
             settings.systemName = cbxSystem.Text;
-            if (isLoaded)
-                settings.saveSettings();
+            dirtySettings();
         }
+
     }
 }
