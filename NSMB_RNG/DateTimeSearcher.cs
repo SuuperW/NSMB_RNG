@@ -60,7 +60,10 @@ namespace NSMB_RNG
                 while (!cancel && dt.Month == currentMonth)
                 {
                     if (desiredSeeds.Contains(sip.GetSeed()))
+                    {
+                        cancel = true;
                         return dt;
+                    }
                     dt = dt.AddMinutes(1);
                     sip.SetDateTime(dt);
                 }
@@ -77,7 +80,7 @@ namespace NSMB_RNG
             progress = new double[threads];
             lastProgress = 0.0;
 
-            // Start threads
+            // Start tasks
             Task<DateTime>[] searchers = new Task<DateTime>[threads];
             double year = 2000;
             for (int i = 0; i < threads; i++)
@@ -92,31 +95,15 @@ namespace NSMB_RNG
                 searchers[i] = Task.Run<DateTime>(() => worker(startYear, endYear - startYear, id));
             }
 
-            // Wait for completion
-            bool allCompleted = false;
+            // Wait for completion of all tasks
             DateTime result = new DateTime(1, 1, 1);
-            while (!allCompleted)
+            foreach (Task<DateTime> t in searchers)
             {
-                await Task.Delay(100);
-                allCompleted = true;
-                foreach (Task<DateTime> t in searchers)
+                DateTime thisTaskResult = await t;
+                if (result.Year == 1) // If we don't have a final result yet,
                 {
-                    if (t.IsCompleted)
-                    {
-                        // If we don't have a result yet, see if this thread found a DateTime.
-                        if (result.Year == 1)
-                        {
-                            DateTime dt = t.Result;
-                            if (dt.Year >= 2000)
-                            {
-                                // Save it to be returned, and cancel remaining threads.
-                                result = dt;
-                                cancel = true;
-                            }
-                        }
-                    }
-                    else
-                        allCompleted = false;
+                    if (thisTaskResult.Year >= 2000) // see if this task found a DateTime.
+                        result = thisTaskResult;
                 }
             }
 
