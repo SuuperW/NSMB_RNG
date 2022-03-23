@@ -69,9 +69,26 @@ namespace NSMB_RNG_GUI
             dts.ProgressReport += (p) => Invoke(() => progressBar1.Value = (int)(p * 100));
             dts.Completed += (dt) =>
             {
-                progressBar1.Visible = false;
-                lblResults.Text = dt.ToLongDateString() + " " + dt.ToLongTimeString();
-                UIEnable(true);
+                if (dt.Year == 1) // no result
+                {
+                    if (chkAutoSeconds.Checked)
+                    {
+                        numSeconds.Value += 1;
+                        btnSearch_Click(dt, new EventArgs());
+                    }
+                    else
+                    {
+                        progressBar1.Visible = false;
+                        lblResults.Text = "No date/time with " + numSeconds.Value.ToString() + " gives a good seed.";
+                        UIEnable(true);
+                    }
+                }
+                else
+                {
+                    progressBar1.Visible = false;
+                    lblResults.Text = dt.ToLongDateString() + " " + dt.ToLongTimeString();
+                    UIEnable(true);
+                }
             };
             Task t = dts.findGoodDateTime((int)numThreads.Value);
         }
