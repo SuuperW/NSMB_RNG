@@ -16,9 +16,9 @@ namespace NSMB_RNG_GUI
     {
         private byte[] tilePatternNoMini = new byte[] { 4, 3, 3, 3, 3, 3, 5, 3 };
         private byte[] tilePatternMini = new byte[] { 4, 5, 5, 3, 5, 5, 5, 5 };
-        int[] doubleJumpCountsNoMini = new int[] { 4, 6, 2, 3, 3, 4, 1, 2 };
-        int[] doubleJumpCountsMini1 = new int[] { 1, 4, 1, 0, 2, 2, 0, 0 };
-        int[] doubleJumpCountsMini2 = new int[] { 6, 7, 4, 3, 5, 7, 5, 3 };
+        private int[] doubleJumpCountsNoMini = new int[] { 4, 6, 2, 3, 3, 4, 1, 2 };
+        private int[] doubleJumpCountsMini1 = new int[] { 1, 4, 1, 0, 2, 2, 0, 0 };
+        private int[] doubleJumpCountsMini2 = new int[] { 6, 7, 4, 3, 5, 7, 5, 3 };
 
         Settings settings;
         bool fromTimeFinder;
@@ -27,26 +27,26 @@ namespace NSMB_RNG_GUI
         {
             InitializeComponent();
 
-            chkMini.Checked = settings.wantMini;
-            lblTime.Text = settings.dt.ToLongDateString() + " " + settings.dt.ToLongTimeString();
-
             this.settings = settings;
             fromTimeFinder = patternFromSettings;
 
+            // Set controls
+            chkMini.Checked = settings.wantMini;
+            lblTime.Text = settings.dt.ToLongDateString() + " " + settings.dt.ToLongTimeString();
             if (patternFromSettings)
             {
                 SeedInitParams sip = new SeedInitParams(settings.MAC, settings.dt);
                 new SystemSeedInitParams(settings.magic).SetSeedParams(sip);
-                byte[][] pattern = TilesFor12.calculateTileRows(sip.GetSeed());
-
-                tileDisplay1.update(pattern[0]);
-                tileDisplay2.update(pattern[1]);
-                numSTile.Value = Array.IndexOf<byte>(pattern[0], 4) + 1;
+                int[] pattern = TilesFor12.getFirstRowPattern(sip.GetSeed());
+                numPTile.Value = Array.IndexOf(pattern, 4) + 1;
             }
             else
-            {
-                // todo
-            }
+                numPTile.Value = 1;
+
+            // The initial value (and thus max) is set to 9 in the designer.
+            // This is because we need to guarantee that setting the value above actually changes the value,
+            // so that numPTile_ValueChanged will be called.
+            numPTile.Maximum = 8;
         }
 
         private void DoubleJumpsForm_FormClosed(object sender, FormClosedEventArgs e)
@@ -69,6 +69,33 @@ namespace NSMB_RNG_GUI
             }
             this.Close();
 
+        }
+
+        private void numPTile_ValueChanged(object sender, EventArgs e)
+        {
+            tileDisplay1.update(getRow((int)numPTile.Value));
+            // There are 27 tiles per row, so the second row will be offset by -3 mod 8 = +5.
+            tileDisplay2.update(getRow(((int)numPTile.Value + 5) % 8));
+        }
+        private byte[] getRow(int PTileLocation)
+        {
+            byte[] patternSource = chkMini.Checked ? tilePatternMini : tilePatternNoMini;
+            byte[] pattern = new byte[11];
+            // First copy, start copying from PTileLocation
+            PTileLocation--; // make it 0-based index
+            int beginIndex = (8 - PTileLocation) % 8;
+            int len = 8 - beginIndex;
+            Array.Copy(patternSource, beginIndex, pattern, 0, len);
+            // Remaining copies, start copying from index 0
+            int dstIndex = len;
+            while (dstIndex < 11)
+            {
+                len = (dstIndex + 8 > pattern.Length) ? (pattern.Length - dstIndex) : 8;
+                Array.Copy(patternSource, 0, pattern, dstIndex, len);
+                dstIndex += len;
+            }
+
+            return pattern;
         }
     }
 }

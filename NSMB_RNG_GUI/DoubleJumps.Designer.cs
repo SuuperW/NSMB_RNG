@@ -34,11 +34,11 @@
             this.lblTime = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.chkMini = new System.Windows.Forms.CheckBox();
-            this.numSTile = new System.Windows.Forms.NumericUpDown();
+            this.numPTile = new System.Windows.Forms.NumericUpDown();
             this.label2 = new System.Windows.Forms.Label();
             this.lblDJCount = new System.Windows.Forms.Label();
             this.btnBack = new System.Windows.Forms.Button();
-            ((System.ComponentModel.ISupportInitialize)(this.numSTile)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numPTile)).BeginInit();
             this.SuspendLayout();
             // 
             // tileDisplay2
@@ -80,9 +80,9 @@
             this.label1.AutoSize = true;
             this.label1.Location = new System.Drawing.Point(12, 115);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(81, 15);
+            this.label1.Size = new System.Drawing.Size(82, 15);
             this.label1.TabIndex = 5;
-            this.label1.Text = "S tile position:";
+            this.label1.Text = "P tile position:";
             // 
             // chkMini
             // 
@@ -94,27 +94,28 @@
             this.chkMini.Text = "mini route";
             this.chkMini.UseVisualStyleBackColor = true;
             // 
-            // numSTile
+            // numPTile
             // 
-            this.numSTile.Location = new System.Drawing.Point(99, 113);
-            this.numSTile.Maximum = new decimal(new int[] {
-            8,
+            this.numPTile.Location = new System.Drawing.Point(99, 113);
+            this.numPTile.Maximum = new decimal(new int[] {
+            9,
             0,
             0,
             0});
-            this.numSTile.Minimum = new decimal(new int[] {
+            this.numPTile.Minimum = new decimal(new int[] {
             1,
             0,
             0,
             0});
-            this.numSTile.Name = "numSTile";
-            this.numSTile.Size = new System.Drawing.Size(35, 23);
-            this.numSTile.TabIndex = 7;
-            this.numSTile.Value = new decimal(new int[] {
-            1,
+            this.numPTile.Name = "numPTile";
+            this.numPTile.Size = new System.Drawing.Size(35, 23);
+            this.numPTile.TabIndex = 7;
+            this.numPTile.Value = new decimal(new int[] {
+            9,
             0,
             0,
             0});
+            this.numPTile.ValueChanged += new System.EventHandler(this.numPTile_ValueChanged);
             // 
             // label2
             // 
@@ -152,7 +153,7 @@
             this.Controls.Add(this.btnBack);
             this.Controls.Add(this.lblDJCount);
             this.Controls.Add(this.label2);
-            this.Controls.Add(this.numSTile);
+            this.Controls.Add(this.numPTile);
             this.Controls.Add(this.chkMini);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.lblTime);
@@ -162,7 +163,7 @@
             this.Name = "DoubleJumpsForm";
             this.Text = "NSMB_RNG_Double_Jumps";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.DoubleJumpsForm_FormClosed);
-            ((System.ComponentModel.ISupportInitialize)(this.numSTile)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numPTile)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -176,7 +177,7 @@
         private System.Windows.Forms.Label lblTime;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.CheckBox chkMini;
-        private System.Windows.Forms.NumericUpDown numSTile;
+        private System.Windows.Forms.NumericUpDown numPTile;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label lblDJCount;
         private System.Windows.Forms.Button btnBack;
