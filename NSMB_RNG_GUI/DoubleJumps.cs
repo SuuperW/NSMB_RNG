@@ -32,16 +32,19 @@ namespace NSMB_RNG_GUI
 
             // Set controls
             chkMini.Checked = settings.wantMini;
-            lblTime.Text = settings.dt.ToLongDateString() + " " + settings.dt.ToLongTimeString();
             if (patternFromSettings)
             {
+                lblTime.Text = settings.dt.ToLongDateString() + " " + settings.dt.ToLongTimeString();
                 SeedInitParams sip = new SeedInitParams(settings.MAC, settings.dt);
                 new SystemSeedInitParams(settings.magic).SetSeedParams(sip);
                 int[] pattern = TilesFor12.getFirstRowPattern(sip.GetSeed());
                 numPTile.Value = Array.IndexOf(pattern, 4) + 1;
             }
             else
+            {
                 numPTile.Value = 1;
+                lblTime.Visible = lblExpectedPattern.Visible = false;
+            }
 
             // The initial value (and thus max) is set to 9 in the designer.
             // This is because we need to guarantee that setting the value above actually changes the value,
@@ -73,16 +76,24 @@ namespace NSMB_RNG_GUI
 
         private void numPTile_ValueChanged(object sender, EventArgs e)
         {
-            tileDisplay1.update(getRow((int)numPTile.Value));
+            // tiles
+            int tilePosition = (int)numPTile.Value - 1; // make it 0-based index
+            tileDisplay1.update(getRow(tilePosition));
             // There are 27 tiles per row, so the second row will be offset by -3 mod 8 = +5.
-            tileDisplay2.update(getRow(((int)numPTile.Value + 5) % 8));
+            tileDisplay2.update(getRow((tilePosition + 5) % 8));
+
+            // double jump counts
+            if (chkMini.Checked)
+                lblDJCount.Text = doubleJumpCountsMini1[tilePosition] + ", " + doubleJumpCountsMini2[tilePosition] + ", " +
+                    (doubleJumpCountsMini1[tilePosition] + 8) + ", " + (doubleJumpCountsMini2[tilePosition] + 8);
+            else
+                lblDJCount.Text = "not " + doubleJumpCountsNoMini[tilePosition] + ", " + (doubleJumpCountsNoMini[tilePosition] + 8);
         }
         private byte[] getRow(int PTileLocation)
         {
             byte[] patternSource = chkMini.Checked ? tilePatternMini : tilePatternNoMini;
             byte[] pattern = new byte[11];
             // First copy, start copying from PTileLocation
-            PTileLocation--; // make it 0-based index
             int beginIndex = (8 - PTileLocation) % 8;
             int len = 8 - beginIndex;
             Array.Copy(patternSource, beginIndex, pattern, 0, len);
@@ -96,6 +107,12 @@ namespace NSMB_RNG_GUI
             }
 
             return pattern;
+        }
+
+        private void chkMini_CheckedChanged(object sender, EventArgs e)
+        {
+            // Update tile and double jump count display.
+            numPTile_ValueChanged(sender, e);
         }
     }
 }

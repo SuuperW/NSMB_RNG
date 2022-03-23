@@ -93,6 +93,7 @@
             this.chkMini.TabIndex = 6;
             this.chkMini.Text = "mini route";
             this.chkMini.UseVisualStyleBackColor = true;
+            this.chkMini.CheckedChanged += new System.EventHandler(this.chkMini_CheckedChanged);
             // 
             // numPTile
             // 
