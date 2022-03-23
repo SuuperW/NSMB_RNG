@@ -43,7 +43,7 @@ namespace NSMB_RNG
                 desiredSeeds = seedsForNoMini;
         }
 
-        bool cancel = false;
+        bool canceled = false;
         double[] progress = new double[0];
         private DateTime worker(int startYear, int yearCount, int id)
         {
@@ -54,14 +54,14 @@ namespace NSMB_RNG
 
             // loop through all minutes with the given seconds count
             double progressPerMonth = 1.0 / yearCount / 12;
-            while (!cancel && dt.Year < startYear + yearCount)
+            while (!canceled && dt.Year < startYear + yearCount)
             {
                 int currentMonth = dt.Month;
-                while (!cancel && dt.Month == currentMonth)
+                while (!canceled && dt.Month == currentMonth)
                 {
                     if (desiredSeeds.Contains(sip.GetSeed()))
                     {
-                        cancel = true;
+                        canceled = true;
                         return dt;
                     }
                     dt = dt.AddMinutes(1);
@@ -138,6 +138,11 @@ namespace NSMB_RNG
                 report = false;
                 ProgressReport?.Invoke(minProgress);
             }
+        }
+
+        public void cancel()
+        {
+            canceled = true;
         }
     }
 }

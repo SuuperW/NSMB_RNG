@@ -37,6 +37,7 @@ namespace NSMB_RNG_GUI
 
         private void TimeFinder_FormClosed(object sender, FormClosedEventArgs e)
         {
+            dts?.cancel();
             if (Application.OpenForms.Count == 0)
                 Application.Exit();
         }
@@ -57,6 +58,7 @@ namespace NSMB_RNG_GUI
             btnSearch.Enabled = enabled;
         }
 
+        DateTimeSearcher? dts;
         private void btnSearch_Click(object sender, EventArgs e)
         {
             UIEnable(false);
@@ -65,10 +67,11 @@ namespace NSMB_RNG_GUI
             lblResults.Text = "Progress";
             lblResults.Visible = true;
 
-            DateTimeSearcher dts = new DateTimeSearcher((int)numSeconds.Value, 0, settings.MAC, settings.magic, chkMini.Checked);
+            dts = new DateTimeSearcher((int)numSeconds.Value, 0, settings.MAC, settings.magic, chkMini.Checked);
             dts.ProgressReport += (p) => Invoke(() => progressBar1.Value = (int)(p * 100));
             dts.Completed += (dt) =>
             {
+                dts = null;
                 if (dt.Year == 1) // no result
                 {
                     if (chkAutoSeconds.Checked)
