@@ -68,7 +68,7 @@ namespace NSMB_RNG
                     sip.SetDateTime(dt);
                 }
                 progress[id] += progressPerMonth;
-                reportProgress();
+                reportProgress(progress[id]);
             }
 
             // No match
@@ -86,7 +86,7 @@ namespace NSMB_RNG
             for (int i = 0; i < threads; i++)
             {
                 int startYear = (int)year;
-                year += 100 / threads;
+                year += 100.0 / threads;
                 int endYear = (int)year;
                 if (i == threads - 1) // just to make sure we avoid rounding errors
                     endYear = 2100;
@@ -112,16 +112,30 @@ namespace NSMB_RNG
         }
 
         double lastProgress = 0.0;
-        public void reportProgress()
+        bool report = false;
+        public void reportProgress(double p)
         {
+            // Progress needs to be reported if there is a new minimum.
+            // It should be reported on the task with the highest progress
+            // otherwise, one task will get bogged down with all the progress reports.
             double minProgress = double.MaxValue;
+            double maxProgress = 0.0;
             for (int i = 0; i < progress.Length; i++)
+            {
                 if (progress[i] < minProgress)
                     minProgress = progress[i];
+                if (progress[i] > maxProgress)
+                    maxProgress = progress[i];
+            }
 
             if (minProgress > lastProgress)
             {
                 lastProgress = minProgress;
+                report = true;
+            }
+            if (report && maxProgress == p)
+            {
+                report = false;
                 ProgressReport?.Invoke(minProgress);
             }
         }
