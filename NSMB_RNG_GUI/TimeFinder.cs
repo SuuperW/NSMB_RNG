@@ -50,7 +50,7 @@ namespace NSMB_RNG_GUI
         {
             pnlButtons.Enabled = enabled;
             numThreads.Enabled = enabled;
-            numSeconds.Enabled = enabled;
+            numSeconds.Enabled = enabled && !chkAutoSeconds.Checked;
             chkAutoSeconds.Enabled = enabled;
             chkMini.Enabled = enabled;
             btnBack.Enabled = enabled;
