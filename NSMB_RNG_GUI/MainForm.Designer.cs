@@ -50,6 +50,7 @@ namespace NSMB_RNG_GUI
             this.tileDisplay4 = new NSMB_RNG_GUI.tileDisplay();
             this.progressBar = new System.Windows.Forms.ProgressBar();
             this.btnTimeFinder = new System.Windows.Forms.Button();
+            this.btnDoubleJumps = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pbxMAC)).BeginInit();
             this.SuspendLayout();
             // 
@@ -245,11 +246,22 @@ namespace NSMB_RNG_GUI
             this.btnTimeFinder.Visible = false;
             this.btnTimeFinder.Click += new System.EventHandler(this.btnTimeFinder_Click);
             // 
+            // btnDoubleJumps
+            // 
+            this.btnDoubleJumps.Location = new System.Drawing.Point(294, 41);
+            this.btnDoubleJumps.Name = "btnDoubleJumps";
+            this.btnDoubleJumps.Size = new System.Drawing.Size(102, 23);
+            this.btnDoubleJumps.TabIndex = 19;
+            this.btnDoubleJumps.Text = "Double Jumps";
+            this.btnDoubleJumps.UseVisualStyleBackColor = true;
+            this.btnDoubleJumps.Click += new System.EventHandler(this.btnDoubleJumps_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(408, 263);
+            this.Controls.Add(this.btnDoubleJumps);
             this.Controls.Add(this.btnTimeFinder);
             this.Controls.Add(this.progressBar);
             this.Controls.Add(this.tileDisplay4);
@@ -301,5 +313,6 @@ namespace NSMB_RNG_GUI
         private tileDisplay tileDisplay4;
         private ProgressBar progressBar;
         private Button btnTimeFinder;
+        private Button btnDoubleJumps;
     }
 }

@@ -394,5 +394,12 @@ namespace NSMB_RNG_GUI
             if (Application.OpenForms.Count == 0)
                 Application.Exit();
         }
+
+        private void btnDoubleJumps_Click(object sender, EventArgs e)
+        {
+            DoubleJumpsForm djForm = new DoubleJumpsForm(settings, false);
+            djForm.Show();
+            this.Close();
+        }
     }
 }

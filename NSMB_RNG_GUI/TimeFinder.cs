@@ -88,9 +88,14 @@ namespace NSMB_RNG_GUI
                 }
                 else
                 {
-                    progressBar1.Visible = false;
-                    lblResults.Text = dt.ToLongDateString() + " " + dt.ToLongTimeString();
-                    UIEnable(true);
+                    Settings newSettings = new Settings();
+                    newSettings.dt = dt;
+                    newSettings.MAC = settings.MAC;
+                    newSettings.wantMini = settings.wantMini;
+                    newSettings.magic = settings.magic;
+                    DoubleJumpsForm djForm = new DoubleJumpsForm(newSettings, true);
+                    djForm.Show();
+                    this.Close();
                 }
             };
             Task t = dts.findGoodDateTime((int)numThreads.Value);
