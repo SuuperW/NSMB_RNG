@@ -68,7 +68,7 @@ namespace NSMB_RNG_GUI
             lblResults.Visible = true;
 
             dts = new DateTimeSearcher((int)numSeconds.Value, 0, settings.MAC, settings.magic, chkMini.Checked);
-            dts.ProgressReport += (p) => Invoke(() => progressBar1.Value = (int)(p * 100));
+            dts.ProgressReport += (p) => Invoke(() => progressBar1.Value = (int)(p * progressBar1.Maximum));
             dts.Completed += (dt) =>
             {
                 dts = null;

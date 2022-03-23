@@ -321,6 +321,7 @@
             this.progressBar1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.progressBar1.Location = new System.Drawing.Point(70, 213);
+            this.progressBar1.Maximum = 1000;
             this.progressBar1.Name = "progressBar1";
             this.progressBar1.Size = new System.Drawing.Size(179, 23);
             this.progressBar1.TabIndex = 1;
@@ -342,7 +343,7 @@
             this.Controls.Add(this.label1);
             this.Controls.Add(this.pnlButtons);
             this.Name = "TimeFinder";
-            this.Text = "TimeFinder";
+            this.Text = "NSMB_RNG Time Finder";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.TimeFinder_FormClosed);
             ((System.ComponentModel.ISupportInitialize)(this.numSeconds)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numThreads)).EndInit();
