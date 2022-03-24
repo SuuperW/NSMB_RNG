@@ -112,7 +112,7 @@ namespace NSMB_RNG_GUI
         {
             if (isLoaded)
             {
-                settings.saveSettings();
+                if (save) settings.saveSettings();
                 // On startup, this text instructs the user to refer to the README file.
                 lblMatch.Visible = false;
             }
