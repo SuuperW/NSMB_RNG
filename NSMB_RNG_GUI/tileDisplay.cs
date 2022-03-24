@@ -31,8 +31,13 @@ namespace NSMB_RNG_GUI
                 else
                     _tileCount = value;
 
-                updateBoxes();
+                initializeBoxes();
             }
+        }
+
+        public bool HasVisibleTiles
+        {
+            get => pbxArray.Length > 0 && pbxArray[0].Visible;
         }
 
         public tileDisplay()
@@ -41,7 +46,7 @@ namespace NSMB_RNG_GUI
             pbxArray = new PictureBox[0];
         }
 
-        private void updateBoxes()
+        private void initializeBoxes()
         {
             foreach (PictureBox box in pbxArray)
             {

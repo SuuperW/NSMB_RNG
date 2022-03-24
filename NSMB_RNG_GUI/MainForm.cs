@@ -183,19 +183,29 @@ namespace NSMB_RNG_GUI
                 if (match)
                     matches.Add(patternIndex);
             }
-            // Display matching results
+            // Found one magic
             if (userPattern.Count > 0 && matches.Count == 1)
             {
-                settings.magic = knownMagics[matches[0]];
-                settings.saveSettings();
-                btnNext.Text = "Time Finder";
-                displayExpectedPattern();
+                // UI
                 lblMatch.Text = "Magic found. Magic's tile pattern shown, check that it matches yours.";
                 lblMatch.Visible = true;
+                btnNext.Text = "Time Finder";
+                txtSecondRow.Text = "";
+                displayExpectedPattern();
+                // settings
+                settings.magic = knownMagics[matches[0]];
+                settings.saveSettings();
             }
             else
             {
+                // Remove full tile pattern
+                if (tileDisplay3.HasVisibleTiles)
+                {
+                    tileDisplay3.update("");
+                    tileDisplay4.update("");
+                }
                 btnNext.Text = "Double Jumps";
+                // Found zero magics
                 if (matches.Count == 0)
                 {
                     if (userPattern.Count < 7)
@@ -209,7 +219,7 @@ namespace NSMB_RNG_GUI
                     }
                     lblMatch.Visible = true;
                 }
-                else
+                else // Multiple magics match; user still needs to enter more tiles
                     lblMatch.Visible = false;
             }
         }
