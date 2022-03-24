@@ -6,7 +6,7 @@ using System.Text;
 
 namespace NSMB_RNG
 {
-    internal unsafe class SeedInitParams
+    public unsafe class SeedInitParams
     {
         // Input buttons:
         const uint A = 0x0001;

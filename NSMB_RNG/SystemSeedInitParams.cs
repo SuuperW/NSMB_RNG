@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace NSMB_RNG
+﻿namespace NSMB_RNG
 {
-    internal class SystemSeedInitParams
+    public class SystemSeedInitParams
     {
         public ushort Timer0;
         public ushort VCount;

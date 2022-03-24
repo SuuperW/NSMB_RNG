@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace NSMB_RNG
 {
-    internal class InitSeedSearcher
+    public class InitSeedSearcher
     {
         public int minTimer0, maxTimer0;
         public int minVCount, maxVCount;
@@ -25,21 +25,21 @@ namespace NSMB_RNG
             minVCount = 0;
             maxVCount = 263; // 262?
             minVFrame = 2; // Lowest I've seen is 4.
-            maxVFrame = 7; // Highest I've seen is 5.
+            maxVFrame = 7; // Highest I've seen is 6.
 
             secondsRange = 1;
         }
 
-        public List<SeedInitParams> FindSeeds()
+        public List<SeedInitParams> FindSeeds(bool reportProgress = false)
         {
             // We will iterate over the chosen range for timer0, vcount, vframe, and seconds.
             List<SeedInitParams> list = new List<SeedInitParams>();
             DateTime dt = seedParams.GetDateTime();
             for (int secs = 0; secs < secondsRange; secs++)
             {
-                for (ushort timer0 = (ushort)minTimer0; timer0 <= maxTimer0; timer0++)
+                for (int timer0 = minTimer0; timer0 <= maxTimer0; timer0++)
                 {
-                    seedParams.Timer0 = timer0;
+                    seedParams.Timer0 = (ushort)timer0;
                     for (ushort vCount = (ushort)minVCount; vCount <= maxVCount; vCount++)
                     {
                         seedParams.VCount = vCount;
@@ -56,7 +56,8 @@ namespace NSMB_RNG
                 seedParams.SetDateTime(dt);
 
                 // Progress reporting
-                Console.WriteLine("Searched second " + secs);
+                if (reportProgress)
+                    Console.WriteLine("Searched second " + secs);
             }
 
             return list;

@@ -1,17 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
+    <OutputType>Library</OutputType>
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Platforms>AnyCPU;x64</Platforms>
-    <Version>1.0</Version>
+    <Version>1.1</Version>
   </PropertyGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="xcopy /y $(ProjectDir)7za.exe $(ProjectDir)$(OutDir)&#xD;&#xA;xcopy /y $(ProjectDir)systems.json $(ProjectDir)$(OutDir)&#xD;&#xA;xcopy /y $(ProjectDir)tiles.png $(ProjectDir)$(OutDir)&#xD;&#xA;xcopy /y $(SolutionDir)README.txt $(ProjectDir)$(OutDir)&#xD;&#xA;xcopy /y $(ProjectDir)7z_license.txt $(ProjectDir)$(OutDir)&#xD;&#xA;" />
+    <Exec Command="xcopy $(ProjectDir)$(OutDir). ..\output\$(Configuration) /i /s /y&#xD;&#xA;xcopy $(ProjectDir)7za.exe ..\output\$(Configuration) /y&#xD;&#xA;xcopy $(ProjectDir)systems.json ..\output\$(Configuration) /y&#xD;&#xA;xcopy $(ProjectDir)tiles.png ..\output\$(Configuration) /y&#xD;&#xA;xcopy $(SolutionDir)README.txt ..\output\$(Configuration) /y&#xD;&#xA;xcopy $(ProjectDir)7z_license.txt ..\output\$(Configuration) /y&#xD;&#xA;" />
   </Target>
 
 	<Target Name="PrepublishScript" BeforeTargets="PrepareForPublish">
