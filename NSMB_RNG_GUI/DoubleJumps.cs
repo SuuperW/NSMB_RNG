@@ -110,6 +110,8 @@ namespace NSMB_RNG_GUI
             numPTile_ValueChanged(sender, e);
             // If not using mini route, 7 and 8 double jumps will always work.
             lbl78.Visible = !chkMini.Checked;
+            // This message is no longer true
+            lblTime.Visible = lblExpectedPattern.Visible = false;
         }
     }
 }
