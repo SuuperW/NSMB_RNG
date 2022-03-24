@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace NSMB_RNG
+﻿namespace NSMB_RNG
 {
     public class SystemSeedInitParams
     {
