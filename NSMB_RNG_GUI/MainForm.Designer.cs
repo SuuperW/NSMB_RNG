@@ -91,6 +91,7 @@ namespace NSMB_RNG_GUI
             // 
             // txtFirst7
             // 
+            this.txtFirst7.Enabled = false;
             this.txtFirst7.Location = new System.Drawing.Point(91, 73);
             this.txtFirst7.Name = "txtFirst7";
             this.txtFirst7.Size = new System.Drawing.Size(94, 23);
