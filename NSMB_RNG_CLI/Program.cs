@@ -195,7 +195,6 @@ uint findMatchingMagic(List<uint> knownMagics, int[] first7Tiles, DateTime dt)
     return 0;
 }
 
-bool cancelProgressBar = false;
 async Task menuFindGoodDateTime()
 {
     // mini?
@@ -253,12 +252,9 @@ async Task menuFindGoodDateTime()
     {
         DateTimeSearcher dts = new DateTimeSearcher(seconds, buttonsHeld, settings.MAC, settings.magic, settings.wantMini);
 
-        cancelProgressBar = false;
         Console.Write("Searching with seconds = " + seconds.ToString());
-        progressBar();
-
+        dts.ProgressReport += (p) => Console.Write('.');
         DateTime dt = await dts.findGoodDateTime(threadCount);
-        cancelProgressBar = true;
         Console.WriteLine();
 
         // Did we find a match?
@@ -285,14 +281,6 @@ async Task menuFindGoodDateTime()
                 break;
             }
         }
-    }
-}
-async void progressBar()
-{
-    while (!cancelProgressBar)
-    {
-        Console.Write('.');
-        await Task.Delay(1000);
     }
 }
 
