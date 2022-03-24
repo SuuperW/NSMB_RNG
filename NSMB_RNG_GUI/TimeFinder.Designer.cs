@@ -115,7 +115,7 @@
             this.chkAutoSeconds.AutoSize = true;
             this.chkAutoSeconds.Checked = true;
             this.chkAutoSeconds.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkAutoSeconds.Location = new System.Drawing.Point(131, 45);
+            this.chkAutoSeconds.Location = new System.Drawing.Point(131, 42);
             this.chkAutoSeconds.Name = "chkAutoSeconds";
             this.chkAutoSeconds.Size = new System.Drawing.Size(50, 19);
             this.chkAutoSeconds.TabIndex = 8;

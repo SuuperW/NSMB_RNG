@@ -38,6 +38,7 @@
             this.label2 = new System.Windows.Forms.Label();
             this.lblDJCount = new System.Windows.Forms.Label();
             this.btnBack = new System.Windows.Forms.Button();
+            this.lbl78 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.numPTile)).BeginInit();
             this.SuspendLayout();
             // 
@@ -146,11 +147,21 @@
             this.btnBack.UseVisualStyleBackColor = true;
             this.btnBack.Click += new System.EventHandler(this.btnBack_Click);
             // 
+            // lbl78
+            // 
+            this.lbl78.AutoSize = true;
+            this.lbl78.Location = new System.Drawing.Point(204, 105);
+            this.lbl78.Name = "lbl78";
+            this.lbl78.Size = new System.Drawing.Size(136, 15);
+            this.lbl78.TabIndex = 11;
+            this.lbl78.Text = "7 and 8 will always work.";
+            // 
             // DoubleJumpsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(352, 163);
+            this.Controls.Add(this.lbl78);
             this.Controls.Add(this.btnBack);
             this.Controls.Add(this.lblDJCount);
             this.Controls.Add(this.label2);
@@ -182,5 +193,6 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label lblDJCount;
         private System.Windows.Forms.Button btnBack;
+        private System.Windows.Forms.Label lbl78;
     }
 }

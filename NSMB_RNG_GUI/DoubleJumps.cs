@@ -1,11 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 using NSMB_RNG;
@@ -113,6 +106,8 @@ namespace NSMB_RNG_GUI
         {
             // Update tile and double jump count display.
             numPTile_ValueChanged(sender, e);
+            // If not using mini route, 7 and 8 double jumps will always work.
+            lbl78.Visible = !chkMini.Checked;
         }
     }
 }

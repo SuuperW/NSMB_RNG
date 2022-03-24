@@ -30,6 +30,7 @@ namespace NSMB_RNG_GUI
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.label1 = new System.Windows.Forms.Label();
             this.txtMAC = new System.Windows.Forms.TextBox();
             this.pbxMAC = new System.Windows.Forms.PictureBox();
@@ -50,6 +51,7 @@ namespace NSMB_RNG_GUI
             this.tileDisplay4 = new NSMB_RNG_GUI.tileDisplay();
             this.progressBar = new System.Windows.Forms.ProgressBar();
             this.btnNext = new System.Windows.Forms.Button();
+            this.toolTip = new System.Windows.Forms.ToolTip(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.pbxMAC)).BeginInit();
             this.SuspendLayout();
             // 
@@ -149,6 +151,7 @@ namespace NSMB_RNG_GUI
             this.dtpTime.ShowUpDown = true;
             this.dtpTime.Size = new System.Drawing.Size(99, 23);
             this.dtpTime.TabIndex = 6;
+            this.toolTip.SetToolTip(this.dtpTime, "This should be time time that the RNG seed was calculated.");
             this.dtpTime.Value = new System.DateTime(2000, 1, 1, 0, 0, 0, 0);
             this.dtpTime.ValueChanged += new System.EventHandler(this.dtpDateTime_ValueChanged);
             this.dtpTime.Leave += new System.EventHandler(this.dtpDateTime_Leave);
@@ -240,6 +243,8 @@ namespace NSMB_RNG_GUI
             this.btnNext.Size = new System.Drawing.Size(102, 23);
             this.btnNext.TabIndex = 18;
             this.btnNext.Text = "Double Jumps";
+            this.toolTip.SetToolTip(this.btnNext, "If you already have a good RNG seed, click here to get the number of double jumps" +
+        " you should do on World 1-1.");
             this.btnNext.UseVisualStyleBackColor = true;
             this.btnNext.Click += new System.EventHandler(this.btnNext_Click);
             // 
@@ -299,5 +304,6 @@ namespace NSMB_RNG_GUI
         private tileDisplay tileDisplay4;
         private ProgressBar progressBar;
         private Button btnNext;
+        private ToolTip toolTip;
     }
 }
