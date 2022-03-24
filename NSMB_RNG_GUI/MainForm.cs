@@ -110,12 +110,10 @@ namespace NSMB_RNG_GUI
 
         private void dirtySettings(bool save = true)
         {
-            if (isLoaded)
-            {
-                if (save) settings.saveSettings();
-                // On startup, this text instructs the user to refer to the README file.
-                lblMatch.Visible = false;
-            }
+            if (isLoaded && save) settings.saveSettings();
+
+            // On startup, this text instructs the user to refer to the README file.
+            if (!lblMatch.Text.StartsWith("See README")) lblMatch.Visible = false;
 
             btnNext.Text = "Double Jumps";
             txtSecondRow.Enabled = false;
