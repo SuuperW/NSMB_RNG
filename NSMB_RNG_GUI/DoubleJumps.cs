@@ -77,7 +77,7 @@ namespace NSMB_RNG_GUI
             tileDisplay2.update(getRow((tilePosition + 5) % 8));
 
             // double jump counts
-            if (chkMini.Checked)
+            if (settings.wantMini)
                 lblDJCount.Text = doubleJumpCountsMini1[tilePosition] + ", " + doubleJumpCountsMini2[tilePosition] + ", " +
                     (doubleJumpCountsMini1[tilePosition] + 8) + ", " + (doubleJumpCountsMini2[tilePosition] + 8);
             else
@@ -85,7 +85,7 @@ namespace NSMB_RNG_GUI
         }
         private byte[] getRow(int PTileLocation)
         {
-            byte[] patternSource = chkMini.Checked ? tilePatternMini : tilePatternNoMini;
+            byte[] patternSource = settings.wantMini ? tilePatternMini : tilePatternNoMini;
             byte[] pattern = new byte[11];
             // First copy, start copying from PTileLocation
             int beginIndex = (8 - PTileLocation) % 8;
@@ -105,6 +105,7 @@ namespace NSMB_RNG_GUI
 
         private void chkMini_CheckedChanged(object sender, EventArgs e)
         {
+            settings.wantMini = chkMini.Checked;
             // Update tile and double jump count display.
             numPTile_ValueChanged(sender, e);
             // If not using mini route, 7 and 8 double jumps will always work.
