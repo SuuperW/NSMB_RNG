@@ -111,10 +111,13 @@ namespace NSMB_RNG_GUI
         private void dirtySettings(bool save = true)
         {
             if (isLoaded)
+            {
                 settings.saveSettings();
+                // On startup, this text instructs the user to refer to the README file.
+                lblMatch.Visible = false;
+            }
 
-            lblMatch.Visible = false;
-            btnTimeFinder.Visible = false;
+            btnNext.Text = "Double Jumps";
             txtSecondRow.Enabled = false;
 
             tileDisplay2.update("");
@@ -181,14 +184,14 @@ namespace NSMB_RNG_GUI
             {
                 settings.magic = knownMagics[matches[0]];
                 settings.saveSettings();
-                btnTimeFinder.Visible = true;
+                btnNext.Text = "Time Finder";
                 displayExpectedPattern();
                 lblMatch.Text = "Magic found. Magic's tile pattern shown, check that it matches yours.";
                 lblMatch.Visible = true;
             }
             else
             {
-                btnTimeFinder.Visible = false;
+                btnNext.Text = "Double Jumps";
                 if (matches.Count == 0)
                 {
                     if (userPattern.Count < 7)
@@ -314,7 +317,7 @@ namespace NSMB_RNG_GUI
                         // Display results
                         setMatchText("Found and saved magic for 'other'. Expected tile pattern shown.");
                         Invoke(() => displayExpectedPattern());
-                        btnTimeFinder.Visible = true;
+                        btnNext.Text = "Time Finder";
                     }
                     // If there are more than one, we cannot know which is correct.
                     else if (foundParams.Count > 1)
@@ -374,18 +377,26 @@ namespace NSMB_RNG_GUI
             dirtySettings();
         }
 
-        private void btnTimeFinder_Click(object sender, EventArgs e)
+        private void btnNext_Click(object sender, EventArgs e)
         {
-            // Warning.
-            string prompt;
-            if (lblMatch.Text.Contains("Expected"))
-                prompt = Properties.Resources.MagicFoundWarning;
-            else
-                prompt = Properties.Resources.MagicMatchWarning;
-            MessageBox.Show(prompt, "Just so you know", MessageBoxButtons.OK);
+            if (btnNext.Text.StartsWith('T')) // Time finder
+            {
+                // Warning.
+                string prompt;
+                if (lblMatch.Text.Contains("Expected"))
+                    prompt = Properties.Resources.MagicFoundWarning;
+                else
+                    prompt = Properties.Resources.MagicMatchWarning;
+                MessageBox.Show(prompt, "Just so you know", MessageBoxButtons.OK);
 
-            TimeFinder tfForm = new TimeFinder(settings);
-            tfForm.Show();
+                TimeFinder tfForm = new TimeFinder(settings);
+                tfForm.Show();
+            }
+            else // double jumps
+            {
+                DoubleJumpsForm djForm = new DoubleJumpsForm(settings, false);
+                djForm.Show();
+            }
             this.Close();
         }
 
@@ -393,13 +404,6 @@ namespace NSMB_RNG_GUI
         {
             if (Application.OpenForms.Count == 0)
                 Application.Exit();
-        }
-
-        private void btnDoubleJumps_Click(object sender, EventArgs e)
-        {
-            DoubleJumpsForm djForm = new DoubleJumpsForm(settings, false);
-            djForm.Show();
-            this.Close();
         }
     }
 }
