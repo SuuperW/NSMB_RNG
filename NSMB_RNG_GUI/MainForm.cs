@@ -38,7 +38,20 @@ namespace NSMB_RNG_GUI
             InitializeComponent();
 
             // load files
-            settings = Settings.loadSettings();
+            try
+            {
+                settings = Settings.loadSettings();
+            }
+            catch (Exception ex)
+            {
+                if (ex.Message != "bad settings file")
+                {
+                    MessageBox.Show("Uknown error: " + ex.Message);
+                    this.Close();
+                }
+                MessageBox.Show("Bad settings.bin file. Loading blank settings instead.");
+                settings = new Settings();
+            }
             if (File.Exists("systems.json"))
             {
                 using (FileStream fs = File.OpenRead("systems.json"))
@@ -57,8 +70,13 @@ namespace NSMB_RNG_GUI
                 systems.Add("other", new string[0]);
 
             // initialize controls
-            txtMAC.Text = settings.MAC.ToString("X").PadLeft(12, '0');
+            if (settings.MAC != 0)
+                txtMAC.Text = settings.MAC.ToString("X").PadLeft(12, '0');
             cbxSystem.SelectedItem = settings.systemName;
+            if (cbxSystem.SelectedItem == null)
+                cbxSystem.SelectedIndex = 0;
+            if (settings.dt.CompareTo(dtpDate.MinDate) == -1 || settings.dt.CompareTo(dtpDate.MaxDate) == 1)
+                settings.dt = new DateTime(2000, 1, 1);
             dtpDate.Value = settings.dt.Date;
             dtpTime.Value = settings.dt;
 
