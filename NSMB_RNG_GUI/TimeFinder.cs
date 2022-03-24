@@ -86,12 +86,8 @@ namespace NSMB_RNG_GUI
                 else
                 {
                     // Sends results to the double jumps form
-                    Settings newSettings = new Settings();
-                    newSettings.dt = dt; // (newSettings because we don't want to change this in settings.bin, if the user returns to the main form)
-                    newSettings.MAC = settings.MAC;
-                    newSettings.wantMini = settings.wantMini;
-                    newSettings.magic = settings.magic;
-                    DoubleJumpsForm djForm = new DoubleJumpsForm(newSettings, true);
+                    settings.dt = dt;
+                    DoubleJumpsForm djForm = new DoubleJumpsForm(settings, true);
                     djForm.Show();
                     this.Close();
                 }
