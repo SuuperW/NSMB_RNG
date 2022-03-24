@@ -412,7 +412,7 @@ namespace NSMB_RNG
             return tiles;
         }
 
-        public static int[] getFirstRowPattern(uint seed)
+        public static int[] getFirstRowPattern(uint seed, int count = 7)
         {
             // Do pre-randomized-tiles rng steps
             uint v = seed;
@@ -420,8 +420,8 @@ namespace NSMB_RNG
                 v = LCRNG_NSMB(v);
 
             // Create pattern
-            int[] tiles = new int[7];
-            for (int i = 0; i < 7; i++)
+            int[] tiles = new int[count];
+            for (int i = 0; i < count; i++)
             {
                 v = LCRNG_NSMB(v);
                 tiles[i] = (int)tileIDwithAfterStep(v);
