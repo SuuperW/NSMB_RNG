@@ -128,10 +128,12 @@ namespace NSMB_RNG_GUI
         private void txtMAC_TextChanged(object sender, EventArgs e)
         {
             pbxMAC.Visible = true;
+            // Assume invalid MAC until we know it is valid.
             pbxMAC.BackColor = Color.Red;
             txtFirst7.Enabled = false;
 
             string userInput = txtMAC.Text;
+            // Allow entering with or without byte separators.
             if (string.IsNullOrEmpty(userInput) || (userInput.Length != 12 && userInput.Length != 17))
                 return;
             else if (userInput.Length == 17)
@@ -140,10 +142,12 @@ namespace NSMB_RNG_GUI
                 userInput = string.Join("", MACParts);
             }
 
+            // Try to parse
             ulong newMAC;
             try { newMAC = Convert.ToUInt64(userInput, 16); }
             catch { return; }
 
+            // If we could parse, MAC is valid
             pbxMAC.BackColor = Color.Green;
             txtFirst7.Enabled = true;
             settings.MAC = newMAC;
@@ -152,11 +156,13 @@ namespace NSMB_RNG_GUI
 
         private void txtFirst7_Enter(object sender, EventArgs e)
         {
+            // Settings may have changed, so update patterns for the system's known magics.
             updateMagicPatterns();
         }
 
         private void txtFirst7_TextChanged(object sender, EventArgs e)
         {
+            // Keep input focus on txtSecondRow after entering 11 tiles.
             if (sender != txtSecondRow) txtSecondRow.Enabled = false;
 
             // Display+get pattern
@@ -239,6 +245,7 @@ namespace NSMB_RNG_GUI
             Action seedFinderReady = () =>
             {
                 Invoke(() => {
+                    // Was it successful?
                     if (seedFinder == null || seedFinder.error)
                     {
                         setMatchText("Failed to load lookup data.");
@@ -252,6 +259,7 @@ namespace NSMB_RNG_GUI
                         setWorkStatus("");
                     }
 
+                    // Re-enable the text box, and possibly trigger seed search with 11 tiles from second row.
                     txtFirst7.Enabled = true;
                     if (txtSecondRow.Enabled)
                         txtSecondRow_TextChanged(progressBar, new EventArgs());
@@ -402,6 +410,7 @@ namespace NSMB_RNG_GUI
 
         private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
         {
+            // Exit the application if there isn't another open window.
             if (Application.OpenForms.Count == 0)
                 Application.Exit();
         }

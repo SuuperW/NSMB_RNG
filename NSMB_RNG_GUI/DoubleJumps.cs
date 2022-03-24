@@ -47,6 +47,7 @@ namespace NSMB_RNG_GUI
 
         private void DoubleJumpsForm_FormClosed(object sender, FormClosedEventArgs e)
         {
+            // Exit the application if there isn't another open window.
             if (Application.OpenForms.Count == 0)
                 Application.Exit();
         }

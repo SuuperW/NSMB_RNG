@@ -31,6 +31,7 @@ namespace NSMB_RNG_GUI
         private void TimeFinder_FormClosed(object sender, FormClosedEventArgs e)
         {
             dts?.cancel();
+            // Exit the application if there isn't another open window.
             if (Application.OpenForms.Count == 0)
                 Application.Exit();
         }
@@ -54,12 +55,14 @@ namespace NSMB_RNG_GUI
         DateTimeSearcher? dts;
         private void btnSearch_Click(object sender, EventArgs e)
         {
+            // Prepare UI
             UIEnable(false);
             progressBar1.Visible = true;
             progressBar1.Value = 0;
             lblResults.Text = "Progress";
             lblResults.Visible = true;
 
+            // Search for a date and time
             dts = new DateTimeSearcher((int)numSeconds.Value, 0, settings.MAC, settings.magic, chkMini.Checked);
             dts.ProgressReport += (p) => Invoke(() => progressBar1.Value = (int)(p * progressBar1.Maximum));
             dts.Completed += (dt) =>
@@ -67,6 +70,7 @@ namespace NSMB_RNG_GUI
                 dts = null;
                 if (dt.Year == 1) // no result
                 {
+                    // Automatically increment seconds and try again?
                     if (chkAutoSeconds.Checked)
                     {
                         numSeconds.Value += 1;
@@ -81,8 +85,9 @@ namespace NSMB_RNG_GUI
                 }
                 else
                 {
+                    // Sends results to the double jumps form
                     Settings newSettings = new Settings();
-                    newSettings.dt = dt;
+                    newSettings.dt = dt; // (newSettings because we don't want to change this in settings.bin, if the user returns to the main form)
                     newSettings.MAC = settings.MAC;
                     newSettings.wantMini = settings.wantMini;
                     newSettings.magic = settings.magic;
