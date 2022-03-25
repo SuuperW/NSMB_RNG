@@ -32,6 +32,8 @@ namespace NSMB_RNG_GUI
                 new SystemSeedInitParams(settings.magic).SetSeedParams(sip);
                 int[] pattern = TilesFor12.getFirstRowPattern(sip.GetSeed(), 8);
                 numPTile.Value = Array.IndexOf(pattern, 4) + 1;
+                // We came from the time finder form, so switching mini would not be compatible with the displayed date/time.
+                chkMini.Enabled = false;
             }
             else
             {
