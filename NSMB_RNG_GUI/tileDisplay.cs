@@ -41,6 +41,23 @@ namespace NSMB_RNG_GUI
             pbxArray = new PictureBox[0];
         }
 
+        private int _lastHeight = 0;
+        protected override void OnResize(EventArgs e)
+        {
+            base.OnResize(e);
+            if (Created && Height != _lastHeight)
+            {
+                _lastHeight = Height;
+                // scale the picture boxes
+                int size = Height;
+                for (int i = 0; i < pbxArray.Length; i++)
+                {
+                    pbxArray[i].Location = new Point(i * size, 0);
+                    pbxArray[i].Size = new Size(size, size);
+                }
+            }
+        }
+
         private void initializeBoxes()
         {
             foreach (PictureBox box in pbxArray)
@@ -49,13 +66,15 @@ namespace NSMB_RNG_GUI
                 box.Dispose();
             }
 
+            // Using the height of the control allows it to be scaled (include for high DPI)
+            int size = Height;
             pbxArray = new PictureBox[TileCount + 1];
             for (int i = 0; i < pbxArray.Length; i++)
             {
                 PictureBox box = new PictureBox();
                 box.Visible = false;
-                box.Location = new Point(i * 32, 0);
-                box.Size = new Size(32, 32);
+                box.Location = new Point(i * size, 0);
+                box.Size = new Size(size, size);
                 box.BackgroundImageLayout = ImageLayout.Zoom;
                 box.BackColor = Color.Red;
 
@@ -105,7 +124,7 @@ namespace NSMB_RNG_GUI
             // make remaining boxes invisible and adjust width
             for (int i = pi; i < pbxArray.Length; i++)
                 pbxArray[i].Visible = false;
-            Width = 32 * pi;
+            Width = Height * pi;
 
             if (inputIsValid) return userPattern;
             else return new List<int>();
@@ -121,7 +140,7 @@ namespace NSMB_RNG_GUI
                 pbxArray[i].Visible = true;
             }
             pbxArray[pbxArray.Length - 1].Visible = false;
-            Width = 32 * pattern.Length;
+            Width = Height * pattern.Length;
 
             return true;
         }
