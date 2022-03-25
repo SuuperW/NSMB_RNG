@@ -106,9 +106,10 @@ namespace NSMB_RNG_GUI
         {
             Action a = () =>
             {
-                int oldWidth = lblWorkStatus.Width;
+                int oldDistance = ClientSize.Width - lblWorkStatus.Right;
                 lblWorkStatus.Text = str;
-                lblWorkStatus.Location = new Point(lblWorkStatus.Location.X + oldWidth - lblWorkStatus.Width, lblWorkStatus.Location.Y);
+                int newDistance = ClientSize.Width - lblWorkStatus.Right;
+                lblWorkStatus.Location = new Point(lblWorkStatus.Location.X + (newDistance - oldDistance), lblWorkStatus.Location.Y);
 
                 progressBar.Visible = lblWorkStatus.Visible = !string.IsNullOrEmpty(str);
             };
