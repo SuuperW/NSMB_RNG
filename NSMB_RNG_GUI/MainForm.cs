@@ -204,15 +204,15 @@ namespace NSMB_RNG_GUI
             // Found one magic
             if (userPattern.Count > 0 && matches.Count == 1)
             {
+                // settings
+                settings.magic = knownMagics[matches[0]];
+                settings.saveSettings();
                 // UI
                 lblMatch.Text = "Magic found. Magic's tile pattern shown, check that it matches yours.";
                 lblMatch.Visible = true;
                 btnNext.Text = "Time Finder";
                 txtSecondRow.Text = "";
                 displayExpectedPattern();
-                // settings
-                settings.magic = knownMagics[matches[0]];
-                settings.saveSettings();
             }
             else
             {
