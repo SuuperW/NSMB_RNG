@@ -39,6 +39,7 @@
             this.lblDJCount = new System.Windows.Forms.Label();
             this.btnBack = new System.Windows.Forms.Button();
             this.lbl78 = new System.Windows.Forms.Label();
+            this.btnWrongPattern = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.numPTile)).BeginInit();
             this.SuspendLayout();
             // 
@@ -78,8 +79,9 @@
             // 
             // label1
             // 
+            this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(12, 115);
+            this.label1.Location = new System.Drawing.Point(12, 137);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(82, 15);
             this.label1.TabIndex = 5;
@@ -87,8 +89,9 @@
             // 
             // chkMini
             // 
+            this.chkMini.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.chkMini.AutoSize = true;
-            this.chkMini.Location = new System.Drawing.Point(259, 85);
+            this.chkMini.Location = new System.Drawing.Point(259, 107);
             this.chkMini.Name = "chkMini";
             this.chkMini.Size = new System.Drawing.Size(81, 19);
             this.chkMini.TabIndex = 6;
@@ -98,7 +101,8 @@
             // 
             // numPTile
             // 
-            this.numPTile.Location = new System.Drawing.Point(99, 113);
+            this.numPTile.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.numPTile.Location = new System.Drawing.Point(99, 135);
             this.numPTile.Maximum = new decimal(new int[] {
             9,
             0,
@@ -121,8 +125,9 @@
             // 
             // label2
             // 
+            this.label2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(12, 139);
+            this.label2.Location = new System.Drawing.Point(12, 161);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(137, 15);
             this.label2.TabIndex = 8;
@@ -130,8 +135,9 @@
             // 
             // lblDJCount
             // 
+            this.lblDJCount.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.lblDJCount.AutoSize = true;
-            this.lblDJCount.Location = new System.Drawing.Point(149, 139);
+            this.lblDJCount.Location = new System.Drawing.Point(149, 161);
             this.lblDJCount.Name = "lblDJCount";
             this.lblDJCount.Size = new System.Drawing.Size(46, 15);
             this.lblDJCount.TabIndex = 9;
@@ -139,7 +145,8 @@
             // 
             // btnBack
             // 
-            this.btnBack.Location = new System.Drawing.Point(265, 128);
+            this.btnBack.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnBack.Location = new System.Drawing.Point(265, 150);
             this.btnBack.Name = "btnBack";
             this.btnBack.Size = new System.Drawing.Size(75, 23);
             this.btnBack.TabIndex = 10;
@@ -149,18 +156,30 @@
             // 
             // lbl78
             // 
+            this.lbl78.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.lbl78.AutoSize = true;
-            this.lbl78.Location = new System.Drawing.Point(204, 105);
+            this.lbl78.Location = new System.Drawing.Point(204, 127);
             this.lbl78.Name = "lbl78";
             this.lbl78.Size = new System.Drawing.Size(136, 15);
             this.lbl78.TabIndex = 11;
             this.lbl78.Text = "7 and 8 will always work.";
             // 
+            // btnWrongPattern
+            // 
+            this.btnWrongPattern.Location = new System.Drawing.Point(12, 100);
+            this.btnWrongPattern.Name = "btnWrongPattern";
+            this.btnWrongPattern.Size = new System.Drawing.Size(100, 23);
+            this.btnWrongPattern.TabIndex = 12;
+            this.btnWrongPattern.Text = "Wrong pattern?";
+            this.btnWrongPattern.UseVisualStyleBackColor = true;
+            this.btnWrongPattern.Click += new System.EventHandler(this.btnWrongPattern_Click);
+            // 
             // DoubleJumpsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(352, 163);
+            this.ClientSize = new System.Drawing.Size(352, 185);
+            this.Controls.Add(this.btnWrongPattern);
             this.Controls.Add(this.lbl78);
             this.Controls.Add(this.btnBack);
             this.Controls.Add(this.lblDJCount);
@@ -194,5 +213,6 @@
         private System.Windows.Forms.Label lblDJCount;
         private System.Windows.Forms.Button btnBack;
         private System.Windows.Forms.Label lbl78;
+        private System.Windows.Forms.Button btnWrongPattern;
     }
 }
