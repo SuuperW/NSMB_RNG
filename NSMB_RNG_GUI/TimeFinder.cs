@@ -87,6 +87,7 @@ namespace NSMB_RNG_GUI
                 {
                     // Sends results to the double jumps form
                     settings.dt = dt;
+                    settings.wantMini = chkMini.Checked;
                     DoubleJumpsForm djForm = new DoubleJumpsForm(settings, true);
                     djForm.Show();
                     this.Close();
