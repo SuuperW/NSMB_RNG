@@ -350,8 +350,11 @@ namespace NSMB_RNG_GUI
                             JsonSerializer.Serialize<string[]>(fs, systems["other"]);
                         // Display results
                         setMatchText("Found and saved magic for 'other'. Expected tile pattern shown.");
-                        Invoke(() => displayExpectedPattern());
-                        btnNext.Text = "Time Finder";
+                        Invoke(() =>
+                        {
+                            displayExpectedPattern();
+                            btnNext.Text = "Time Finder";
+                        });
                     }
                     // If there are more than one, we cannot know which is correct.
                     else if (foundParams.Count > 1)
