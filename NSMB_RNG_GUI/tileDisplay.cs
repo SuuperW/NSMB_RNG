@@ -66,30 +66,35 @@ namespace NSMB_RNG_GUI
 
         public List<int> update(string tilePattern)
         {
+            // case-insensitive
             string upper = tilePattern.ToUpper();
+
             bool inputIsValid = true;
             int maxLength = pbxArray.Length - 1;
             List<int> userPattern = new List<int>(maxLength);
-            int pi = 0;
+            int pi = 0; // index in the picture box array
             for (int i = 0; i < upper.Length; i++)
             {
+                // ignore whitespace
                 if (upper[i] == ' ')
                     continue;
 
                 int index = Array.IndexOf(TilesFor12.tileLetters, upper[i]);
                 if (index == -1 || pi >= maxLength)
                 {
+                    // input has too many tiles
                     if (pi >= maxLength)
                         pbxArray[pi].BackgroundImage = tooLong;
-                    else
+                    else // input has invalid character; no image will show red background
                         pbxArray[pi].BackgroundImage = null;
-                    pbxArray[pi].Visible = true;
+                    pbxArray[pi].Visible = true; 
                     pi++;
                     inputIsValid = false;
                     break;
                 }
                 else
                 {
+                    // show tile image
                     pbxArray[pi].BackgroundImage = tiles[index];
                     pbxArray[pi].Visible = true;
                     userPattern.Add(index);
@@ -97,8 +102,10 @@ namespace NSMB_RNG_GUI
                 }
             }
 
+            // make remaining boxes invisible and adjust width
             for (int i = pi; i < pbxArray.Length; i++)
                 pbxArray[i].Visible = false;
+            Width = 32 * pi;
 
             if (inputIsValid) return userPattern;
             else return new List<int>();
@@ -114,6 +121,7 @@ namespace NSMB_RNG_GUI
                 pbxArray[i].Visible = true;
             }
             pbxArray[pbxArray.Length - 1].Visible = false;
+            Width = 32 * pattern.Length;
 
             return true;
         }

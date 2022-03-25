@@ -335,7 +335,7 @@ namespace NSMB_RNG_GUI
                     InitSeedSearcher iss = new InitSeedSearcher(sip, seeds);
                     List<SeedInitParams> foundParams = iss.FindSeeds();
                     if (foundParams.Count == 0)
-                        setMatchText("No magic found. Verify that you entered the correct tiles, MAC address, date, and time.");
+                        setMatchText("No magic found. Verify your MAC address, system type, date/time, and tile pattern. Try changing your seconds count by +/-1 in case your measurement for RNG initialization time is off.");
                     // Expected result: only 1 params found. Save the magic.
                     else if (foundParams.Count == 1)
                     {
