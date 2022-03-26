@@ -5,11 +5,12 @@ The purpose of NSMB_RNG is to allow speedrunners to play the any% category with 
 
 --- How to use NSMB_RNG ---
 In order to determine which RNG seed your system generated, you will have to:
- 0) Create a save file with World 1-2 unlocked (so, any save file other than a blank new one). The step only needs to be done once; the rest need to be done every time you want to look at a new seed.
+ A) Create a save file with World 1-2 unlocked (so, any save file other than a blank new one). The step only needs to be done once; the rest need to be done every time you want to look at a new seed.
+ B) Ensure that you do not have a GBA game in the GBA slot.
  1) Choose any date/time and set your system's clock to that date/time. When the time is set, the seconds will be set to 0. Write down this date/time. WARNING: On some systems, if the current time already matches the hour and minute you set, it will not actually set the time (seconds) despite what the confirmation message says.
  2) Open NSMB any chosen number of seconds after setting the system's time, and then do not have any controller buttons pressed as the game starts.
  3) The RNG seed is calculated about half a second before the red Nintendo logo appears. Write down the date/time of the system at that point. Use a stopwatch, or something similar, to know how many seconds passed between setting the system time and the RNG seed being calculated. Note that when calculating the RNG seed, the game rounds DOWN to the nearest second.
- 4) Open the save file from step 0 before the cutscene begins.
+ 4) Open the save file from step A before the cutscene begins.
  5) Go directly to World 1-2 and start the level.
  6) Pause the game before the camera begins scrolling down.
  7) The on-screen tiles are what NSMB_RNG will use to determine your seed and magic.
