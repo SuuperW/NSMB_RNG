@@ -19,7 +19,7 @@ You will have to repeat the above steps 1-7 multiple times in the following step
  1) Give NSMB_RNG your system's MAC address. This can be found somewhere under internet settings.
  2) Load NSMB and look at the first few tiles. Do this several times with the same date and time. Find a sequence that is relatively common, and take a picture of that sequence.
 --- Main / GUI version ---
- 3) Choose your system type in the drop-down menu.
+ 3) Choose your system type in the drop-down menu. (Note: 3DS and WiiU VC are not supported and will not work. If you have a 3DS and an Action Replay then contact me and I may be able to provide you with AR codes that collect the info I need.)
  4) Enter the date and time that the RNG seed was calculated.
  5) Enter the first 7 tiles, according to the tiles.png file.
   A) If these match a known magic for your system, the text beneath the tiles will say so.
