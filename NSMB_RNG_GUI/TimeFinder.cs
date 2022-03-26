@@ -64,11 +64,12 @@ namespace NSMB_RNG_GUI
             lblResults.Text = "Progress";
             lblResults.Visible = true;
 
-            // Search for a date and time
-            uint buttons = 0;
+            // buttons
+            settings.buttonsHeld = 0;
             for (int i = 0; i < cbxArray.Length; i++)
-                buttons |= (cbxArray[i].Checked ? 1u : 0u) << i;
-            dts = new DateTimeSearcher((int)numSeconds.Value, buttons, settings.MAC, settings.magic, chkMini.Checked);
+                settings.buttonsHeld |= (cbxArray[i].Checked ? 1u : 0u) << i;
+            // Search for a date and time
+            dts = new DateTimeSearcher((int)numSeconds.Value, settings.buttonsHeld, settings.MAC, settings.magic, settings.wantMini);
             dts.ProgressReport += (p) => Invoke(() => progressBar1.Value = (int)(p * progressBar1.Maximum));
             dts.Completed += (dt) =>
             {
@@ -92,14 +93,17 @@ namespace NSMB_RNG_GUI
                 {
                     // Sends results to the double jumps form
                     settings.dt = dt;
-                    settings.wantMini = chkMini.Checked;
-                    settings.buttonsHeld = buttons;
                     DoubleJumpsForm djForm = new DoubleJumpsForm(settings, true);
                     djForm.Show();
                     this.Close();
                 }
             };
             Task t = dts.findGoodDateTime((int)numThreads.Value);
+        }
+
+        private void chkMini_CheckedChanged(object sender, EventArgs e)
+        {
+            settings.wantMini = chkMini.Checked;
         }
     }
 }
