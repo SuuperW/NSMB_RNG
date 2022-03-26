@@ -68,13 +68,13 @@ namespace NSMB_RNG_GUI
             // 
             this.txtMAC.Location = new System.Drawing.Point(98, 12);
             this.txtMAC.Name = "txtMAC";
-            this.txtMAC.Size = new System.Drawing.Size(100, 23);
+            this.txtMAC.Size = new System.Drawing.Size(127, 23);
             this.txtMAC.TabIndex = 1;
             this.txtMAC.TextChanged += new System.EventHandler(this.txtMAC_TextChanged);
             // 
             // pbxMAC
             // 
-            this.pbxMAC.Location = new System.Drawing.Point(204, 14);
+            this.pbxMAC.Location = new System.Drawing.Point(231, 14);
             this.pbxMAC.Name = "pbxMAC";
             this.pbxMAC.Size = new System.Drawing.Size(20, 20);
             this.pbxMAC.TabIndex = 2;
@@ -105,7 +105,7 @@ namespace NSMB_RNG_GUI
             this.cbxSystem.FormattingEnabled = true;
             this.cbxSystem.Items.AddRange(new object[] {
             "other"});
-            this.cbxSystem.Location = new System.Drawing.Point(296, 12);
+            this.cbxSystem.Location = new System.Drawing.Point(311, 12);
             this.cbxSystem.Name = "cbxSystem";
             this.cbxSystem.Size = new System.Drawing.Size(85, 23);
             this.cbxSystem.TabIndex = 3;
@@ -114,7 +114,7 @@ namespace NSMB_RNG_GUI
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(242, 15);
+            this.label3.Location = new System.Drawing.Point(257, 15);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(48, 15);
             this.label3.TabIndex = 2;
@@ -159,10 +159,9 @@ namespace NSMB_RNG_GUI
             // 
             // lblMatch
             // 
-            this.lblMatch.AutoSize = true;
             this.lblMatch.Location = new System.Drawing.Point(12, 169);
             this.lblMatch.Name = "lblMatch";
-            this.lblMatch.Size = new System.Drawing.Size(325, 15);
+            this.lblMatch.Size = new System.Drawing.Size(384, 82);
             this.lblMatch.TabIndex = 13;
             this.lblMatch.Text = "See README.txt for instructions, and tiles.png for tile names.";
             // 
@@ -214,6 +213,7 @@ namespace NSMB_RNG_GUI
             // 
             // tileDisplay3
             // 
+            this.tileDisplay3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.tileDisplay3.Location = new System.Drawing.Point(12, 187);
             this.tileDisplay3.Name = "tileDisplay3";
             this.tileDisplay3.Size = new System.Drawing.Size(384, 32);
@@ -222,6 +222,7 @@ namespace NSMB_RNG_GUI
             // 
             // tileDisplay4
             // 
+            this.tileDisplay4.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.tileDisplay4.Location = new System.Drawing.Point(12, 219);
             this.tileDisplay4.Name = "tileDisplay4";
             this.tileDisplay4.Size = new System.Drawing.Size(384, 32);
@@ -256,12 +257,9 @@ namespace NSMB_RNG_GUI
             this.ClientSize = new System.Drawing.Size(408, 263);
             this.Controls.Add(this.btnNext);
             this.Controls.Add(this.progressBar);
-            this.Controls.Add(this.tileDisplay4);
-            this.Controls.Add(this.tileDisplay3);
             this.Controls.Add(this.tileDisplay2);
             this.Controls.Add(this.tileDisplay1);
             this.Controls.Add(this.lblWorkStatus);
-            this.Controls.Add(this.lblMatch);
             this.Controls.Add(this.dtpTime);
             this.Controls.Add(this.dtpDate);
             this.Controls.Add(this.label4);
@@ -274,6 +272,9 @@ namespace NSMB_RNG_GUI
             this.Controls.Add(this.pbxMAC);
             this.Controls.Add(this.txtMAC);
             this.Controls.Add(this.label1);
+            this.Controls.Add(this.tileDisplay4);
+            this.Controls.Add(this.tileDisplay3);
+            this.Controls.Add(this.lblMatch);
             this.Name = "MainForm";
             this.Text = "NSMB RNG Magic Finder";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.MainForm_FormClosed);

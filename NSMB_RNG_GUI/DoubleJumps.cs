@@ -29,14 +29,19 @@ namespace NSMB_RNG_GUI
             {
                 lblTime.Text = settings.dt.ToLongDateString() + " " + settings.dt.ToLongTimeString();
                 SeedInitParams sip = new SeedInitParams(settings.MAC, settings.dt);
+                sip.Buttons = settings.buttonsHeld;
                 new SystemSeedInitParams(settings.magic).SetSeedParams(sip);
                 int[] pattern = TilesFor12.getFirstRowPattern(sip.GetSeed(), 8);
                 numPTile.Value = Array.IndexOf(pattern, 4) + 1;
+                // We came from the time finder form, so switching mini would not be compatible with the displayed date/time.
+                chkMini.Enabled = false;
             }
             else
             {
                 numPTile.Value = 1;
-                lblTime.Visible = lblExpectedPattern.Visible = false;
+                btnWrongPattern.Visible = lblTime.Visible = lblExpectedPattern.Visible = false;
+                // don't need that empty space where the non-visible tiles and button are
+                this.Height -= 35;
             }
 
             // The initial value (and thus max) is set to 9 in the designer.
@@ -110,8 +115,17 @@ namespace NSMB_RNG_GUI
             numPTile_ValueChanged(sender, e);
             // If not using mini route, 7 and 8 double jumps will always work.
             lbl78.Visible = !chkMini.Checked;
-            // This message is no longer true
-            lblTime.Visible = lblExpectedPattern.Visible = false;
+        }
+
+        private void btnWrongPattern_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("It is normal to have to set the time and boot the game multiple times before getting the expected pattern!\n\n" +
+                "If you can't get this displayed pattern, it might be because your system used a different magic, or you missed the target time.\n" +
+                "Go back to the magic finder window, enter the date/time for this pattern, and type in the pattern that you actually got.\n" +
+                "1) If it finds a magic, then your system was using a different magic than the one you found the first time. Either try again to get the desired magic and pattern, or calculate a new date/time based on this other magic.\n" +
+                "2) If it does not find a magic, try changing the seconds by +/-1. If that works, then you missed the target time when starting the game.\n" +
+                "3) If it still doesn't find a magic, ... you probably messed up somewhere else. If you're confident you did everything correctly, send me a video of you showing the MAC address on your system, setting the date/time, opening NSMB, and showing the tile pattern in 1-2, along with the settings.bin file.",
+                "What to do if your tile pattern doesn't match");
         }
     }
 }

@@ -9,7 +9,7 @@ namespace NSMB_RNG_GUI
     public partial class TimeFinder : Form
     {
         private Settings settings;
-
+        private CheckBox[] cbxArray;
         public TimeFinder(Settings settings)
         {
             InitializeComponent();
@@ -19,6 +19,8 @@ namespace NSMB_RNG_GUI
             numSeconds.Value = settings.dt.Second;
             chkMini.Checked = settings.wantMini;
             numThreads.Value = Environment.ProcessorCount;
+            cbxArray = new CheckBox[] { chkA, chkB, chkSelect, chkStart, chkRight, chkLeft,
+                chkUp, chkDown, chkR, chkL, chkX, chkY };
         }
 
         private void btnBack_Click(object sender, EventArgs e)
@@ -62,8 +64,12 @@ namespace NSMB_RNG_GUI
             lblResults.Text = "Progress";
             lblResults.Visible = true;
 
+            // buttons
+            settings.buttonsHeld = 0;
+            for (int i = 0; i < cbxArray.Length; i++)
+                settings.buttonsHeld |= (cbxArray[i].Checked ? 1u : 0u) << i;
             // Search for a date and time
-            dts = new DateTimeSearcher((int)numSeconds.Value, 0, settings.MAC, settings.magic, chkMini.Checked);
+            dts = new DateTimeSearcher((int)numSeconds.Value, settings.buttonsHeld, settings.MAC, settings.magic, settings.wantMini);
             dts.ProgressReport += (p) => Invoke(() => progressBar1.Value = (int)(p * progressBar1.Maximum));
             dts.Completed += (dt) =>
             {
@@ -93,6 +99,11 @@ namespace NSMB_RNG_GUI
                 }
             };
             Task t = dts.findGoodDateTime((int)numThreads.Value);
+        }
+
+        private void chkMini_CheckedChanged(object sender, EventArgs e)
+        {
+            settings.wantMini = chkMini.Checked;
         }
     }
 }

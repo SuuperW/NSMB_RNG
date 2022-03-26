@@ -1,23 +1,16 @@
-There is a pre-built version (1.0) for Windows x64 on the Release branch. You can download it here: https://github.com/SuuperW/NSMB_RNG/raw/Release/NSMB_RNG_v1.0.zip
+There is a pre-built version (1.1) for Windows x64 on the Release branch. You can download it here: https://github.com/SuuperW/NSMB_RNG/raw/Release/NSMB_RNG_v1.1.zip
 
 --- Purpose of NSMB_RNG ---
 The purpose of NSMB_RNG is to allow speedrunners to play the any% category with the best possible RNG. This means the red ? blocks in World 8 always move left. If attempting mini route, there will be a 7% chance of RNG supporting that in World 5.
 
---- How the game's RNG works ---
-The random number generator keeps a 32-bit integer representing its current state. Whenever the game wants a random number, this 32-bit integer is given as the input to a function that outputs another 32-bit integer. The output of this function is then used as the RNG's new state. Depending on what the random number is to be used for, a selection of those 32 bits are then used to calculate the random number that is actually used.
-The state of the RNG when it is first started/initialized is called the RNG's "seed". The seed is randomized in a much more robust and random way than the RNG's normal function. (This "more random" method is not used for each random number presumably because it is much slower.) 
-
---- How the RNG seed is manipulated ---
-The RNG seed is calculated using various inputs. The important ones for this application are: (A) a "magic" that varies across console types, and can also slightly vary with a single system, (B) the system's MAC address, (C) the system's current date and time (rounded down to the nearest second), and (D) the controller buttons that are currently held.
-In order to control the RNG seed, we first need to determine the system's MAC address and its most common magic. We can then calculate the expected seed for any given date/time and button combination, and search the available possibilities until we find a desired seed.
-
 --- How to use NSMB_RNG ---
 In order to determine which RNG seed your system generated, you will have to:
- 0) Create a save file with World 1-2 unlocked (so, any save file other than a blank new one). The step only needs to be done once; the rest need to be done every time you want to look at a new seed.
+ A) Create a save file with World 1-2 unlocked (so, any save file other than a blank new one). The step only needs to be done once; the rest need to be done every time you want to look at a new seed.
+ B) Ensure that you do not have a GBA game in the GBA slot.
  1) Choose any date/time and set your system's clock to that date/time. When the time is set, the seconds will be set to 0. Write down this date/time. WARNING: On some systems, if the current time already matches the hour and minute you set, it will not actually set the time (seconds) despite what the confirmation message says.
  2) Open NSMB any chosen number of seconds after setting the system's time, and then do not have any controller buttons pressed as the game starts.
  3) The RNG seed is calculated about half a second before the red Nintendo logo appears. Write down the date/time of the system at that point. Use a stopwatch, or something similar, to know how many seconds passed between setting the system time and the RNG seed being calculated. Note that when calculating the RNG seed, the game rounds DOWN to the nearest second.
- 4) Open the save file from step 0 before the cutscene begins.
+ 4) Open the save file from step A before the cutscene begins.
  5) Go directly to World 1-2 and start the level.
  6) Pause the game before the camera begins scrolling down.
  7) The on-screen tiles are what NSMB_RNG will use to determine your seed and magic.
@@ -51,3 +44,11 @@ You will have to repeat the above steps 1-7 multiple times in the following step
  8) You can now quit to the main menu and start a run. Repeat step 6 every time you boot the game. Repeat step 7 before every attempt.
 
 NSMB_RNG will save a file named settings.bin, which will be loaded when NSMB_RNG starts next time. You can copy/rename this file to keep info for multiple systems.
+
+--- How the game's RNG works ---
+The random number generator keeps a 32-bit integer representing its current state. Whenever the game wants a random number, this 32-bit integer is given as the input to a function that outputs another 32-bit integer. The output of this function is then used as the RNG's new state. Depending on what the random number is to be used for, a selection of those 32 bits are then used to calculate the random number that is actually used.
+The state of the RNG when it is first started/initialized is called the RNG's "seed". The seed is randomized in a much more robust and random way than the RNG's normal function. (This "more random" method is not used for each random number presumably because it is much slower.) 
+
+--- How the RNG seed is manipulated ---
+The RNG seed is calculated using various inputs. The important ones for this application are: (A) a "magic" that varies across console types, and can also slightly vary with a single system, (B) the system's MAC address, (C) the system's current date and time (rounded down to the nearest second), and (D) the controller buttons that are currently held.
+In order to control the RNG seed, we first need to determine the system's MAC address and its most common magic. We can then calculate the expected seed for any given date/time and button combination, and search the available possibilities until we find a desired seed.

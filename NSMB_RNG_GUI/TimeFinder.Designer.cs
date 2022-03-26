@@ -109,6 +109,7 @@
             this.chkMini.TabIndex = 8;
             this.chkMini.Text = "mini route";
             this.chkMini.UseVisualStyleBackColor = true;
+            this.chkMini.CheckedChanged += new System.EventHandler(this.chkMini_CheckedChanged);
             // 
             // chkAutoSeconds
             // 

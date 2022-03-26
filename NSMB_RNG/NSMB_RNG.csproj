@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Library</OutputType>
@@ -7,11 +7,11 @@
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Platforms>AnyCPU;x64</Platforms>
-    <Version>1.1</Version>
+    <Version>1.2</Version>
   </PropertyGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="xcopy $(ProjectDir)$(OutDir). ..\output\$(Configuration) /i /s /y&#xD;&#xA;xcopy $(ProjectDir)7za.exe ..\output\$(Configuration) /y&#xD;&#xA;xcopy $(ProjectDir)systems.json ..\output\$(Configuration) /y&#xD;&#xA;xcopy $(ProjectDir)tiles.png ..\output\$(Configuration) /y&#xD;&#xA;xcopy $(SolutionDir)README.txt ..\output\$(Configuration) /y&#xD;&#xA;xcopy $(ProjectDir)7z_license.txt ..\output\$(Configuration) /y&#xD;&#xA;" />
+    <Exec Command="xcopy $(ProjectDir)$(OutDir). ..\output\$(Configuration) /i /s /y" />
   </Target>
 
 	<Target Name="PrepublishScript" BeforeTargets="PrepareForPublish">
@@ -23,6 +23,10 @@
 		<FilesToCopy Include="$(SolutionDir)README.txt" />
 	  </ItemGroup>
 	  <Copy SourceFiles="@(FilesToCopy)" DestinationFolder="$(PublishDir)" />
+	</Target>
+
+	<Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+	  <Exec Command="xcopy $(ProjectDir)7za.exe $(ProjectDir)$(OutDir) /y&#xD;&#xA;xcopy $(ProjectDir)systems.json $(ProjectDir)$(OutDir) /y&#xD;&#xA;xcopy $(ProjectDir)tiles.png $(ProjectDir)$(OutDir) /y&#xD;&#xA;xcopy $(SolutionDir)README.txt $(ProjectDir)$(OutDir) /y&#xD;&#xA;xcopy $(ProjectDir)7z_license.txt $(ProjectDir)$(OutDir) /y" />
 	</Target>
 
 </Project>

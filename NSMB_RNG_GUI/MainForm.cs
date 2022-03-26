@@ -106,9 +106,10 @@ namespace NSMB_RNG_GUI
         {
             Action a = () =>
             {
-                int oldWidth = lblWorkStatus.Width;
+                int oldDistance = ClientSize.Width - lblWorkStatus.Right;
                 lblWorkStatus.Text = str;
-                lblWorkStatus.Location = new Point(lblWorkStatus.Location.X + oldWidth - lblWorkStatus.Width, lblWorkStatus.Location.Y);
+                int newDistance = ClientSize.Width - lblWorkStatus.Right;
+                lblWorkStatus.Location = new Point(lblWorkStatus.Location.X + (newDistance - oldDistance), lblWorkStatus.Location.Y);
 
                 progressBar.Visible = lblWorkStatus.Visible = !string.IsNullOrEmpty(str);
             };
@@ -204,15 +205,15 @@ namespace NSMB_RNG_GUI
             // Found one magic
             if (userPattern.Count > 0 && matches.Count == 1)
             {
+                // settings
+                settings.magic = knownMagics[matches[0]];
+                settings.saveSettings();
                 // UI
                 lblMatch.Text = "Magic found. Magic's tile pattern shown, check that it matches yours.";
                 lblMatch.Visible = true;
                 btnNext.Text = "Time Finder";
                 txtSecondRow.Text = "";
                 displayExpectedPattern();
-                // settings
-                settings.magic = knownMagics[matches[0]];
-                settings.saveSettings();
             }
             else
             {
@@ -335,7 +336,7 @@ namespace NSMB_RNG_GUI
                     InitSeedSearcher iss = new InitSeedSearcher(sip, seeds);
                     List<SeedInitParams> foundParams = iss.FindSeeds();
                     if (foundParams.Count == 0)
-                        setMatchText("No magic found. Verify that you entered the correct tiles, MAC address, date, and time.");
+                        setMatchText("No magic found. Verify your MAC address, system type, date/time, and tile pattern. Try changing your seconds count by +/-1 in case your measurement for RNG initialization time is off.");
                     // Expected result: only 1 params found. Save the magic.
                     else if (foundParams.Count == 1)
                     {
@@ -350,8 +351,11 @@ namespace NSMB_RNG_GUI
                             JsonSerializer.Serialize<string[]>(fs, systems["other"]);
                         // Display results
                         setMatchText("Found and saved magic for 'other'. Expected tile pattern shown.");
-                        Invoke(() => displayExpectedPattern());
-                        btnNext.Text = "Time Finder";
+                        Invoke(() =>
+                        {
+                            displayExpectedPattern();
+                            btnNext.Text = "Time Finder";
+                        });
                     }
                     // If there are more than one, we cannot know which is correct.
                     else if (foundParams.Count > 1)
