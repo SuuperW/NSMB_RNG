@@ -13,6 +13,8 @@ namespace NSMB_RNG
         public bool wantMini = false;
         public DateTime dt;
         public string systemName = "";
+        // This one isn't saved, because there's no UI for that.
+        public uint buttonsHeld = 0;
 
         public Settings() { }
 

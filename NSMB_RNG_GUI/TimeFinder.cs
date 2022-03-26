@@ -9,7 +9,7 @@ namespace NSMB_RNG_GUI
     public partial class TimeFinder : Form
     {
         private Settings settings;
-
+        private CheckBox[] cbxArray;
         public TimeFinder(Settings settings)
         {
             InitializeComponent();
@@ -19,6 +19,8 @@ namespace NSMB_RNG_GUI
             numSeconds.Value = settings.dt.Second;
             chkMini.Checked = settings.wantMini;
             numThreads.Value = Environment.ProcessorCount;
+            cbxArray = new CheckBox[] { chkA, chkB, chkSelect, chkStart, chkRight, chkLeft,
+                chkUp, chkDown, chkR, chkL, chkX, chkY };
         }
 
         private void btnBack_Click(object sender, EventArgs e)
@@ -63,7 +65,10 @@ namespace NSMB_RNG_GUI
             lblResults.Visible = true;
 
             // Search for a date and time
-            dts = new DateTimeSearcher((int)numSeconds.Value, 0, settings.MAC, settings.magic, chkMini.Checked);
+            uint buttons = 0;
+            for (int i = 0; i < cbxArray.Length; i++)
+                buttons |= (cbxArray[i].Checked ? 1u : 0u) << i;
+            dts = new DateTimeSearcher((int)numSeconds.Value, buttons, settings.MAC, settings.magic, chkMini.Checked);
             dts.ProgressReport += (p) => Invoke(() => progressBar1.Value = (int)(p * progressBar1.Maximum));
             dts.Completed += (dt) =>
             {
@@ -88,6 +93,7 @@ namespace NSMB_RNG_GUI
                     // Sends results to the double jumps form
                     settings.dt = dt;
                     settings.wantMini = chkMini.Checked;
+                    settings.buttonsHeld = buttons;
                     DoubleJumpsForm djForm = new DoubleJumpsForm(settings, true);
                     djForm.Show();
                     this.Close();

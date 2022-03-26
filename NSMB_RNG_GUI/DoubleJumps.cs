@@ -29,6 +29,7 @@ namespace NSMB_RNG_GUI
             {
                 lblTime.Text = settings.dt.ToLongDateString() + " " + settings.dt.ToLongTimeString();
                 SeedInitParams sip = new SeedInitParams(settings.MAC, settings.dt);
+                sip.Buttons = settings.buttonsHeld;
                 new SystemSeedInitParams(settings.magic).SetSeedParams(sip);
                 int[] pattern = TilesFor12.getFirstRowPattern(sip.GetSeed(), 8);
                 numPTile.Value = Array.IndexOf(pattern, 4) + 1;
