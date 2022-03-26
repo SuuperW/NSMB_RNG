@@ -119,7 +119,7 @@ namespace NSMB_RNG
             set => ((byte*)msg)[18] = ToBCD(value);
         }
 
-        public static uint BUTTON_MASK = 0x2fff;
+        private const uint BUTTON_MASK = 0x2fff;
         public uint Buttons
         {
             get => ((uint*)msg)[7] ^ BUTTON_MASK;
