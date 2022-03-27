@@ -19,8 +19,8 @@ You will have to repeat the above steps 1-7 multiple times in the following step
  1) Give NSMB_RNG your system's MAC address. This can be found somewhere under internet settings.
  2) Load NSMB and look at the first few tiles. Do this several times with the same date and time. Find a sequence that is relatively common, and take a picture of that sequence.
 --- Main / GUI version ---
- 3) Choose your system type in the drop-down menu. (Note: 3DS and WiiU VC are not supported and will not work. If you have a 3DS and an Action Replay then contact me and I may be able to provide you with AR codes that collect the info I need.)
  4) Enter the date and time that the RNG seed was calculated.
+ 3) Choose your system type in the drop-down menu. (Note: WiiU VC is not supported and will not work. If you have any way of installing custom ROMs on a WiiU VC please contact me.)
  5) Enter the first 7 tiles, according to the tiles.png file.
   A) If these match a known magic for your system, the text beneath the tiles will say so.
   B) If not, you will have to also enter 11 tiles for the second row and wait for NSMB_RNG to calculate a magic.
@@ -38,7 +38,7 @@ You will have to repeat the above steps 1-7 multiple times in the following step
  3) Determine your system's "magic":
   A) Select the option to find your magic, and select your system type. Follow the promts, which will ask you to input your tile sequence. (This will be compared with known magics, if there are any for your chosen system. If no match is found, NSMB_RNG will have to calculate your seed and then calculate your magic.)
  4) Choose the option to find a date/time that gives a good seed. Follow the promts. (It will ask if you want to do the mini route, for seconds, buttons held, whether to auto-increment seconds after exhausting the DS's date range, and thread count.)
- 5) If a good date/time is found, NSMB_RNG will output the tile sequence that the calculated seed should give. If not, try again with another seconds and button combination. (There is approximately a 50% chance of any given second count and buttons combination containing a good date/time.)
+ 5) If a good date/time is found, NSMB_RNG will output the tile sequence that the calculated seed should give. If not, try again with another seconds and button combination.
  6) Use that date/time, load NSMB, and confirm that you have the expected tile pattern. You may need a few tries to get the desired seed.
  7) Choose the option in NSMB_RNG to find a number of double jumps in World 1-1. You can then quit to the main menu and start a run. (This step removes the need to memorize toad patterns in the intro cutscene for RNG manip in World 1-1.)
  8) You can now quit to the main menu and start a run. Repeat step 6 every time you boot the game. Repeat step 7 before every attempt.

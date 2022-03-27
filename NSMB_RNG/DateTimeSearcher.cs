@@ -25,7 +25,7 @@ namespace NSMB_RNG
         private int seconds;
         private uint buttonsHeld;
         private ulong mac;
-        private uint magic;
+        private SystemSeedInitParams sysMagic;
 
         public event Action<double>? ProgressReport;
         public event Action<DateTime>? Completed;
@@ -35,7 +35,7 @@ namespace NSMB_RNG
             this.seconds = seconds;
             this.buttonsHeld = buttonsHeld;
             this.mac = mac;
-            this.magic = magic;
+            sysMagic = new SystemSeedInitParams(magic);
             if (wantMini)
                 desiredSeeds = seedsForMini;
             else
@@ -48,7 +48,7 @@ namespace NSMB_RNG
         {
             DateTime dt = new DateTime(startYear, 1, 1, 0, 0, 0).AddSeconds(seconds);
             SeedInitParams sip = new SeedInitParams(mac, dt);
-            new SystemSeedInitParams(magic).SetSeedParams(sip);
+            sysMagic.SetSeedParams(sip);
             sip.Buttons = buttonsHeld;
 
             // loop through all minutes with the given seconds count
@@ -82,13 +82,14 @@ namespace NSMB_RNG
             // Start tasks
             Task<DateTime>[] searchers = new Task<DateTime>[threads];
             double year = 2000;
+            double yearRange = sysMagic.Is3DS ? 50 : 100;
             for (int i = 0; i < threads; i++)
             {
                 int startYear = (int)year;
-                year += 100.0 / threads;
+                year += yearRange / threads;
                 int endYear = (int)year;
                 if (i == threads - 1) // just to make sure we avoid rounding errors
-                    endYear = 2100;
+                    endYear = 2000 + (int)yearRange;
 
                 int id = i; // variables given as parameters must not change between now and task start
                 searchers[i] = Task.Run<DateTime>(() => worker(startYear, endYear - startYear, id));
