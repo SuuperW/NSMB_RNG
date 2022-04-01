@@ -334,7 +334,7 @@ namespace NSMB_RNG_GUI
                 {
                     // Find magic
                     setWorkStatus("Finding magics...");
-                    SeedInitParams sip = new SeedInitParams(settings.MAC, dt);
+                    SeedInitParams sip = new SeedInitParams(settings.MAC, dt, settings.systemName.ToUpper().Contains("3DS"));
                     InitSeedSearcher iss = new InitSeedSearcher(sip, seeds);
                     List<SeedInitParams> foundParams = iss.FindSeeds();
                     if (foundParams.Count == 0)
