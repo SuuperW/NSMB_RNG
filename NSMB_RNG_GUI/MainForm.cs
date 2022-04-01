@@ -59,6 +59,8 @@ namespace NSMB_RNG_GUI
             }
             else
                 systems = new Dictionary<string, string[]>();
+            // Put WiiU VC on the list so people who don't read the README can see a message about it not being supported.
+            systems.Add("WiiU VC", new string[0]);
             foreach (string key in systems.Keys)
                 cbxSystem.Items.Add(key);
             if (File.Exists("otherMagics.json"))
@@ -411,6 +413,13 @@ namespace NSMB_RNG_GUI
 
         private void cbxSystem_SelectedIndexChanged(object sender, EventArgs e)
         {
+            if ((string)cbxSystem.SelectedItem == "WiiU VC")
+            {
+                MessageBox.Show("The RNG on WiiU VC does not depend on date/time, so it is not possible to use this kind of RNG manipulation.");
+                cbxSystem.SelectedIndex = 0;
+                return;
+            }
+
             settings.systemName = cbxSystem.Text;
             dirtySettings();
         }
