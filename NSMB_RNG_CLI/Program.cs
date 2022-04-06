@@ -72,7 +72,7 @@ List<uint> chooseSystem()
         sb.Append(systemName).Append(", ");
     sb.Append("other");
     Console.WriteLine(sb.ToString());
-    Console.WriteLine("Note: 3DS-like systems and virtual console are not supported, as their RNG initialization procedures are unknown.");
+    Console.WriteLine("Note: WiiU VC does not support RNG seed manipulation, as it apparently doesn't emulate the DS clock.");
 
     // case-insensitive, and 'other' option
     Dictionary<string, string[]> systemsCaseInsensitive = new Dictionary<string, string[]>();
@@ -301,7 +301,7 @@ void menuDoubleJumps()
     Console.WriteLine("1) Go to 1-2 as instructed in the README.txt file. You MUST pause.");
     Console.WriteLine("2) Enter the position (1-8) of the first 'P' tile in the first row of tiles.");
     Console.WriteLine("3) Quit directly to the main menu. Do not go to the overworld.");
-    int tilePosition = UI.GetUserMenuSelection("'S' tile position: ", 8);
+    int tilePosition = UI.GetUserMenuSelection("'P' tile position: ", 8);
     // This array has indexes 0-8. [0] is equal to [8], of course.
     int[] doubleJumpCountsNoMini = new int[] { 2, 4, 6, 2, 3, 3, 4, 1, 2 };
     int[] doubleJumpCountsMini1 = new int[]  { 1, 0, 2, 2, 0, 0, 1, 4, 1 };
