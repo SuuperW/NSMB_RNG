@@ -72,7 +72,7 @@ List<uint> chooseSystem()
         sb.Append(systemName).Append(", ");
     sb.Append("other");
     Console.WriteLine(sb.ToString());
-    Console.WriteLine("Note: 3DS-like systems and virtual console are not supported, as their RNG initialization procedures are unknown.");
+    Console.WriteLine("Note: WiiU VC does not support RNG seed manipulation, as it apparently doesn't emulate the DS clock.");
 
     // case-insensitive, and 'other' option
     Dictionary<string, string[]> systemsCaseInsensitive = new Dictionary<string, string[]>();
