@@ -1,33 +1,33 @@
 ﻿namespace NSMB_RNG_GUI
 {
-    partial class DoubleJumpsForm
-    {
-        /// <summary>
-        /// Required designer variable.
-        /// </summary>
-        private System.ComponentModel.IContainer components = null;
+	partial class DoubleJumpsForm
+	{
+		/// <summary>
+		/// Required designer variable.
+		/// </summary>
+		private System.ComponentModel.IContainer components = null;
 
-        /// <summary>
-        /// Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing && (components != null))
-            {
-                components.Dispose();
-            }
-            base.Dispose(disposing);
-        }
+		/// <summary>
+		/// Clean up any resources being used.
+		/// </summary>
+		/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing && (components != null))
+			{
+				components.Dispose();
+			}
+			base.Dispose(disposing);
+		}
 
-        #region Windows Form Designer generated code
+		#region Windows Form Designer generated code
 
-        /// <summary>
-        /// Required method for Designer support - do not modify
-        /// the contents of this method with the code editor.
-        /// </summary>
-        private void InitializeComponent()
-        {
+		/// <summary>
+		/// Required method for Designer support - do not modify
+		/// the contents of this method with the code editor.
+		/// </summary>
+		private void InitializeComponent()
+		{
 			this.tileDisplay2 = new NSMB_RNG_GUI.tileDisplay();
 			this.tileDisplay1 = new NSMB_RNG_GUI.tileDisplay();
 			this.lblExpectedPattern = new System.Windows.Forms.Label();
@@ -104,23 +104,23 @@
 			this.numPTile.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
 			this.numPTile.Location = new System.Drawing.Point(99, 135);
 			this.numPTile.Maximum = new decimal(new int[] {
-            9,
-            0,
-            0,
-            0});
+			9,
+			0,
+			0,
+			0});
 			this.numPTile.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
+			1,
+			0,
+			0,
+			0});
 			this.numPTile.Name = "numPTile";
 			this.numPTile.Size = new System.Drawing.Size(35, 23);
 			this.numPTile.TabIndex = 7;
 			this.numPTile.Value = new decimal(new int[] {
-            9,
-            0,
-            0,
-            0});
+			9,
+			0,
+			0,
+			0});
 			this.numPTile.ValueChanged += new System.EventHandler(this.numPTile_ValueChanged);
 			// 
 			// label2
@@ -198,21 +198,21 @@
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
-        }
+		}
 
-        #endregion
+		#endregion
 
-        private tileDisplay tileDisplay2;
-        private tileDisplay tileDisplay1;
-        private System.Windows.Forms.Label lblExpectedPattern;
-        private System.Windows.Forms.Label lblTime;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.CheckBox chkMini;
-        private System.Windows.Forms.NumericUpDown numPTile;
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.Label lblDJCount;
-        private System.Windows.Forms.Button btnBack;
-        private System.Windows.Forms.Label lbl78;
-        private System.Windows.Forms.Button btnWrongPattern;
-    }
+		private tileDisplay tileDisplay2;
+		private tileDisplay tileDisplay1;
+		private System.Windows.Forms.Label lblExpectedPattern;
+		private System.Windows.Forms.Label lblTime;
+		private System.Windows.Forms.Label label1;
+		private System.Windows.Forms.CheckBox chkMini;
+		private System.Windows.Forms.NumericUpDown numPTile;
+		private System.Windows.Forms.Label label2;
+		private System.Windows.Forms.Label lblDJCount;
+		private System.Windows.Forms.Button btnBack;
+		private System.Windows.Forms.Label lbl78;
+		private System.Windows.Forms.Button btnWrongPattern;
+	}
 }
