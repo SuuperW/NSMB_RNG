@@ -1,7 +1,7 @@
 There is a pre-built version (1.4) for Windows x64 on the Release branch. You can download it here: https://github.com/SuuperW/NSMB_RNG/raw/Release/NSMB_RNG_v1.4.zip
 
 --- Purpose of NSMB_RNG ---
-The purpose of NSMB_RNG is to allow speedrunners to play the any% category with the best possible RNG. This means the red ? blocks in World 8 always move left. If attempting mini route, there will be a 7% chance of RNG supporting that in World 5.
+The purpose of NSMB_RNG is to allow speedrunners to play the any% category with the best possible RNG. This means the red ? blocks in World 8 always move left. If attempting mini route, there will be a 7% chance of RNG supporting that in World 5 when doing basic in-game RNG manip.
 
 --- How to use NSMB_RNG ---
 In order to determine which RNG seed your system generated, you will have to:
