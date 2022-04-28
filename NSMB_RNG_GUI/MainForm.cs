@@ -131,7 +131,11 @@ namespace NSMB_RNG_GUI
 		}
 		private void setMatchText(string str)
 		{
-			Action a = () => { lblMatch.Text = str; };
+			Action a = () =>
+			{
+				lblMatch.Text = str;
+				lblMatch.Visible = !string.IsNullOrEmpty(str);
+			};
 			if (InvokeRequired)
 				Invoke(a);
 			else
@@ -220,8 +224,7 @@ namespace NSMB_RNG_GUI
 				settings.magic = knownMagics[matches[0]];
 				settings.saveSettings();
 				// UI
-				lblMatch.Text = "Magic found. Magic's tile pattern shown, check that it matches yours.";
-				lblMatch.Visible = true;
+				setMatchText("Magic found. Magic's tile pattern shown, check that it matches yours.");
 				btnNext.Text = "Time Finder";
 				txtSecondRow.Text = "";
 				displayExpectedPattern();
@@ -239,18 +242,17 @@ namespace NSMB_RNG_GUI
 				if (matches.Count == 0)
 				{
 					if (userPattern.Count < 7)
-						lblMatch.Text = "No matching known magics. Enter all 7 tiles.";
+						setMatchText("No matching known magics. Enter all 7 tiles.");
 					else
 					{
-						lblMatch.Text = "Enter 11 tiles from second row.";
+						setMatchText("Enter 11 tiles from second row.");
 						txtSecondRow.Enabled = true;
 						txtFirst7.Enabled = false;
 						createSeedFinder(userPattern);
 					}
-					lblMatch.Visible = true;
 				}
 				else // Multiple magics match; user still needs to enter more tiles
-					lblMatch.Visible = false;
+					setMatchText("");
 			}
 		}
 
@@ -369,8 +371,8 @@ namespace NSMB_RNG_GUI
 							cbxSystem.SelectedIndex = cbxSystem.Items.IndexOf("other");
 							displayExpectedPattern();
 							btnNext.Text = "Time Finder";
+							setMatchText("Found and saved magic for 'other'. Expected tile pattern shown.");
 						});
-						setMatchText("Found and saved magic for 'other'. Expected tile pattern shown.");
 					}
 					// If there are more than one, we cannot know which is correct.
 					else if (foundParams.Count > 1)
