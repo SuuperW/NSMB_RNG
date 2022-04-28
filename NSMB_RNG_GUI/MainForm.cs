@@ -10,448 +10,460 @@ using NSMB_RNG;
 
 namespace NSMB_RNG_GUI
 {
-    public partial class MainForm : Form
-    {
-        Settings settings;
+	public partial class MainForm : Form
+	{
+		Settings settings;
 
-        Dictionary<string, string[]> systems;
-        List<uint> knownMagics
-        {
-            get
-            {
-                if (systems.ContainsKey(cbxSystem.Text))
-                    return strArrayToMagicList(systems[cbxSystem.Text]);
-                else
-                    return new List<uint>();
-            }
-        }
-        List<int[]> knownMagicPatterns = new List<int[]>();
+		Dictionary<string, string[]> systems;
+		List<uint> knownMagics
+		{
+			get
+			{
+				if (systems.ContainsKey(cbxSystem.Text))
+					return strArrayToMagicList(systems[cbxSystem.Text]);
+				else
+					return new List<uint>();
+			}
+		}
+		List<int[]> knownMagicPatterns = new List<int[]>();
 
-        TilesFor12.SeedFinder? seedFinder = null;
-        bool SeedFinderReady => seedFinder != null && seedFinder.isReady;
+		TilesFor12.SeedFinder? seedFinder = null;
+		bool SeedFinderReady => seedFinder != null && seedFinder.isReady;
 
-        private DateTime dt => dtpDate.Value.Add(dtpTime.Value.TimeOfDay);
+		private DateTime dt => dtpDate.Value.Add(dtpTime.Value.TimeOfDay);
 
-        bool isLoaded = false;
-        public MainForm()
-        {
-            InitializeComponent();
+		bool isLoaded = false;
+		public MainForm()
+		{
+			InitializeComponent();
 
-            // load files
-            try
-            {
-                settings = Settings.loadSettings();
-            }
-            catch (Exception ex)
-            {
-                if (ex.Message != "bad settings file")
-                {
-                    MessageBox.Show("Uknown error: " + ex.Message);
-                    this.Close();
-                }
-                MessageBox.Show("Bad settings.bin file. Loading blank settings instead.");
-                settings = new Settings();
-            }
-            if (File.Exists("systems.json"))
-            {
-                using (FileStream fs = File.OpenRead("systems.json"))
-                    systems = JsonSerializer.Deserialize<Dictionary<string, string[]>>(fs) ?? new Dictionary<string, string[]>();
-            }
-            else
-                systems = new Dictionary<string, string[]>();
-            // Put WiiU VC on the list so people who don't read the README can see a message about it not being supported.
-            systems.Add("WiiU VC", new string[0]);
-            foreach (string key in systems.Keys)
-                cbxSystem.Items.Add(key);
-            if (File.Exists("otherMagics.json"))
-            {
-                using (FileStream fs = File.OpenRead("otherMagics.json"))
-                    systems.Add("other", JsonSerializer.Deserialize<string[]>(fs) ?? new string[0]);
-            }
-            else
-                systems.Add("other", new string[0]);
+			// load files
+			try
+			{
+				settings = Settings.loadSettings();
+			}
+			catch (Exception ex)
+			{
+				if (ex.Message != "bad settings file")
+				{
+					MessageBox.Show("Uknown error: " + ex.Message);
+					this.Close();
+				}
+				MessageBox.Show("Bad settings.bin file. Loading blank settings instead.");
+				settings = new Settings();
+			}
+			if (File.Exists("systems.json"))
+			{
+				using (FileStream fs = File.OpenRead("systems.json"))
+					systems = JsonSerializer.Deserialize<Dictionary<string, string[]>>(fs) ?? new Dictionary<string, string[]>();
+			}
+			else
+				systems = new Dictionary<string, string[]>();
+			// Put WiiU VC on the list so people who don't read the README can see a message about it not being supported.
+			systems.Add("WiiU VC", new string[0]);
+			foreach (string key in systems.Keys)
+				cbxSystem.Items.Add(key);
+			if (File.Exists("otherMagics.json"))
+			{
+				using (FileStream fs = File.OpenRead("otherMagics.json"))
+					systems.Add("other", JsonSerializer.Deserialize<string[]>(fs) ?? new string[0]);
+			}
+			else
+				systems.Add("other", new string[0]);
 
-            // initialize controls
-            if (settings.MAC != 0)
-                txtMAC.Text = settings.MAC.ToString("X").PadLeft(12, '0');
-            cbxSystem.SelectedItem = settings.systemName;
-            if (cbxSystem.SelectedItem == null)
-                cbxSystem.SelectedIndex = 0;
-            if (settings.dt.CompareTo(dtpDate.MinDate) == -1 || settings.dt.CompareTo(dtpDate.MaxDate) == 1)
-                settings.dt = new DateTime(2000, 1, 1);
-            dtpDate.Value = settings.dt.Date;
-            dtpTime.Value = settings.dt;
+			// initialize controls
+			if (settings.MAC != 0)
+				txtMAC.Text = settings.MAC.ToString("X").PadLeft(12, '0');
+			cbxSystem.SelectedItem = settings.systemName;
+			if (cbxSystem.SelectedItem == null)
+				cbxSystem.SelectedIndex = 0;
+			if (settings.dt.CompareTo(dtpDate.MinDate) == -1 || settings.dt.CompareTo(dtpDate.MaxDate) == 1)
+				settings.dt = new DateTime(2000, 1, 1);
+			dtpDate.Value = settings.dt.Date;
+			dtpTime.Value = settings.dt;
 
-            isLoaded = true;
-        }
+			isLoaded = true;
+		}
 
-        private List<uint> strArrayToMagicList(string[] strArray)
-        {
-            List<uint> magicList = new List<uint>();
-            foreach (string str in strArray)
-                magicList.Add(Convert.ToUInt32(str, 16));
-            return magicList;
-        }
+		// These two settings are updated with elements on other forms. This method should not be called from MainForm.
+		public static void updateSettings(bool wantMini, uint buttons)
+		{
+			Settings s = Settings.loadSettings();
+			s.wantMini = wantMini;
+			s.buttonsHeld = buttons;
+			s.saveSettings();
+		}
 
-        private void updateMagicPatterns()
-        {
-            knownMagicPatterns = new List<int[]>();
-            foreach (uint magic in knownMagics)
-            {
-                SeedInitParams sip = new SeedInitParams(settings.MAC, dt);
-                new SystemSeedInitParams(magic).SetSeedParams(sip);
-                knownMagicPatterns.Add(TilesFor12.getFirstRowPattern(sip.GetSeed()));
-            }
-        }
+		private List<uint> strArrayToMagicList(string[] strArray)
+		{
+			List<uint> magicList = new List<uint>();
+			foreach (string str in strArray)
+				magicList.Add(Convert.ToUInt32(str, 16));
+			return magicList;
+		}
 
-        private void setWorkStatus(string str)
-        {
-            Action a = () =>
-            {
-                int oldDistance = ClientSize.Width - lblWorkStatus.Right;
-                lblWorkStatus.Text = str;
-                int newDistance = ClientSize.Width - lblWorkStatus.Right;
-                lblWorkStatus.Location = new Point(lblWorkStatus.Location.X + (newDistance - oldDistance), lblWorkStatus.Location.Y);
+		private void updateMagicPatterns()
+		{
+			knownMagicPatterns = new List<int[]>();
+			foreach (uint magic in knownMagics)
+			{
+				SeedInitParams sip = new SeedInitParams(settings.MAC, dt);
+				new SystemSeedInitParams(magic).SetSeedParams(sip);
+				knownMagicPatterns.Add(TilesFor12.getFirstRowPattern(sip.GetSeed()));
+			}
+		}
 
-                progressBar.Visible = lblWorkStatus.Visible = !string.IsNullOrEmpty(str);
-            };
-            if (InvokeRequired)
-                Invoke(a);
-            else
-                a();
-        }
-        private void setMatchText(string str)
-        {
-            Action a = () => { lblMatch.Text = str; };
-            if (InvokeRequired)
-                Invoke(a);
-            else
-                a();
-        }
+		private void setWorkStatus(string str)
+		{
+			Action a = () =>
+			{
+				int oldDistance = ClientSize.Width - lblWorkStatus.Right;
+				lblWorkStatus.Text = str;
+				int newDistance = ClientSize.Width - lblWorkStatus.Right;
+				lblWorkStatus.Location = new Point(lblWorkStatus.Location.X + (newDistance - oldDistance), lblWorkStatus.Location.Y);
 
-        private void dirtySettings(bool save = true)
-        {
-            if (isLoaded && save) settings.saveSettings();
+				progressBar.Visible = lblWorkStatus.Visible = !string.IsNullOrEmpty(str);
+			};
+			if (InvokeRequired)
+				Invoke(a);
+			else
+				a();
+		}
+		private void setMatchText(string str)
+		{
+			Action a = () =>
+			{
+				lblMatch.Text = str;
+				lblMatch.Visible = !string.IsNullOrEmpty(str);
+			};
+			if (InvokeRequired)
+				Invoke(a);
+			else
+				a();
+		}
 
-            // On startup, this text instructs the user to refer to the README file.
-            if (!lblMatch.Text.StartsWith("See README")) lblMatch.Visible = false;
+		private void dirtySettings(bool save = true)
+		{
+			if (isLoaded && save) settings.saveSettings();
 
-            btnNext.Text = "Double Jumps";
-            txtSecondRow.Enabled = false;
+			// On startup, this text instructs the user to refer to the README file.
+			if (!lblMatch.Text.StartsWith("See README")) lblMatch.Visible = false;
 
-            tileDisplay2.update("");
-            tileDisplay3.update("");
-            tileDisplay4.update("");
-        }
+			btnNext.Text = "Double Jumps";
+			txtSecondRow.Enabled = false;
 
-        private void txtMAC_TextChanged(object sender, EventArgs e)
-        {
-            pbxMAC.Visible = true;
-            // Assume invalid MAC until we know it is valid.
-            pbxMAC.BackColor = Color.Red;
-            txtFirst7.Enabled = false;
+			tileDisplay2.update("");
+			tileDisplay3.update("");
+			tileDisplay4.update("");
+		}
 
-            string userInput = txtMAC.Text;
-            // Allow entering with or without byte separators.
-            if (string.IsNullOrEmpty(userInput) || (userInput.Length != 12 && userInput.Length != 17))
-                return;
-            else if (userInput.Length == 17)
-            {
-                string[] MACParts = userInput.Split(userInput[2]);
-                userInput = string.Join("", MACParts);
-            }
+		private void txtMAC_TextChanged(object sender, EventArgs e)
+		{
+			pbxMAC.Visible = true;
+			// Assume invalid MAC until we know it is valid.
+			pbxMAC.BackColor = Color.Red;
+			txtFirst7.Enabled = false;
 
-            // Try to parse
-            ulong newMAC;
-            try { newMAC = Convert.ToUInt64(userInput, 16); }
-            catch { return; }
+			string userInput = txtMAC.Text;
+			// Allow entering with or without byte separators.
+			if (string.IsNullOrEmpty(userInput) || (userInput.Length != 12 && userInput.Length != 17))
+				return;
+			else if (userInput.Length == 17)
+			{
+				string[] MACParts = userInput.Split(userInput[2]);
+				userInput = string.Join("", MACParts);
+			}
 
-            // If we could parse, MAC is valid
-            pbxMAC.BackColor = Color.Green;
-            txtFirst7.Enabled = true;
-            settings.MAC = newMAC;
-            dirtySettings();
-        }
+			// Try to parse
+			ulong newMAC;
+			try { newMAC = Convert.ToUInt64(userInput, 16); }
+			catch { return; }
 
-        private void txtFirst7_Enter(object sender, EventArgs e)
-        {
-            // Settings may have changed, so update patterns for the system's known magics.
-            updateMagicPatterns();
-        }
+			// If we could parse, MAC is valid
+			pbxMAC.BackColor = Color.Green;
+			txtFirst7.Enabled = true;
+			settings.MAC = newMAC;
+			dirtySettings();
+		}
 
-        private void txtFirst7_TextChanged(object sender, EventArgs e)
-        {
-            // Keep input focus on txtSecondRow after entering 11 tiles.
-            if (sender != txtSecondRow) txtSecondRow.Enabled = false;
+		private void txtFirst7_Enter(object sender, EventArgs e)
+		{
+			// Settings may have changed, so update patterns for the system's known magics.
+			updateMagicPatterns();
+		}
 
-            // Display+get pattern
-            List<int> userPattern = tileDisplay1.update(txtFirst7.Text);
+		private void txtFirst7_TextChanged(object sender, EventArgs e)
+		{
+			// Keep input focus on txtSecondRow after entering 11 tiles.
+			if (sender != txtSecondRow) txtSecondRow.Enabled = false;
 
-            // Compare with known magics
-            List<int> matches = new List<int>();
-            for (int patternIndex = 0; patternIndex < knownMagicPatterns.Count; patternIndex++)
-            {
-                int[] pattern = knownMagicPatterns[patternIndex];
-                bool match = true;
-                for (int i = 0; i < userPattern.Count; i++)
-                {
-                    if (pattern[i] != userPattern[i])
-                    {
-                        match = false;
-                        break;
-                    }
-                }
-                if (match)
-                    matches.Add(patternIndex);
-            }
-            // Found one magic
-            if (userPattern.Count > 0 && matches.Count == 1)
-            {
-                // settings
-                settings.magic = knownMagics[matches[0]];
-                settings.saveSettings();
-                // UI
-                lblMatch.Text = "Magic found. Magic's tile pattern shown, check that it matches yours.";
-                lblMatch.Visible = true;
-                btnNext.Text = "Time Finder";
-                txtSecondRow.Text = "";
-                displayExpectedPattern();
-            }
-            else
-            {
-                // Remove full tile pattern
-                if (tileDisplay3.HasVisibleTiles)
-                {
-                    tileDisplay3.update("");
-                    tileDisplay4.update("");
-                }
-                btnNext.Text = "Double Jumps";
-                // Found zero magics
-                if (matches.Count == 0)
-                {
-                    if (userPattern.Count < 7)
-                        lblMatch.Text = "No matching known magics. Enter all 7 tiles.";
-                    else
-                    {
-                        lblMatch.Text = "Enter 11 tiles from second row.";
-                        txtSecondRow.Enabled = true;
-                        txtFirst7.Enabled = false;
-                        createSeedFinder(userPattern);
-                    }
-                    lblMatch.Visible = true;
-                }
-                else // Multiple magics match; user still needs to enter more tiles
-                    lblMatch.Visible = false;
-            }
-        }
+			// Display+get pattern
+			List<int> userPattern = tileDisplay1.update(txtFirst7.Text);
 
-        private void txtSecondRow_TextChanged(object sender, EventArgs e)
-        {
-            // Display+get pattern
-            List<int> userPattern = tileDisplay2.update(txtSecondRow.Text);
+			// Compare with known magics
+			List<int> matches = new List<int>();
+			for (int patternIndex = 0; patternIndex < knownMagicPatterns.Count; patternIndex++)
+			{
+				int[] pattern = knownMagicPatterns[patternIndex];
+				bool match = true;
+				for (int i = 0; i < userPattern.Count; i++)
+				{
+					if (pattern[i] != userPattern[i])
+					{
+						match = false;
+						break;
+					}
+				}
+				if (match)
+					matches.Add(patternIndex);
+			}
+			// Found one magic
+			if (userPattern.Count > 0 && matches.Count == 1)
+			{
+				// settings
+				settings.magic = knownMagics[matches[0]];
+				settings.saveSettings();
+				// UI
+				setMatchText("Magic found. Magic's tile pattern shown, check that it matches yours.");
+				btnNext.Text = "Time Finder";
+				txtSecondRow.Text = "";
+				displayExpectedPattern();
+			}
+			else
+			{
+				// Remove full tile pattern
+				if (tileDisplay3.HasVisibleTiles)
+				{
+					tileDisplay3.update("");
+					tileDisplay4.update("");
+				}
+				btnNext.Text = "Double Jumps";
+				// Found zero magics
+				if (matches.Count == 0)
+				{
+					if (userPattern.Count < 7)
+						setMatchText("No matching known magics. Enter all 7 tiles.");
+					else
+					{
+						setMatchText("Enter 11 tiles from second row.");
+						txtSecondRow.Enabled = true;
+						txtFirst7.Enabled = false;
+						createSeedFinder(userPattern);
+					}
+				}
+				else // Multiple magics match; user still needs to enter more tiles
+					setMatchText("");
+			}
+		}
 
-            // Do we need to re-initialize the seed finder?
-            if (seedFinder != null && seedFinder.isComplete)
-                txtFirst7_TextChanged(sender, e);
+		private void txtSecondRow_TextChanged(object sender, EventArgs e)
+		{
+			// Display+get pattern
+			List<int> userPattern = tileDisplay2.update(txtSecondRow.Text);
 
-            // Find seeds and magic
-            if (userPattern.Count == 11 && SeedFinderReady)
-            {
-                txtSecondRow.Enabled = false;
-                performMagicSearch(userPattern.ToArray());
-            }
-            else
-            {
-                tileDisplay3.update("");
-                tileDisplay4.update("");
-            }
-        }
+			// Do we need to re-initialize the seed finder?
+			if (seedFinder != null && seedFinder.isComplete)
+				txtFirst7_TextChanged(sender, e);
 
-        private void createSeedFinder(List<int> userPattern)
-        {
-            seedFinder = null; // This ensures it isn't seen as "ready" between now and initing the new one.
+			// Find seeds and magic
+			if (userPattern.Count == 11 && SeedFinderReady)
+			{
+				txtSecondRow.Enabled = false;
+				performMagicSearch(userPattern.ToArray());
+			}
+			else
+			{
+				tileDisplay3.update("");
+				tileDisplay4.update("");
+			}
+		}
 
-            Action seedFinderReady = () =>
-            {
-                Invoke(() => {
-                    // Was it successful?
-                    if (seedFinder == null || seedFinder.error)
-                    {
-                        setMatchText("Failed to load lookup data.");
-                        setWorkStatus("");
-                        txtSecondRow.Enabled = false;
-                        seedFinder = null;
-                    }
-                    else
-                    {
-                        setMatchText("Lookup complete. Enter second row of tiles.");
-                        setWorkStatus("");
-                    }
+		private void createSeedFinder(List<int> userPattern)
+		{
+			seedFinder = null; // This ensures it isn't seen as "ready" between now and initing the new one.
 
-                    // Re-enable the text box, and possibly trigger seed search with 11 tiles from second row.
-                    txtFirst7.Enabled = true;
-                    if (txtSecondRow.Enabled)
-                        txtSecondRow_TextChanged(progressBar, new EventArgs());
-                });
-            };
-            setWorkStatus("Loading lookup data...");
-            Thread t = new Thread(() => {
-                seedFinder = new TilesFor12.SeedFinder(userPattern.ToArray());
-                // If it didn't have to download, then it ran syncronously.
-                if (!seedFinder.isReady)
-                {
-                    seedFinder.DownloadProgress += (progress) =>
-                    {
-                        if (progress < 100)
-                            setWorkStatus("Downloading lookup... " + Math.Round(progress).ToString() + "%");
-                        else
-                            setWorkStatus("Extracting files...");
-                    };
-                    seedFinder.Ready += seedFinderReady;
-                }
-                else
-                    seedFinderReady();
-            });
-            t.Start();
-        }
+			Action seedFinderReady = () =>
+			{
+				Invoke(() => {
+					// Was it successful?
+					if (seedFinder == null || seedFinder.error)
+					{
+						setMatchText("Failed to load lookup data.");
+						setWorkStatus("");
+						txtSecondRow.Enabled = false;
+						seedFinder = null;
+					}
+					else
+						setWorkStatus("");
 
-        private void performMagicSearch(int[] secondRow)
-        {
-            Thread t = new Thread(() =>
-            {
-                if (seedFinder == null)
-                {
-                    setMatchText("Error: Idk."); // it should never happen
-                    return;
-                }
+					// Re-enable the text box, and possibly trigger seed search with 11 tiles from second row.
+					txtFirst7.Enabled = true;
+					if (txtSecondRow.Enabled)
+						txtSecondRow_TextChanged(progressBar, new EventArgs());
+				});
+			};
+			setWorkStatus("Loading lookup data...");
+			Thread t = new Thread(() => {
+				seedFinder = new TilesFor12.SeedFinder(userPattern.ToArray());
+				// If it didn't have to download, then it ran syncronously.
+				if (!seedFinder.isReady)
+				{
+					seedFinder.DownloadProgress += (progress) =>
+					{
+						if (progress < 100)
+							setWorkStatus("Downloading lookup... " + Math.Round(progress).ToString() + "%");
+						else
+							setWorkStatus("Extracting files...");
+					};
+					seedFinder.Ready += seedFinderReady;
+				}
+				else
+					seedFinderReady();
+			});
+			t.Start();
+		}
 
-                // Find seeds
-                setWorkStatus("Finding seeds...");
-                List<uint> seeds = seedFinder.calculatePossibleSeeds(secondRow);
-                if (seeds.Count == 0)
-                    setMatchText("No seeds found. Verify that you entered the correct tiles.");
-                else
-                {
-                    // Find magic
-                    setWorkStatus("Finding magics...");
-                    SeedInitParams sip = new SeedInitParams(settings.MAC, dt, settings.systemName.ToUpper().Contains("3DS"));
-                    InitSeedSearcher iss = new InitSeedSearcher(sip, seeds);
-                    List<SeedInitParams> foundParams = iss.FindSeeds();
-                    if (foundParams.Count == 0)
-                        setMatchText("No magic found. Verify your MAC address, system type, date/time, and tile pattern. Try changing your seconds count by +/-1 in case your measurement for RNG initialization time is off.");
-                    // Expected result: only 1 params found. Save the magic.
-                    else if (foundParams.Count == 1)
-                    {
-                        settings.magic = SystemSeedInitParams.GetMagic(foundParams[0]);
-                        settings.saveSettings();
-                        // Save this magic so it can be used again later.
-                        string[] newOthers = new string[systems["other"].Length + 1];
-                        Array.Copy(systems["other"], newOthers, systems["other"].Length);
-                        newOthers[newOthers.Length - 1] = settings.magic.ToString("X");
-                        systems["other"] = newOthers;
-                        using (FileStream fs = File.Open("otherMagics.json", FileMode.Create))
-                            JsonSerializer.Serialize<string[]>(fs, systems["other"]);
-                        // Display results
-                        setMatchText("Found and saved magic for 'other'. Expected tile pattern shown.");
-                        Invoke(() =>
-                        {
-                            displayExpectedPattern();
-                            btnNext.Text = "Time Finder";
-                        });
-                    }
-                    // If there are more than one, we cannot know which is correct.
-                    else if (foundParams.Count > 1)
-                    {
-                        setMatchText("Multiple magics. Choose system 'temp' and try another tile pattern.");
-                        // Save magic and slightly-varied magics
-                        string[] magics = new string[foundParams.Count * 9];
-                        int mID = 0;
-                        foreach (SeedInitParams p in foundParams)
-                        {
-                            for (int t0 = -1; t0 <= 1; t0++)
-                                for (int vc = -1; vc <= 1; vc++)
-                                {
-                                    SeedInitParams newParams = new SeedInitParams(p);
-                                    newParams.Timer0 += (ushort)t0;
-                                    newParams.VCount += (ushort)vc;
-                                    magics[mID] = SystemSeedInitParams.GetMagic(newParams).ToString("X");
-                                    mID++;
-                                }
-                        }
-                        systems["temp"] = magics;
-                        if (!cbxSystem.Items.Contains("temp"))
-                            Invoke(() => cbxSystem.Items.Add("temp"));
-                    }
-                }
+		private void performMagicSearch(int[] secondRow)
+		{
+			Thread t = new Thread(() =>
+			{
+				if (seedFinder == null)
+				{
+					setMatchText("Error: Idk."); // it should never happen
+					return;
+				}
 
-                Invoke(() => txtSecondRow.Enabled = true);
-                setWorkStatus("");
-            });
-            t.Start();
-        }
+				// Find seeds
+				setWorkStatus("Finding seeds...");
+				List<uint> seeds = seedFinder.calculatePossibleSeeds(secondRow);
+				if (seeds.Count == 0)
+					setMatchText("No seeds found. Verify that you entered the correct tiles.");
+				else
+				{
+					// Find magic
+					setWorkStatus("Finding magics...");
+					SeedInitParams sip = new SeedInitParams(settings.MAC, dt, settings.systemName.ToUpper().Contains("3DS"));
+					InitSeedSearcher iss = new InitSeedSearcher(sip, seeds);
+					List<SeedInitParams> foundParams = iss.FindSeeds();
+					if (foundParams.Count == 0)
+						setMatchText("No magic found. Verify your MAC address, system type, date/time, and tile pattern. Try changing your seconds count by +/-1 in case your measurement for RNG initialization time is off.");
+					// Expected result: only 1 params found. Save the magic.
+					else if (foundParams.Count == 1)
+					{
+						settings.magic = SystemSeedInitParams.GetMagic(foundParams[0]);
+						settings.saveSettings();
+						// Save this magic so it can be used again later.
+						if (Array.IndexOf(systems["other"], settings.magic.ToString("X")) == -1)
+						{
+							string[] newOthers = new string[systems["other"].Length + 1];
+							Array.Copy(systems["other"], newOthers, systems["other"].Length);
+							newOthers[newOthers.Length - 1] = settings.magic.ToString("X");
+							systems["other"] = newOthers;
+							using (FileStream fs = File.Open("otherMagics.json", FileMode.Create))
+								JsonSerializer.Serialize<string[]>(fs, systems["other"]);
+						}
+						// Display results
+						Invoke(() =>
+						{
+							cbxSystem.SelectedIndex = cbxSystem.Items.IndexOf("other");
+							displayExpectedPattern();
+							btnNext.Text = "Time Finder";
+							setMatchText("Found and saved magic for 'other'. Expected tile pattern shown.");
+						});
+					}
+					// If there are more than one, we cannot know which is correct.
+					else if (foundParams.Count > 1)
+					{
+						setMatchText("Multiple magics. Choose system 'temp' and try another tile pattern.");
+						// Save magic and slightly-varied magics
+						string[] magics = new string[foundParams.Count * 9];
+						int mID = 0;
+						foreach (SeedInitParams p in foundParams)
+						{
+							for (int t0 = -1; t0 <= 1; t0++)
+								for (int vc = -1; vc <= 1; vc++)
+								{
+									SeedInitParams newParams = new SeedInitParams(p);
+									newParams.Timer0 += (ushort)t0;
+									newParams.VCount += (ushort)vc;
+									magics[mID] = SystemSeedInitParams.GetMagic(newParams).ToString("X");
+									mID++;
+								}
+						}
+						systems["temp"] = magics;
+						if (!cbxSystem.Items.Contains("temp"))
+							Invoke(() => cbxSystem.Items.Add("temp"));
+					}
+				}
 
-        private void displayExpectedPattern()
-        {
-            SeedInitParams sip = new SeedInitParams(settings.MAC, dt);
-            new SystemSeedInitParams(settings.magic).SetSeedParams(sip);
-            byte[][] pattern = TilesFor12.calculateTileRows(sip.GetSeed());
+				Invoke(() => txtSecondRow.Enabled = true);
+				setWorkStatus("");
+			});
+			t.Start();
+		}
 
-            tileDisplay2.update(pattern[1]);
-            tileDisplay3.update(pattern[2]);
-            tileDisplay4.update(pattern[3]);
-        }
+		private void displayExpectedPattern()
+		{
+			SeedInitParams sip = new SeedInitParams(settings.MAC, dt);
+			new SystemSeedInitParams(settings.magic).SetSeedParams(sip);
+			byte[][] pattern = TilesFor12.calculateTileRows(sip.GetSeed());
 
-        private void dtpDateTime_Leave(object sender, EventArgs e)
-        {
-            settings.dt = dt;
-            dirtySettings();
-        }
-        private void dtpDateTime_ValueChanged(object sender, EventArgs e)
-        {
-            dirtySettings(false);
-        }
+			tileDisplay2.update(pattern[1]);
+			tileDisplay3.update(pattern[2]);
+			tileDisplay4.update(pattern[3]);
+		}
 
-        private void cbxSystem_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if ((string)cbxSystem.SelectedItem == "WiiU VC")
-            {
-                MessageBox.Show("The RNG on WiiU VC does not depend on date/time, so it is not possible to use this kind of RNG manipulation.");
-                cbxSystem.SelectedIndex = 0;
-                return;
-            }
+		private void dtpDateTime_Leave(object sender, EventArgs e)
+		{
+			settings.dt = dt;
+			dirtySettings();
+		}
+		private void dtpDateTime_ValueChanged(object sender, EventArgs e)
+		{
+			dirtySettings(false);
+		}
 
-            settings.systemName = cbxSystem.Text;
-            dirtySettings();
-        }
+		private void cbxSystem_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			if ((string)cbxSystem.SelectedItem == "WiiU VC")
+			{
+				MessageBox.Show("The RNG on WiiU VC does not depend on date/time, so it is not possible to use this kind of RNG manipulation.");
+				cbxSystem.SelectedIndex = 0;
+				return;
+			}
 
-        private void btnNext_Click(object sender, EventArgs e)
-        {
-            if (btnNext.Text.StartsWith('T')) // Time finder
-            {
-                // Warning.
-                string prompt;
-                if (lblMatch.Text.Contains("Expected"))
-                    prompt = Properties.Resources.MagicFoundWarning;
-                else
-                    prompt = Properties.Resources.MagicMatchWarning;
-                MessageBox.Show(prompt, "Just so you know", MessageBoxButtons.OK);
+			settings.systemName = cbxSystem.Text;
+			dirtySettings();
+		}
 
-                TimeFinder tfForm = new TimeFinder(settings);
-                tfForm.Show();
-            }
-            else // double jumps
-            {
-                DoubleJumpsForm djForm = new DoubleJumpsForm(settings, false);
-                djForm.Show();
-            }
-            this.Close();
-        }
+		private void btnNext_Click(object sender, EventArgs e)
+		{
+			if (btnNext.Text.StartsWith('T')) // Time finder
+			{
+				// Warning.
+				string prompt;
+				if (lblMatch.Text.Contains("Expected"))
+					prompt = Properties.Resources.MagicFoundWarning;
+				else
+					prompt = Properties.Resources.MagicMatchWarning;
+				MessageBox.Show(prompt, "Just so you know", MessageBoxButtons.OK);
 
-        private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
-        {
-            // Exit the application if there isn't another open window.
-            if (Application.OpenForms.Count == 0)
-                Application.Exit();
-        }
-    }
+				TimeFinder tfForm = new TimeFinder(settings);
+				tfForm.Show();
+			}
+			else // double jumps
+			{
+				DoubleJumpsForm djForm = new DoubleJumpsForm(settings, false);
+				djForm.Show();
+			}
+			this.Close();
+		}
+
+		private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
+		{
+			// Exit the application if there isn't another open window.
+			if (Application.OpenForms.Count == 0)
+				Application.Exit();
+		}
+	}
 }

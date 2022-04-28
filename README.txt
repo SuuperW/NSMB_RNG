@@ -1,7 +1,7 @@
-There is a pre-built version (1.3) for Windows x64 on the Release branch. You can download it here: https://github.com/SuuperW/NSMB_RNG/raw/Release/NSMB_RNG_v1.3.zip
+There is a pre-built version (1.4) for Windows x64 on the Release branch. You can download it here: https://github.com/SuuperW/NSMB_RNG/raw/Release/NSMB_RNG_v1.4.zip
 
 --- Purpose of NSMB_RNG ---
-The purpose of NSMB_RNG is to allow speedrunners to play the any% category with the best possible RNG. This means the red ? blocks in World 8 always move left. If attempting mini route, there will be a 7% chance of RNG supporting that in World 5.
+The purpose of NSMB_RNG is to allow speedrunners to play the any% category with the best possible RNG. This means the red ? blocks in World 8 always move left. If attempting mini route, there will be a 7% chance of RNG supporting that in World 5 when doing basic in-game RNG manip.
 
 --- How to use NSMB_RNG ---
 In order to determine which RNG seed your system generated, you will have to:
@@ -23,7 +23,7 @@ You will have to repeat the above steps 1-7 multiple times in the following step
  3) Choose your system type in the drop-down menu. (Note: It is not possible to manipulate RNG via date/time on WiiU VC, so only DS-like systems are supported.)
  5) Enter the first 7 tiles, according to the tiles.png file.
   A) If these match a known magic for your system, the text beneath the tiles will say so.
-  B) If not, you will have to also enter 11 tiles for the second row and wait for NSMB_RNG to calculate a magic.
+  B) If not, you will have to also enter 11 tiles for the second row and wait for NSMB_RNG to calculate a magic. (Most magics for US ROMs are known, most others are not.)
  6) Click the "Time Finder" button.
  7) If you want to attempt the mini route, check the box.
  8) Click "Search".
