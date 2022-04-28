@@ -20,12 +20,12 @@ namespace NSMB_RNG
             foreach (uint s in desiredSeeds)
                 this.desiredSeeds.Add(s);
 
-            minTimer0 = 0x200;
-            maxTimer0 = 0x5ff; // Idk if that's right. Idk what timer0 is.
+            minTimer0 = 0x300;
+            maxTimer0 = 0x22ff; // Idk if that's right. Idk what timer0 is.
             minVCount = 0;
             maxVCount = 263; // 262?
-            minVFrame = 3; // Lowest I've seen is 4.
-            maxVFrame = 9; // Highest I've seen is 8.
+            minVFrame = 4; // Lowest I've seen is 4.
+            maxVFrame = 8; // Highest I've seen is 8.
 
             secondsRange = 1;
         }
