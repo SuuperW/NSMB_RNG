@@ -354,12 +354,15 @@ namespace NSMB_RNG_GUI
 						settings.magic = SystemSeedInitParams.GetMagic(foundParams[0]);
 						settings.saveSettings();
 						// Save this magic so it can be used again later.
-						string[] newOthers = new string[systems["other"].Length + 1];
-						Array.Copy(systems["other"], newOthers, systems["other"].Length);
-						newOthers[newOthers.Length - 1] = settings.magic.ToString("X");
-						systems["other"] = newOthers;
-						using (FileStream fs = File.Open("otherMagics.json", FileMode.Create))
-							JsonSerializer.Serialize<string[]>(fs, systems["other"]);
+						if (Array.IndexOf(systems["other"], settings.magic.ToString("X")) == -1)
+						{
+							string[] newOthers = new string[systems["other"].Length + 1];
+							Array.Copy(systems["other"], newOthers, systems["other"].Length);
+							newOthers[newOthers.Length - 1] = settings.magic.ToString("X");
+							systems["other"] = newOthers;
+							using (FileStream fs = File.Open("otherMagics.json", FileMode.Create))
+								JsonSerializer.Serialize<string[]>(fs, systems["other"]);
+						}
 						// Display results
 						Invoke(() =>
 						{
