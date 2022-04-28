@@ -24,7 +24,6 @@ namespace NSMB_RNG_GUI
 			fromTimeFinder = patternFromSettings;
 
 			// Set controls
-			chkMini.Checked = settings.wantMini;
 			if (patternFromSettings)
 			{
 				lblTime.Text = settings.dt.ToLongDateString() + " " + settings.dt.ToLongTimeString();
@@ -43,6 +42,7 @@ namespace NSMB_RNG_GUI
 				// don't need that empty space where the non-visible tiles and button are
 				this.Height -= 35;
 			}
+			chkMini.Checked = settings.wantMini;
 
 			// The initial value (and thus max) is set to 9 in the designer.
 			// This is because we need to guarantee that setting the value above actually changes the value,
@@ -115,6 +115,8 @@ namespace NSMB_RNG_GUI
 			numPTile_ValueChanged(sender, e);
 			// If not using mini route, 7 and 8 double jumps will always work.
 			lbl78.Visible = !chkMini.Checked;
+
+			MainForm.updateSettings(settings.wantMini, settings.buttonsHeld);
 		}
 
 		private void btnWrongPattern_Click(object sender, EventArgs e)

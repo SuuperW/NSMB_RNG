@@ -85,6 +85,15 @@ namespace NSMB_RNG_GUI
 			isLoaded = true;
 		}
 
+		// These two settings are updated with elements on other forms. This method should not be called from MainForm.
+		public static void updateSettings(bool wantMini, uint buttons)
+		{
+			Settings s = Settings.loadSettings();
+			s.wantMini = wantMini;
+			s.buttonsHeld = buttons;
+			s.saveSettings();
+		}
+
 		private List<uint> strArrayToMagicList(string[] strArray)
 		{
 			List<uint> magicList = new List<uint>();

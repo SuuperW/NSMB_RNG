@@ -68,6 +68,7 @@ namespace NSMB_RNG_GUI
 			settings.buttonsHeld = 0;
 			for (int i = 0; i < cbxArray.Length; i++)
 				settings.buttonsHeld |= (cbxArray[i].Checked ? 1u : 0u) << i;
+			MainForm.updateSettings(settings.wantMini, settings.buttonsHeld);
 			// Search for a date and time
 			dts = new DateTimeSearcher((int)numSeconds.Value, settings.buttonsHeld, settings.MAC, settings.magic, settings.wantMini);
 			dts.ProgressReport += (p) => Invoke(() => progressBar1.Value = (int)(p * progressBar1.Maximum));
