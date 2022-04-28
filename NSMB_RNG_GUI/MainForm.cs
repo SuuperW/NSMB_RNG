@@ -352,12 +352,13 @@ namespace NSMB_RNG_GUI
 						using (FileStream fs = File.Open("otherMagics.json", FileMode.Create))
 							JsonSerializer.Serialize<string[]>(fs, systems["other"]);
 						// Display results
-						setMatchText("Found and saved magic for 'other'. Expected tile pattern shown.");
 						Invoke(() =>
 						{
+							cbxSystem.SelectedIndex = cbxSystem.Items.IndexOf("other");
 							displayExpectedPattern();
 							btnNext.Text = "Time Finder";
 						});
+						setMatchText("Found and saved magic for 'other'. Expected tile pattern shown.");
 					}
 					// If there are more than one, we cannot know which is correct.
 					else if (foundParams.Count > 1)
