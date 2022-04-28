@@ -294,10 +294,7 @@ namespace NSMB_RNG_GUI
 						seedFinder = null;
 					}
 					else
-					{
-						setMatchText("Lookup complete. Enter second row of tiles.");
 						setWorkStatus("");
-					}
 
 					// Re-enable the text box, and possibly trigger seed search with 11 tiles from second row.
 					txtFirst7.Enabled = true;
