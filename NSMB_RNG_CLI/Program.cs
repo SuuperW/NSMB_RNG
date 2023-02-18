@@ -91,6 +91,8 @@ List<uint> chooseSystem()
 		else
 		{
 			magicsArray = systemsCaseInsensitive[chosenSystem.ToLower()];
+			if (chosenSystem.ToLower() == "3ds")
+				Console.WriteLine("Note: Some people have reported this app being unable to find magics for their 3DS. Turning the 3DS off and on again seems to help.");
 			break;
 		}
 	}
@@ -298,24 +300,25 @@ void menuCalculateTilePattern()
 void menuDoubleJumps()
 {
 	Console.WriteLine("This assumes that you already have a good seed!");
-	Console.WriteLine("1) Go to 1-2 as instructed in the README.txt file. You MUST pause.");
+	Console.WriteLine("1) Go to 1-2 as instructed in the README.txt file. You MUST pause before Mario falls one-third way down the screen.");
 	Console.WriteLine("2) Enter the position (1-8) of the first 'P' tile in the first row of tiles.");
 	Console.WriteLine("3) Quit directly to the main menu. Do not go to the overworld.");
 	int tilePosition = UI.GetUserMenuSelection("'P' tile position: ", 8);
 	// This array has indexes 0-8. [0] is equal to [8], of course.
-	int[] doubleJumpCountsNoMini = new int[] { 2, 4, 6, 2, 3, 3, 4, 1, 2 };
-	int[] doubleJumpCountsMini1 = new int[]  { 1, 0, 2, 2, 0, 0, 1, 4, 1 };
-	int[] doubleJumpCountsMini2 = new int[]  { 4, 3, 5, 7, 5, 3, 6, 7, 4 };
+	int[] doubleJumpCountsNoMini = new int[] { 5, 7, 1, 5, 6, 6, 7, 4, 5 };
+	int[] doubleJumpCountsMiniLow = new int[] { 1, 0, 2, 2, 0, 1, 1, 4, 1 };
+	int[] doubleJumpCountsMiniHigh = new int[] { 4, 3, 5, 7, 5, 4, 6, 7, 4 };
+
 	if (settings.wantMini)
 	{
-		Console.WriteLine("\nYou can do " + doubleJumpCountsMini1[tilePosition] + " or " + doubleJumpCountsMini2[tilePosition] + " double jumps.");
+		Console.WriteLine("\nYou can do " + doubleJumpCountsMiniLow[tilePosition] + " or " + doubleJumpCountsMiniHigh[tilePosition] + " double jumps.");
 		Console.WriteLine("Adding 8, 16, etc, to either of those numbers will also work.\n");
 	}
 	else
 	{
 		int djCount = doubleJumpCountsNoMini[tilePosition];
 		Console.WriteLine("\nYou can do any number of double jumps except " + djCount + " (or " + (djCount + 8) + ", " + (djCount + 16) + ", etc.).");
-		Console.WriteLine("Note: 7 and 8 double jumps will always work, regardless of tile position.\n");
+		Console.WriteLine("Note: 0, 2, 3, and 8 double jumps will always work, regardless of tile position.\n");
 	}
 }
 
