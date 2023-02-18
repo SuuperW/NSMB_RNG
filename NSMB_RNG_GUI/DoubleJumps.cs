@@ -9,9 +9,9 @@ namespace NSMB_RNG_GUI
 	{
 		private byte[] tilePatternNoMini = new byte[] { 4, 3, 3, 3, 3, 3, 5, 3 };
 		private byte[] tilePatternMini = new byte[] { 4, 5, 5, 3, 5, 5, 5, 5 };
-		private int[] doubleJumpCountsNoMini = new int[] { 4, 6, 2, 3, 3, 4, 1, 2 };
-		private int[] doubleJumpCountsMini1 = new int[] { 1, 4, 1, 0, 2, 2, 0, 0 };
-		private int[] doubleJumpCountsMini2 = new int[] { 6, 7, 4, 3, 5, 7, 5, 3 };
+		private int[] doubleJumpCountsMiniLow = new int[] { 1, 0, 2, 2, 0, 1, 1, 4 };
+		private int[] doubleJumpCountsMiniHigh = new int[] { 4, 3, 5, 7, 5, 4, 6, 7 };
+		private int[] doubleJumpCountsNoMini = new int[] { 5, 7, 1, 5, 6, 6, 7, 4 };
 
 		Settings settings;
 		bool fromTimeFinder;
@@ -83,10 +83,10 @@ namespace NSMB_RNG_GUI
 
 			// double jump counts
 			if (settings.wantMini)
-				lblDJCount.Text = doubleJumpCountsMini1[tilePosition] + ", " + doubleJumpCountsMini2[tilePosition] + ", " +
-					(doubleJumpCountsMini1[tilePosition] + 8) + ", " + (doubleJumpCountsMini2[tilePosition] + 8);
+				lblDJCount.Text = doubleJumpCountsMiniLow[tilePosition] + ", " + doubleJumpCountsMiniHigh[tilePosition] + ", " +
+					(doubleJumpCountsMiniLow[tilePosition] + 8) + ", or " + (doubleJumpCountsMiniHigh[tilePosition] + 8);
 			else
-				lblDJCount.Text = "not " + doubleJumpCountsNoMini[tilePosition] + ", " + (doubleJumpCountsNoMini[tilePosition] + 8);
+				lblDJCount.Text = "not " + doubleJumpCountsNoMini[tilePosition] + " or " + (doubleJumpCountsNoMini[tilePosition] + 8);
 		}
 		private byte[] getRow(int PTileLocation)
 		{

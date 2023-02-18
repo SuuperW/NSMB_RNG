@@ -104,23 +104,23 @@
 			this.numPTile.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
 			this.numPTile.Location = new System.Drawing.Point(99, 135);
 			this.numPTile.Maximum = new decimal(new int[] {
-			9,
-			0,
-			0,
-			0});
+            9,
+            0,
+            0,
+            0});
 			this.numPTile.Minimum = new decimal(new int[] {
-			1,
-			0,
-			0,
-			0});
+            1,
+            0,
+            0,
+            0});
 			this.numPTile.Name = "numPTile";
 			this.numPTile.Size = new System.Drawing.Size(35, 23);
 			this.numPTile.TabIndex = 7;
 			this.numPTile.Value = new decimal(new int[] {
-			9,
-			0,
-			0,
-			0});
+            9,
+            0,
+            0,
+            0});
 			this.numPTile.ValueChanged += new System.EventHandler(this.numPTile_ValueChanged);
 			// 
 			// label2
@@ -158,11 +158,11 @@
 			// 
 			this.lbl78.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this.lbl78.AutoSize = true;
-			this.lbl78.Location = new System.Drawing.Point(204, 127);
+			this.lbl78.Location = new System.Drawing.Point(180, 129);
 			this.lbl78.Name = "lbl78";
-			this.lbl78.Size = new System.Drawing.Size(136, 15);
+			this.lbl78.Size = new System.Drawing.Size(163, 15);
 			this.lbl78.TabIndex = 11;
-			this.lbl78.Text = "7 and 8 will always work.";
+			this.lbl78.Text = "0, 2, 3, and 8 will always work.";
 			// 
 			// btnWrongPattern
 			// 
