@@ -431,6 +431,10 @@ namespace NSMB_RNG_GUI
 				cbxSystem.SelectedIndex = 0;
 				return;
 			}
+			else if ((string)cbxSystem.SelectedItem == "3DS")
+			{
+				MessageBox.Show("Some people have reported this app being unable to find magics for their 3DS. Turning the 3DS off and on again seems to help.");
+			}
 
 			settings.systemName = cbxSystem.Text;
 			dirtySettings();

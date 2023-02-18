@@ -91,6 +91,8 @@ List<uint> chooseSystem()
 		else
 		{
 			magicsArray = systemsCaseInsensitive[chosenSystem.ToLower()];
+			if (chosenSystem.ToLower() == "3ds")
+				Console.WriteLine("Note: Some people have reported this app being unable to find magics for their 3DS. Turning the 3DS off and on again seems to help.");
 			break;
 		}
 	}
