@@ -13,4 +13,9 @@ code {
   color: #fff;
   background-color: #1b6ec2;
   border-color: #1861ac;
+  margin: 8px auto;
+}
+
+label {
+	margin: 4px 10px;
 }

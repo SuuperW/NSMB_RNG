@@ -1,4 +1,4 @@
-namespace AngularTutorial
+namespace NSMB_RNG_WebApp
 {
     internal static class CONST
     {

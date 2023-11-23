@@ -1,8 +1,7 @@
 import { Routes } from '@angular/router';
-import { FetchDataComponent } from './app/fetch-data/fetch-data.component';
-import { CounterComponent } from './app/counter/counter.component';
 import { Error404Component } from './app/error404/error404.component';
 import { HomeComponent } from './app/home/home.component';
+import { SeedParamsFinderComponent } from './app/seed-params-finder/seed-params-finder.component';
 
 const routeConfig: Routes = [
 	{
@@ -12,14 +11,9 @@ const routeConfig: Routes = [
 		pathMatch: 'full',
 	},
 	{
-		path: 'weather',
-		component: FetchDataComponent,
-		title: 'Weather Data',
-	},
-	{
-		path: 'counter',
-		component: CounterComponent,
-		title: 'Counter',
+		path: 'all',
+		component: SeedParamsFinderComponent,
+		title: 'Seed Params Finder',
 	},
 	{ // No route matches
 		path: '**',

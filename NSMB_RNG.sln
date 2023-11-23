@@ -15,6 +15,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NSMB_RNG_GUI", "NSMB_RNG_GU
 		{A50E1C5C-9C8E-4C4F-A59B-9BC93F2EFE16} = {A50E1C5C-9C8E-4C4F-A59B-9BC93F2EFE16}
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NSMB_RNG_WebApp", "NSMB_RNG_WebApp\NSMB_RNG_WebApp.csproj", "{0D37BD91-C71F-441E-9E6A-2022BE21B27D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -47,6 +49,14 @@ Global
 		{7986F2D5-1642-4B81-BC0D-7E3800EBC668}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7986F2D5-1642-4B81-BC0D-7E3800EBC668}.Release|x64.ActiveCfg = Release|Any CPU
 		{7986F2D5-1642-4B81-BC0D-7E3800EBC668}.Release|x64.Build.0 = Release|Any CPU
+		{0D37BD91-C71F-441E-9E6A-2022BE21B27D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0D37BD91-C71F-441E-9E6A-2022BE21B27D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0D37BD91-C71F-441E-9E6A-2022BE21B27D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{0D37BD91-C71F-441E-9E6A-2022BE21B27D}.Debug|x64.Build.0 = Debug|Any CPU
+		{0D37BD91-C71F-441E-9E6A-2022BE21B27D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0D37BD91-C71F-441E-9E6A-2022BE21B27D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0D37BD91-C71F-441E-9E6A-2022BE21B27D}.Release|x64.ActiveCfg = Release|Any CPU
+		{0D37BD91-C71F-441E-9E6A-2022BE21B27D}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
