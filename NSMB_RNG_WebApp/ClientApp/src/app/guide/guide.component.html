@@ -1,0 +1,6 @@
+<ng-container container [type]="stepComponentList[currentStep]"></ng-container>
+
+<!--<button class="btn-primary" [disabled]="this.stepComponent ? this.stepComponent.form.invalid : true" (click)="next()">Next</button>-->
+<!-- don't disable; user will click and get a message telling why form is invalid -->
+<button class="btn-primary" [hidden]="currentStep == 0" (click)="previous()">Previous</button>
+<button class="btn-primary" [hidden]="currentStep == stepComponentList.length - 1" (click)="next()">Next</button>

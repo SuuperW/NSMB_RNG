@@ -1,0 +1,15 @@
+<p>What type of console are you using?</p>
+
+<ng-container [formGroup]="form">
+	<label for="consoleTypeDS">DS-like</label>
+	<input id="consoleTypeDS" type="radio" name="consoleType" value="DS" formControlName="consoleType" />
+
+	<label for="consoleType3DS">3DS-like</label>
+	<input id="consoleType3DS" type="radio" name="consoleType" value="3DS" formControlName="consoleType" />
+</ng-container>
+
+<p>
+	DS-like consoles include DSi, DS Lite, DS XL versions, and DS emulators.<br />
+	3DS-like consoles include 2DS, XL versions, and 3DS emulators.<br />
+	Nintendo Virtual Console is not supported.
+</p>

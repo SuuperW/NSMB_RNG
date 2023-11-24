@@ -19,10 +19,9 @@ import { inject } from '@angular/core';
 })
 export class SeedParamsFinderComponent {
 	// TODO: validate more
-	inputsForm: FormGroup = new FormGroup({
+	inputsForm = new FormGroup({
 		macInput: new FormControl(localStorage.getItem('mac') ?? '00:11:22:aa:bb:cc', (c: AbstractControl<any, any>) => {
 			let macStr: string = c.value;
-			console.log('validating');
 			if (macStr.match(/([\dabcdef]{2}:){5}[\dabcdef]{2}/i) || macStr.match(/[\dabcdef]{12}/i))
 				return null;
 			else

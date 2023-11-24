@@ -5,7 +5,3 @@ input {
 app-tile-display {
 	display: block;
 }
-
-input.ng-invalid {
-	outline: 2px solid red;
-}

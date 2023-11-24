@@ -2,20 +2,34 @@
 
 /* Provide sufficient contrast against white background */
 a {
-  color: #0366d6;
+	color: #0366d6;
 }
 
 code {
-  color: #e01a76;
+	color: #e01a76;
 }
 
 .btn-primary {
-  color: #fff;
-  background-color: #1b6ec2;
-  border-color: #1861ac;
-  margin: 8px auto;
+	color: #fff;
+	background-color: #1b6ec2;
+	border-color: #1861ac;
+	border-width: 2px;
+	margin: 0.5em 0.5em;
+	padding: 0.4em 0.44em 0.4em 0.4em;
+}
+.btn-primary:disabled {
+	background-color: #b0cfdf;
+	border-width: 0;
 }
 
 label {
 	margin: 4px 10px;
+}
+
+p {
+	margin: 1em 0;
+}
+
+input.ng-invalid.ng-touched {
+	outline: 2px solid red;
 }
