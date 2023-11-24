@@ -1,0 +1,8 @@
+.tileWithLetter {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+.tileLetters {
+	display: flex;
+}

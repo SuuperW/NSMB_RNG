@@ -6,6 +6,7 @@ import { StepComponent } from './step';
 import { Step1Component } from './step1/step1.component';
 import { Step2Component } from './step2/step2.component';
 import { Step3Component } from './step3/step3.component';
+import { Step4Component } from './step4/step4.component';
 
 interface TI {
 	new(): StepComponent
@@ -23,7 +24,7 @@ interface TI {
 })
 export class GuideComponent implements AfterViewInit {
 	stepComponentList: TI[] = [
-		Step1Component, Step2Component, Step3Component,
+		Step1Component, Step2Component, Step3Component, Step4Component,
 	];
 
 	@ViewChild(ComponentContainer<StepComponent>) stepContainer!: ComponentContainer<StepComponent>;
@@ -37,9 +38,23 @@ export class GuideComponent implements AfterViewInit {
 		return (this.stepComponent?.form.invalid ?? true) ? '' : null;
 	}
 
-	constructor(private cdr: ChangeDetectorRef) { }
+	constructor(private cdr: ChangeDetectorRef) {
+		if (!localStorage.getItem('consoleType'))
+			return;
+
+		this.currentStep = 1;
+		if (!localStorage.getItem('mac'))
+			return;
+
+		this.currentStep = 2;
+		if (!localStorage.getItem('datetime'))
+			return;
+
+		this.currentStep = 3;
+	}
 
 	ngAfterViewInit() {
+		// Do I need these?
 		this.stepComponent?.form.markAsDirty();
 		this.cdr.detectChanges();
 	}

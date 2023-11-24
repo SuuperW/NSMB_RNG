@@ -13,7 +13,7 @@ import { StepComponent } from '../step';
 })
 export class Step1Component implements StepComponent {
 	form = new FormGroup({
-		consoleType: new FormControl(localStorage.getItem('consoleType'), (c: AbstractControl) => {
+		consoleType: new FormControl(localStorage.getItem('consoleType'), (c: AbstractControl<string>) => {
 			if (c.value) {
 				localStorage.setItem('consoleType', c.value);		
 				return null;

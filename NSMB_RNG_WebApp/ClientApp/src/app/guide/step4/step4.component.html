@@ -1,0 +1,54 @@
+<p>Now to collect RNG data. This comes in the form of tile patterns.</p>
+<p>You will need a saved file in the game before doing this.</p>
+<p>
+	Load the game as in step 3, making sure RNG is initialized at the exact same time.*<br />
+	As a reminder, your target time for RNG initialization is {{ targetDateTime }}.<br />
+	Then, load your saved file. This must be done BEFORE the intro cutscene begins playing.<br />
+	If you've left the game running on the title screen long enough for the cutscene to play, reset the system clock and reload the game.<br />
+	Go to world 1-2 and enter the level. Pause the game before Mario falls far enough to reach one third way down the screen.<br />
+	Your tile pattern is the first 7 tiles in the topmost row to Mario's right plus all 11 visible tiles in the second row.<br />
+</p>
+<p>Enter one letter for each tile. Here are the letters for each tile:</p>
+<div class="tileLetters">
+	<div class="tileWithLetter">B <img src="assets/tileB.png" class="tileImage" /></div>
+	<div class="tileWithLetter">C <img src="assets/tileC.png" class="tileImage" /></div>
+	<div class="tileWithLetter">E <img src="assets/tileE.png" class="tileImage" /></div>
+	<div class="tileWithLetter">I <img src="assets/tileI.png" class="tileImage" /></div>
+	<div class="tileWithLetter">P <img src="assets/tileP.png" class="tileImage" /></div>
+	<div class="tileWithLetter">S <img src="assets/tileS.png" class="tileImage" /></div>
+</div>
+
+<p>Example: The following image shows the tile pattern "xxxxxxx" and "xxxxxxxxxxx".</p>
+<img src="assets/exampleTilePattern.png" />
+
+<ng-container [formGroup]="form">
+	<label for="row1Input">First row</label>
+	<input id="row1Input" placeholder="first row tiles (7)" formControlName="row1Input" />
+
+	<label for="row2Input">Second row</label>
+	<input id="row2Input" placeholder="second row tiles (11)" formControlName="row2Input" />
+
+	<app-tile-display [tileCount]="7" [tiles]="this.form.value.row1Input" (tilesOut)="row1Changed($event)"></app-tile-display>
+	<app-tile-display [tileCount]="11" [tiles]="this.form.value.row2Input"></app-tile-display>
+	<p>----- bottom row -----</p>
+	<app-tile-display [tileCount]="11" tiles="x"></app-tile-display>
+</ng-container>
+
+<p>
+	After submitting your tile pattern, reboot the console, reset the clock, and get another tile pattern.<br />
+	You will be required to collect several tile patterns.<br />
+	Patterns submitted: {{ submitCount }}
+</p>
+
+<p class="fine-print">
+	*The app should be able to detect if you're off by one second, but it will be less reliable with more mistakes. If you load the game and are not confident RNG was initialized at the correct time, try again before getting a tile pattern.
+</p>
+
+<div [hidden]="!inProgress">
+	<label for="submitProcess">{{ status }}</label>
+	<br />
+	<progress id="submitProgress"></progress>
+</div>
+
+<button class="btn-primary" (click)="submit()">Submit</button>
+<br />

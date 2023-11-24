@@ -14,14 +14,14 @@
 
 	<br />
 	<label for="row1Input">First row</label>
-	<input id="row1Input" name="row1" placeholder="first row tiles (7)" formControlName="row1Input" />
+	<input id="row1Input" placeholder="first row tiles (7)" formControlName="row1Input" />
 
 
 	<label for="row2Input">Second row</label>
-	<input id="row2Input" name="row2" placeholder="second row tiles (11)" formControlName="row2Input" />
+	<input id="row2Input" placeholder="second row tiles (11)" formControlName="row2Input" />
 
-	<app-tile-display [tileCount]="7" [row1Input]="this.inputsForm.value.row1Input"></app-tile-display>
-	<app-tile-display [tileCount]="11" [row1Input]="this.inputsForm.value.row2Input"></app-tile-display>
+	<app-tile-display [tileCount]="7" [tiles]="this.inputsForm.value.row1Input"></app-tile-display>
+	<app-tile-display [tileCount]="11" [tiles]="this.inputsForm.value.row2Input"></app-tile-display>
 
 	<button class="btn-primary" (click)="formSubmit()">Find Seed Info</button>
 </ng-container>

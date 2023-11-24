@@ -1,5 +1,29 @@
 <p>The next thing to do is figure out what date and time you'll use to collect RNG data.</p>
 <p>
 	RNG results depend on (among other things) the date and time to the second at which RNG was initialized.<br />
-	This occurs about half a second before the Nintendo logo begins to appear at startup.
+	This occurs about half a second before the Nintendo logo begins to appear at startup.<br />
+	You'll need to go to the system settings and set the date and time, to whatever you want.<br />
+	However, you should always ensure the console's clock shows a different hour/minute when you set those.*<br />
+	Get a stopwatch with a precision of at least tenths of seconds. Start the stopwatch at the same time you set the system clock.<br />
+	DO NOT attempt to use the home screen's clock for timing anything. It is not precise enough and can display seconds incorrectly.<br />
+	After setting the time, start the game. Stop the stopwatch when the Nintendo logo beings to appear.<br />
+	To get the time at which RNG was initialized, subtract half a second from the time on your stopwatch then round down to the nearest second.
+</p>
+<p>
+	For example, lets say you set the date and time to 08/11/2004 05:00.<br />
+	If the Ninendo logo appears at 13.2 seconds, subracting half gives 12.7 and then rounding down gives 12.<br />
+	So you would enter 08/11/2004 05:00:12 below in this case.
+</p>
+
+<ng-container [formGroup]="form">
+	<label for="dtInput">Date + Time: </label>
+	<input id="dtInput" type="datetime-local" min="2000-01-01" max="2099-12-31 23:59:59" step="1" formControlName="dtInput" />
+</ng-container>
+
+<p>
+	You're going to have to set the time to the same value and reload the game multiple times in the next steps.<br />
+</p>
+
+<p class="fine-print">
+	*On some consoles, if it sees you've set the time to, for example 3:15 but it was already 3:15 it will not actually do anything. This is bad since you need it to set to 3:15:00.
 </p>

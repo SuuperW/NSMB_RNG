@@ -13,10 +13,11 @@ import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule } from '@a
 })
 export class Step2Component implements StepComponent {
 	form = new FormGroup({
-		mac: new FormControl(localStorage.getItem('mac') ?? '00:11:22:aa:bb:cc', (c: AbstractControl<any, any>) => {
-			let macStr: string = c.value;
-			if (macStr.match(/([\dabcdef]{2}:){5}[\dabcdef]{2}/i) || macStr.match(/[\dabcdef]{12}/i))
+		mac: new FormControl(localStorage.getItem('mac') ?? '00:11:22:aa:bb:cc', (c: AbstractControl<string>) => {
+			if (c.value.match(/([\dabcdef]{2}:){5}[\dabcdef]{2}/i) || c.value.match(/[\dabcdef]{12}/i)) {
+				localStorage.setItem('mac', c.value);
 				return null;
+			}
 			else
 				return { err: 'MAC address is invalid' };
 		}),

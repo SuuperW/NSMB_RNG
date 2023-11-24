@@ -1,5 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
+
+const noTile = 'assets/none.png';
 
 @Component({
 	selector: 'app-tile-display',
@@ -11,31 +13,66 @@ import { Component, Input } from '@angular/core';
 	styleUrls: ['./tile-display.component.css'],
 })
 export class TileDisplayComponent {
-	@Input() tileCount: number = 0;
-	@Input() row1Input: string | null | undefined = '';
+	private _tileCount: number = 0;
+	@Input() set tileCount(value: number) {
+		this._tileCount = value;
+		this.imageSrc = new Array(value + 1);
+		this.tiles = this._tiles;
+	}
+	get tileCount() {
+		return this._tileCount;
+	}
 
-	getImageSrc(index: number) {
-		if (!this.row1Input)
-			return 'assets/none.png';
-
-		let strIndex: number = -1;
-		let charIndex: number = -1;
-		while (charIndex != index) {
-			strIndex++;
-			if (strIndex == this.row1Input.length)
-				return 'assets/none.png';
-			if (this.row1Input[strIndex] != ' ')
-				charIndex++;
-		}
-
-		if (index >= this.tileCount)
-			return 'assets/tooLong.png';
+	private _tiles: string = '';
+	@Input() set tiles(value: string | null | undefined) {
+		if (!value)
+			value = '';
+		this._tiles = value;
 
 		const validChars: string[] = ['B', 'C', 'E', 'I', 'P', 'S'];
-		const tileChar = this.row1Input[strIndex].toUpperCase();
-		if (validChars.indexOf(tileChar) != -1)
-			return `assets/tile${tileChar}.png`;
+		let strIndex: number = 0;
+		let charIndex: number = -1;
+		let outTiles = '';
+		let valid = true;
+		while (charIndex < this._tileCount && strIndex < value.length) {
+			if (value[strIndex] != ' ') {
+				charIndex++;
+				const tileChar = value[strIndex].toUpperCase();
+				outTiles = outTiles + value[strIndex].toLowerCase();
+				if (validChars.indexOf(tileChar) != -1)
+					this.imageSrc[charIndex] = `assets/tile${tileChar}.png`;
+				else {
+					this.imageSrc[charIndex] = 'assets/invalid.png';
+					valid = false;
+				}
+			}
+			strIndex++;
+		}
+
+		if (charIndex == this._tileCount) {
+			valid = false;
+			this.imageSrc[this._tileCount] = 'assets/tooLong.png';
+		}
+		else {
+			while (charIndex < this._tileCount) {
+				charIndex++;
+				this.imageSrc[charIndex] = 'assets/none.png';
+			}
+		}
+
+		if (valid)
+			this.tilesOut.emit(outTiles);
+	}
+
+	private imageSrc: string[] = ['assets/none.png'];
+
+
+	@Output() tilesOut = new EventEmitter<string>();
+
+	getImageSrc(index: number) {
+		if (index >= 0 && index < this.imageSrc.length)
+			return this.imageSrc[index];
 		else
-			return 'assets/invalid.png';
+			return 'assets/none.png';
 	}
 }

@@ -33,3 +33,16 @@ p {
 input.ng-invalid.ng-touched {
 	outline: 2px solid red;
 }
+
+.fine-print {
+	font-size: 0.8em;
+}
+
+.tileImage {
+	min-width: 3em;
+	min-height: 3em;
+}
+
+app-tile-display {
+	display: block;
+}
