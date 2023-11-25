@@ -5,3 +5,4 @@
 output/*
 **Backup.csproj
 ignore/**
+NSMB_RNG_WebApp/config.json

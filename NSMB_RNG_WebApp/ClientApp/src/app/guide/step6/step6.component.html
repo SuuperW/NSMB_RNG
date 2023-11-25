@@ -1,0 +1,20 @@
+<p>Your RNG initialization time is {{ manipDatetime }}.</p>
+<p>
+	Set your console's clock and load the game so that RNG is initialized at {{ manipDatetime }}.<br />
+	Then go to 1-2 and get the tile pattern.
+</p>
+
+<ng-container [formGroup]="form">
+	<label for="row1Input">First row</label>
+	<input id="row1Input" placeholder="first row tiles (7)" formControlName="row1Input" />
+
+	<app-tile-display [tileCount]="7" [tiles]="this.form.value.row1Input" (tilesOut)="row1Changed($event)"></app-tile-display>
+</ng-container>
+
+<p>{{ feedback }}</p>
+
+<div [hidden]="!inProgress">
+	<label for="submitProcess">{{ status }}</label>
+	<br />
+	<progress id="submitProgress"></progress>
+</div>

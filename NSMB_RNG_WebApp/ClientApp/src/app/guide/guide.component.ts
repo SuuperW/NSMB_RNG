@@ -7,6 +7,9 @@ import { Step1Component } from './step1/step1.component';
 import { Step2Component } from './step2/step2.component';
 import { Step3Component } from './step3/step3.component';
 import { Step4Component } from './step4/step4.component';
+import { Step5Component } from './step5/step5.component';
+import { Step6Component } from './step6/step6.component';
+import { Step7Component } from './step7/step7.component';
 
 interface TI {
 	new(): StepComponent
@@ -25,6 +28,7 @@ interface TI {
 export class GuideComponent implements AfterViewInit {
 	stepComponentList: TI[] = [
 		Step1Component, Step2Component, Step3Component, Step4Component,
+		Step5Component, Step6Component, Step7Component,
 	];
 
 	@ViewChild(ComponentContainer<StepComponent>) stepContainer!: ComponentContainer<StepComponent>;
@@ -60,8 +64,8 @@ export class GuideComponent implements AfterViewInit {
 	}
 
 	next() {
-		if (this.stepComponent?.form.invalid) {
-			alert(this.getErrorsForForm(this.stepComponent?.form));
+		if (this.stepComponent?.form.invalid || this.stepComponent?.errorStatus) {
+			alert(this.getErrorsForForm(this.stepComponent?.form, this.stepComponent?.errorStatus));
 			return;
 		}
 
@@ -74,8 +78,10 @@ export class GuideComponent implements AfterViewInit {
 			this.currentStep--;
 	}
 
-	getErrorsForForm(form: FormGroup) {
+	getErrorsForForm(form: FormGroup, otherError?: string) {
 		let sb = [];
+		if (otherError)
+			sb.push(otherError);
 		// I wish the form's .errors would include errors from all controls. (though Idk how it'd handle conflicting keys...)
 		for (let c in form.controls) {
 			let control = form.controls[c];

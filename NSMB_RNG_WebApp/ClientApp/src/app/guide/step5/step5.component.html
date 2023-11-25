@@ -1,0 +1,22 @@
+<p>
+	Do you want RNG optimized for the normal any% route, or for mini route?<br />
+	Mini route is an advanced strategy where you use a mini mushroom in 5-Ghost House.<br />
+	Mini route RNG might also be good for longer categories.*<br />
+	Normal any% route is recommended for most players.
+</p>
+
+<ng-container [formGroup]="form">
+	<label for="routeNormal">Normal route</label>
+	<input id="routeNormal" type="radio" name="route" value="normal" formControlName="route" />
+
+	<label for="routeMini">Mini route</label>
+	<input id="routeMini" type="radio" name="route" value="mini" formControlName="route" />
+</ng-container>
+
+<p class="fine-print">I think players have told me this before.</p>
+
+<div [hidden]="!inProgress">
+	<label for="submitProcess">Finding RNG initialization time...</label>
+	<br />
+	<progress id="submitProgress"></progress>
+</div>

@@ -4,7 +4,7 @@ using NSMB_RNG_WebApp.Models;
 namespace NSMB_RNG_WebApp.Controllers
 {
     [ApiController]
-    [Route($"{CONST.ApiRotuePrefix}seedfindingresults")]
+    [Route($"{Config.ApiRotuePrefix}seedfindingresults")]
     public class SeedFindController : ControllerBase
     {
         private readonly ILogger<SeedFindController> _logger;
