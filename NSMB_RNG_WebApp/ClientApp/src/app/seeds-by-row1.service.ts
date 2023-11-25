@@ -7,14 +7,16 @@ import { firstValueFrom } from 'rxjs';
 })
 export class SeedsByRow1Service {
 	http: HttpClient = inject(HttpClient);
+	private cache: { [key: string]: number[] } = {};
 
 	constructor() { }
 
 	async getPossibleSeedsFor(row1: string) {
-		let temp: number[] = [];
-
-		let result = await firstValueFrom(this.http.get(`asp/seeds/${row1}`));
-		console.log(result);
+		let result = this.cache[row1];
+		if (!result) {
+			result = await firstValueFrom(this.http.get(`asp/seeds/${row1}`)) as number[];
+			this.cache[row1] = result;
+		}
 
 		return result;
 	}

@@ -38,7 +38,7 @@ export class TileDisplayComponent {
 			if (value[strIndex] != ' ') {
 				charIndex++;
 				const tileChar = value[strIndex].toUpperCase();
-				outTiles = outTiles + value[strIndex].toLowerCase();
+				outTiles = outTiles + tileChar;
 				if (validChars.indexOf(tileChar) != -1)
 					this.imageSrc[charIndex] = `assets/tile${tileChar}.png`;
 				else {

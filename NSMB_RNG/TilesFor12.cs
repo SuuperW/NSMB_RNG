@@ -15,21 +15,27 @@ namespace NSMB_RNG
 			public bool error = false;
 			public bool isReady = false;
 			public bool isComplete = false;
-			private bool cli;
+			private bool cli = false;
 
-			private List<uint> lookupResults;
-			private List<uint> currentValues;
+			public List<uint> lookupResults = new List<uint>();
+			private List<uint> currentValues = new List<uint>();
 
 			public event Action<double>? DownloadProgress;
 			public event Action? Ready;
 			private Task initTask;
 
+			private string lookupArchivePath = "";
+
 			public SeedFinder(int[] first7Tiles, bool cli = false)
 			{
 				this.cli = cli;
-				lookupResults = new List<uint>();
-				currentValues = new List<uint>();
+				initTask = Init(first7Tiles);
+			}
 
+			public SeedFinder(int[] first7Tiles, string lookupArchivePath)
+			{
+				this.lookupArchivePath = lookupArchivePath;
+				this.cli = true;
 				initTask = Init(first7Tiles);
 			}
 
@@ -107,14 +113,25 @@ namespace NSMB_RNG
 
 			private async Task<List<uint>> lookUpRNGByTiles(int[] firstSeven)
 			{
-				string folder = firstSeven[0].ToString() + firstSeven[1].ToString() + firstSeven[2].ToString() + "/" +
-					firstSeven[3].ToString() + firstSeven[4].ToString();
-				string file = "/" + firstSeven[5].ToString() + firstSeven[6].ToString();
-				string filePath = "lookup/" + folder + file;
+				string folder = Path.Combine(firstSeven[0].ToString() + firstSeven[1].ToString() + firstSeven[2].ToString(),
+					firstSeven[3].ToString() + firstSeven[4].ToString());
+				string file = firstSeven[5].ToString() + firstSeven[6].ToString();
+				string filePath = Path.Combine("lookup", folder, file);
 				if (!File.Exists(filePath))
 				{
-					if (! await DownloadChunk(folder))
-						return new List<uint>();
+					if (lookupArchivePath == "")
+					{
+						if (!await DownloadChunk(folder))
+							return new List<uint>();
+					}
+					else
+					{
+						if (!ExtractFile(Path.Combine(lookupArchivePath, folder + ".7z"),
+							Path.Combine("lookup", folder), file))
+						{
+							return new List<uint>();
+						}
+					}
 				}
 				FileStream fs = File.OpenRead(filePath);
 				byte[] data = new byte[1024 * 210]; // all files are under 210KB
@@ -234,6 +251,32 @@ namespace NSMB_RNG
 				File.Delete(archivePath);
 
 				return true;
+			}
+
+			private bool ExtractFile(string archivePath, string outDir, string fileName)
+			{
+				// If the directory doesn't exist, create it.
+				if (!Directory.Exists(outDir))
+					Directory.CreateDirectory(outDir);
+
+				string zPath = Environment.GetEnvironmentVariable("7z_PATH") ?? "7za.exe";
+				try
+				{
+					ProcessStartInfo psi = new ProcessStartInfo();
+					psi.WindowStyle = ProcessWindowStyle.Hidden;
+					psi.UseShellExecute = true;
+					psi.FileName = zPath;
+					psi.Arguments = "e " + archivePath + " -o" + outDir + " " + fileName + " -r";
+					Process? process = Process.Start(psi);
+					if (process != null)
+						process.WaitForExit();
+				}
+				catch
+				{
+					return false;
+				}
+
+				return File.Exists(outDir + "/" + fileName);
 			}
 
 			/// <summary>
