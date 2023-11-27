@@ -5,7 +5,7 @@ import { firstValueFrom } from 'rxjs';
 @Injectable({
 	providedIn: 'root',
 })
-export class SeedsByRow1Service {
+export class SeedTileCalculatorService {
 	http: HttpClient = inject(HttpClient);
 	private cache: { [key: string]: number[] } = {};
 
