@@ -1,13 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 
-import { SeedsByRow1Service } from './seeds-by-row1.service';
+import { SeedTileCalculatorService } from './seeds-tile-calculator.service';
 
 describe('SeedsByRow1Service', () => {
-  let service: SeedsByRow1Service;
+  let service: SeedTileCalculatorService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(SeedsByRow1Service);
+    service = TestBed.inject(SeedTileCalculatorService);
   });
 
   it('should be created', () => {

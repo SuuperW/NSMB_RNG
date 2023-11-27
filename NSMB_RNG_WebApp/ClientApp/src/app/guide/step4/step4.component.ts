@@ -2,9 +2,8 @@ import { Component, inject } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { StepComponent } from '../step';
 import { TileDisplayComponent } from '../../tile-display/tile-display.component';
-import { SeedsByRow1Service } from '../../seeds-by-row1.service';
+import { SeedTileCalculatorService } from '../../seeds-tile-calculator.service';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
-import { firstValueFrom } from 'rxjs';
 
 @Component({
 	selector: 'app-step4',
@@ -18,7 +17,7 @@ import { firstValueFrom } from 'rxjs';
 	],
 })
 export class Step4Component implements StepComponent {
-	seedService: SeedsByRow1Service = inject(SeedsByRow1Service);
+	seedService: SeedTileCalculatorService = inject(SeedTileCalculatorService);
 	http: HttpClient = inject(HttpClient);
 
 	form = new FormGroup({
