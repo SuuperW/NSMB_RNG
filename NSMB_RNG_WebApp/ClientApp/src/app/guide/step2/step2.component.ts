@@ -11,7 +11,7 @@ import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule } from '@a
 		ReactiveFormsModule,
 	],
 })
-export class Step2Component implements StepComponent {
+export class Step2Component extends StepComponent {
 	form = new FormGroup({
 		mac: new FormControl(localStorage.getItem('mac') ?? '00:11:22:aa:bb:cc', (c: AbstractControl<string>) => {
 			if (c.value.match(/([\dabcdef]{2}:){5}[\dabcdef]{2}/i) || c.value.match(/[\dabcdef]{12}/i)) {

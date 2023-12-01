@@ -11,7 +11,7 @@ import { StepComponent } from '../step';
 		ReactiveFormsModule,
 	],
 })
-export class Step3Component implements StepComponent {
+export class Step3Component extends StepComponent {
 	form = new FormGroup({
 		dtInput: new FormControl(localStorage.getItem('datetime') ?? this.getDateTime(), (c: AbstractControl) => {
 			// Do I need to check range?

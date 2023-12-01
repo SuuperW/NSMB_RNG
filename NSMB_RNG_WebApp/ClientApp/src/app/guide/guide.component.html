@@ -1,5 +1,13 @@
 <ng-container container [type]="stepComponentList[currentStep]"></ng-container>
 
+<br />
+<div [hidden]="!isInProgress">
+	<progress id="submitProgress"></progress>
+	<ul>
+		<li *ngFor="let status of this.progressStatus">{{ status }}</li>
+	</ul>
+</div>
+
 <!--<button class="btn-primary" [disabled]="this.stepComponent ? this.stepComponent.form.invalid : true" (click)="next()">Next</button>-->
 <!-- don't disable; user will click and get a message telling why form is invalid -->
 <button class="btn-primary" [hidden]="currentStep == 0" (click)="previous()">Previous</button>

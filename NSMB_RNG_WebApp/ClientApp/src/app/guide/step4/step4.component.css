@@ -6,3 +6,12 @@
 .tileLetters {
 	display: flex;
 }
+
+.bottomRow {
+	margin: 0.25em 0;
+}
+
+.warning {
+	font-weight: bold;
+	font-size: 1.2em;
+}

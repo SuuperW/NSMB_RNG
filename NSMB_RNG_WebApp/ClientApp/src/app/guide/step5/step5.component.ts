@@ -11,15 +11,15 @@ import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule } from '@a
 		ReactiveFormsModule,
 	],
 })
-export class Step5Component implements StepComponent {
+export class Step5Component extends StepComponent {
 	form = new FormGroup({
 		route: new FormControl('', (c: AbstractControl<string>) => {
 			if (c.value) {
-				this.inProgress = true;
+				this.addProgress('');
 				// TODO: Actually do the calculations.
 				setTimeout(() => {
 					this.errorStatus = undefined;
-					this.inProgress = false;
+					this.removeProgress('');
 					localStorage.setItem('manipDatetime', localStorage.getItem('datetime')!);
 					localStorage.setItem('route', c.value);
 				}, 10_000);
@@ -30,6 +30,4 @@ export class Step5Component implements StepComponent {
 		}),
 	});
 	errorStatus? = 'Plase wait';
-
-	inProgress: boolean = false;
 }

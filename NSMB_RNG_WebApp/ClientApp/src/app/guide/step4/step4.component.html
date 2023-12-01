@@ -32,25 +32,18 @@
 	<app-tile-display [tileCount]="7" [tiles]="this.form.value.row1Input" (tilesOut)="row1Changed($event)"></app-tile-display>
 	<app-tile-display [tileCount]="11" [tiles]="this.form.value.row2Input" (tilesOut)="row2Changed($event)"></app-tile-display>
 	<p>----- bottom row (If the bottom row in game doesn't match one of the rows below, you made a typo.) -----</p>
-	<app-tile-display [tileCount]="11" [tiles]="this.bottomRow"></app-tile-display>
+	<p class="warning" [hidden]="!this.patternIsInvalid">The tile pattern you entered is not possible. Check for typos.</p>
+	<app-tile-display *ngFor="let row of this.bottomRows" class="bottomRow" [tileCount]="11" [tiles]="row"></app-tile-display>
 </ng-container>
 
+<button class="btn-primary" (click)="submit()">Submit</button>
+<p>Patterns submitted: {{ submitCount }}<p>
 <p>
 	After submitting your tile pattern, reboot the console, reset the clock, and get another tile pattern.<br />
-	You will be required to collect several tile patterns.<br />
-	Patterns submitted: {{ submitCount }}
+	You will be required to collect several tile patterns.
 </p>
 
 <p class="fine-print">
 	*The app should be able to detect if you're off by one second, but it will be less reliable with more mistakes. If you load the game and are not confident RNG was initialized at the correct time, try again before getting a tile pattern.<br />
 	**This would invalidate the data collected from the tile pattern, and the app will not detect this.
 </p>
-
-<div [hidden]="!inProgress">
-	<label for="submitProcess">{{ status }}</label>
-	<br />
-	<progress id="submitProgress"></progress>
-</div>
-
-<button class="btn-primary" (click)="submit()">Submit</button>
-<br />
