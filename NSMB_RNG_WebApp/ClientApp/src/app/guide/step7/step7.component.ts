@@ -11,6 +11,6 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 		ReactiveFormsModule,
 	],
 })
-export class Step7Component implements StepComponent {
+export class Step7Component extends StepComponent {
 	form = new FormGroup({});
 }

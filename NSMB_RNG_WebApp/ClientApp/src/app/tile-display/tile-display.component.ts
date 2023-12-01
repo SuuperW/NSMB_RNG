@@ -62,6 +62,8 @@ export class TileDisplayComponent {
 
 		if (valid)
 			this.tilesOut.emit(outTiles);
+		else
+			this.tilesOut.emit('');
 	}
 
 	private imageSrc: string[] = ['assets/none.png'];

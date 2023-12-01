@@ -1,4 +1,4 @@
-import { AfterViewChecked, AfterViewInit, ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, ViewChild } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 
 import { ComponentContainer } from '../component-container';
@@ -10,6 +10,7 @@ import { Step4Component } from './step4/step4.component';
 import { Step5Component } from './step5/step5.component';
 import { Step6Component } from './step6/step6.component';
 import { Step7Component } from './step7/step7.component';
+import { CommonModule } from '@angular/common';
 
 interface TI {
 	new(): StepComponent
@@ -23,6 +24,7 @@ interface TI {
 	imports: [		
 		Step1Component,
 		ComponentContainer,
+		CommonModule,
 	],
 })
 export class GuideComponent implements AfterViewInit {
@@ -38,9 +40,8 @@ export class GuideComponent implements AfterViewInit {
 
 	currentStep: number = 0;
 
-	get dumbInvalidGetter() {
-		return (this.stepComponent?.form.invalid ?? true) ? '' : null;
-	}
+	isInProgress: boolean = false;
+	progressStatus: string[] = [];
 
 	constructor(private cdr: ChangeDetectorRef) {
 		if (!localStorage.getItem('consoleType'))
@@ -57,10 +58,20 @@ export class GuideComponent implements AfterViewInit {
 		this.currentStep = 3;
 	}
 
+	onLoadStepComponent(component: StepComponent) {
+		component.progress.add((progressStatus: string[]) => {
+			this.isInProgress = progressStatus.length != 0;
+			this.progressStatus = progressStatus.slice();
+			// Since we're updating proerties outside of events that Angular expects to modify this component, we need to manually call detectChanges.
+			this.cdr.detectChanges();
+		});
+		
+	}
+
 	ngAfterViewInit() {
-		// Do I need these?
-		this.stepComponent?.form.markAsDirty();
-		this.cdr.detectChanges();
+		this.stepContainer.componentCreated.add(this.onLoadStepComponent);
+		if (this.stepContainer.component)
+			this.onLoadStepComponent(this.stepContainer.component);
 	}
 
 	next() {

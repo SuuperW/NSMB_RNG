@@ -11,7 +11,7 @@ import { StepComponent } from '../step';
 		ReactiveFormsModule,
 	],
 })
-export class Step1Component implements StepComponent {
+export class Step1Component extends StepComponent {
 	form = new FormGroup({
 		consoleType: new FormControl(localStorage.getItem('consoleType'), (c: AbstractControl<string>) => {
 			if (c.value) {

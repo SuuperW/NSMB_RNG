@@ -1,9 +1,10 @@
-import { Component, inject } from '@angular/core';
+import { Component, ViewChild, inject } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { StepComponent } from '../step';
 import { TileDisplayComponent } from '../../tile-display/tile-display.component';
 import { SeedTileCalculatorService } from '../../seeds-tile-calculator.service';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { CommonModule } from '@angular/common';
 
 @Component({
 	selector: 'app-step4',
@@ -14,9 +15,10 @@ import { HttpClient, HttpClientModule } from '@angular/common/http';
 		ReactiveFormsModule,
 		TileDisplayComponent,
 		HttpClientModule,
+		CommonModule,
 	],
 })
-export class Step4Component implements StepComponent {
+export class Step4Component extends StepComponent {
 	seedService: SeedTileCalculatorService = inject(SeedTileCalculatorService);
 	http: HttpClient = inject(HttpClient);
 
@@ -24,24 +26,22 @@ export class Step4Component implements StepComponent {
 		row1Input: new FormControl(''),
 		row2Input: new FormControl(''),
 	});
-	errorStatus? = 'We don\'t have enough information yet. Continue entering tile patterns.';
+	errorStatus?= 'We don\'t have enough information yet. Continue entering tile patterns.';
 
-	seedCandidates: number[] = [];
 	seeds: number[] = [];
 	lastFirstRow: string = '';
 	lastSecondRow: string = '';
-	bottomRow: string = '';
+	bottomRows: string[] = [''];
+	patternIsInvalid: boolean = false;
 
 	targetDateTime: string;
 
 	submitCount: number = 0;
 
-	inProgress: boolean = false;
-	status: string = '';
-
 	results: any = [];
 
 	constructor() {
+		super();
 		let dtStr = localStorage.getItem('datetime');
 		if (dtStr) {
 			let dt = new Date(dtStr);
@@ -49,6 +49,7 @@ export class Step4Component implements StepComponent {
 		} else {
 			this.targetDateTime = 'INVALID [go back and enter a date and time!]';
 		}
+
 	}
 
 	submit() {
@@ -57,8 +58,8 @@ export class Step4Component implements StepComponent {
 			return;
 		}
 
-		this.inProgress = true;
-		this.status = 'Nothing is actually happening.';
+		const status = 'Nothing is actually happening.';
+		this.addProgress(status);
 
 		// TODO: Calculate potential RNG init params
 		let userInputParams = {
@@ -83,7 +84,7 @@ export class Step4Component implements StepComponent {
 			...result,
 		});
 
-		this.inProgress = false;
+		this.removeProgress(status);
 
 		this.submitCount++;
 		this.results.push(computedParams);
@@ -102,33 +103,46 @@ export class Step4Component implements StepComponent {
 
 	async row1Changed(tiles: string) {
 		this.lastFirstRow = tiles;
-		this.seeds = this.seedCandidates = [];
+		this.seeds = [];
 		if (!tiles || tiles.length != 7)
 			return;
 
-		this.inProgress = true;
-		this.status = 'Getting seed candidates from server...';
-		this.seedCandidates = await this.seedService.getPossibleSeedsFor(tiles);
-
-		this.inProgress = false;
+		const status = 'Getting seed candidates from server...';
+		this.addProgress(status);
+		let result = await this.seedService.getPossibleSeedsFor(tiles);
+		this.removeProgress(status);
+		if (result.length == 0) {
+			alert('Failed to get seed candidates from server. Please try again (by backspacing one tile for first row and re-entering it).');
+			return;
+		}
 
 		if (this.lastSecondRow.length == 11)
 			this.row2Changed(this.lastSecondRow);
 	}
 
 	async row2Changed(tiles: string) {
+		this.patternIsInvalid = false;
 		this.lastSecondRow = tiles;
 		this.seeds = [];
+		this.bottomRows = [''];
 
-		if (this.seedCandidates.length == 0)
-			return;
+		if (tiles.length == 11 && this.lastFirstRow.length == 7) {
+			const status = "Finding seeds...";
+			this.addProgress(status);
+			this.seeds = await this.seedService.getPossibleSeedsFor(this.lastFirstRow, tiles) as number[];
+			this.removeProgress(status);
 
-		if (tiles.length == 11) {
-			// TODO: Calculate seeds!
-			let seed = this.seedCandidates[0];
-			this.seeds.push(seed);
+			if (this.seeds.length == 0) {
+				this.patternIsInvalid = true;
+				return;
+			}
 
-			// TODO: Display bottom row
+			let rows: Set<string> = new Set();
+			this.bottomRows = [];
+			for (let seed of this.seeds)
+				rows.add(this.seedService.getBottomRow(seed));
+			for (let row of rows)
+				this.bottomRows.push(row);
 		}
 	}
 }

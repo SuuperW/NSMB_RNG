@@ -22,10 +22,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="ClientApp\src\app\guide\step.ts" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\NSMB_RNG\NSMB_RNG.csproj" />
   </ItemGroup>
 
