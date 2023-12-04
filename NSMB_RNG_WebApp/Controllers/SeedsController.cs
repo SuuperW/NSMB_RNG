@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-
+﻿using Microsoft.AspNetCore.Mvc;
 using NSMB_RNG;
+using System;
+using System.Collections.Generic;
 
 namespace NSMB_RNG_WebApp.Controllers
 {
