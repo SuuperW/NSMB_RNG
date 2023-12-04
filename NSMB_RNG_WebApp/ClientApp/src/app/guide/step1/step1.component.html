@@ -1,11 +1,25 @@
-<p>What type of console are you using?</p>
-
 <ng-container [formGroup]="form">
+	<p>What type of console are you using?</p>
+
 	<label for="consoleTypeDS">DS-like</label>
 	<input id="consoleTypeDS" type="radio" name="consoleType" value="DS" formControlName="consoleType" />
 
 	<label for="consoleType3DS">3DS-like</label>
 	<input id="consoleType3DS" type="radio" name="consoleType" value="3DS" formControlName="consoleType" />
+
+	<p>What game version are you using?</p>
+
+	<label for="gameVersionUSA">USA</label>
+	<input id="gameVersionUSA" type="radio" name="gameVersion" value="USA" formControlName="gameVersion" />
+
+	<label for="gameVersionEUR">EUR</label>
+	<input id="gameVersionEUR" type="radio" name="gameVersion" value="EUR" formControlName="gameVersion" />
+
+	<label for="gameVersionJPN">JPN</label>
+	<input id="gameVersionJPN" type="radio" name="gameVersion" value="JPN" formControlName="gameVersion" />
+
+	<label for="gameVersionOther">Other</label>
+	<input id="gameVersionOther" type="radio" name="gameVersion" value="Other" formControlName="gameVersion" />
 </ng-container>
 
 <p>

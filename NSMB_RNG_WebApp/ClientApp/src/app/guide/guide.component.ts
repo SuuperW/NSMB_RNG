@@ -44,7 +44,7 @@ export class GuideComponent implements AfterViewInit {
 	progressStatus: string[] = [];
 
 	constructor(private cdr: ChangeDetectorRef) {
-		if (!localStorage.getItem('consoleType'))
+		if (!localStorage.getItem('consoleType') || !localStorage.getItem('gameVersion'))
 			return;
 
 		this.currentStep = 1;

@@ -15,10 +15,18 @@ export class Step1Component extends StepComponent {
 	form = new FormGroup({
 		consoleType: new FormControl(localStorage.getItem('consoleType'), (c: AbstractControl<string>) => {
 			if (c.value) {
-				localStorage.setItem('consoleType', c.value);		
+				localStorage.setItem('consoleType', c.value);
 				return null;
 			} else {
 				return { 'err': 'Select a console type.' };
+			}
+		}),
+		gameVersion: new FormControl(localStorage.getItem('gameVersion'), (c: AbstractControl<string>) => {
+			if (c.value) {
+				localStorage.setItem('gameVersion', c.value);
+				return null;
+			} else {
+				return { 'err': 'Select a game version.' };
 			}
 		}),
 	});
