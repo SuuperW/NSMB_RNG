@@ -11,6 +11,7 @@ import { Step5Component } from './step5/step5.component';
 import { Step6Component } from './step6/step6.component';
 import { Step7Component } from './step7/step7.component';
 import { CommonModule } from '@angular/common';
+import { Step0Component } from './step0/step0.component';
 
 interface TI {
 	new(): StepComponent
@@ -29,7 +30,7 @@ interface TI {
 })
 export class GuideComponent implements AfterViewInit {
 	stepComponentList: TI[] = [
-		Step1Component, Step2Component, Step3Component, Step4Component,
+		Step0Component, Step1Component, Step2Component, Step3Component, Step4Component,
 		Step5Component, Step6Component, Step7Component,
 	];
 
@@ -47,15 +48,15 @@ export class GuideComponent implements AfterViewInit {
 		if (!localStorage.getItem('consoleType') || !localStorage.getItem('gameVersion'))
 			return;
 
-		this.currentStep = 1;
+		this.currentStep = 2;
 		if (!localStorage.getItem('mac'))
 			return;
 
-		this.currentStep = 2;
+		this.currentStep = 3;
 		if (!localStorage.getItem('datetime'))
 			return;
 
-		this.currentStep = 3;
+		this.currentStep = 4;
 	}
 
 	onLoadStepComponent(component: StepComponent) {
