@@ -8,7 +8,7 @@ describe('Step7Component', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ Step7Component ]
+		imports: [ Step7Component ]
     })
     .compileComponents();
 
