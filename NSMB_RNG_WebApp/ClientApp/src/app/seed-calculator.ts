@@ -23,6 +23,7 @@ export const buttons = {
 export class SeedCalculator {
 	private bytesBuffer: ArrayBuffer = new ArrayBuffer(32);
 	private data = new DataView(this.bytesBuffer);
+	private dataAsUint32: number[] = [];
 
 	private _is3DS: boolean = false;
 	public get is3DS() {
@@ -35,10 +36,16 @@ export class SeedCalculator {
 	}
 
 	public get timer0() { return this.data.getUint16(0, true); }
-	public set timer0(value: number) { this.data.setUint16(0, value, true); }
+	public set timer0(value: number) {
+		this.data.setUint16(0, value, true);
+		this.dataAsUint32[0] = this.data.getUint32(0, false);
+	}
 
 	public get vCount() { return this.data.getUint16(2, true); }
-	public set vCount(value: number) { this.data.setUint16(2, value, true); }
+	public set vCount(value: number) {
+		this.data.setUint16(2, value, true);
+		this.dataAsUint32[0] = this.data.getUint32(0, false);
+	}
 
 	private _mac: DataView = new DataView(new ArrayBuffer(6));
 	public setMAC(value: string) {
@@ -50,6 +57,9 @@ export class SeedCalculator {
 		let vframe = this.vFrame;
 		this.data.setUint16(6, this._mac.getUint16(4, true), true);
 		this.data.setUint32(8, this._mac.getUint32(0, true) ^ 0x06000000 ^ vframe, true);
+
+		this.dataAsUint32[1] = this.data.getUint32(4, false);
+		this.dataAsUint32[2] = this.data.getUint32(8, false);
 	}
 
 	public get vFrame() {
@@ -57,6 +67,7 @@ export class SeedCalculator {
 	}
 	public set vFrame(value: number) {
 		this.data.setUint32(8, this._mac.getUint32(0, true) ^ 0x06000000 ^ value, true)
+		this.dataAsUint32[2] = this.data.getUint32(8, false);
 	}
 
 	public get year() {
@@ -64,6 +75,7 @@ export class SeedCalculator {
 	}
 	public set year(value: number) {
 		this.data.setUint8(12, this.toBCD(value));
+		this.dataAsUint32[3] = this.data.getUint32(12, false);
 	}
 
 	public get month() {
@@ -71,6 +83,7 @@ export class SeedCalculator {
 	}
 	public set month(value: number) {
 		this.data.setUint8(13, this.toBCD(value));
+		this.dataAsUint32[3] = this.data.getUint32(12, false);
 	}
 
 	public get dayOfMonth() {
@@ -78,6 +91,7 @@ export class SeedCalculator {
 	}
 	public set dayOfMonth(value: number) {
 		this.data.setUint8(14, this.toBCD(value));
+		this.dataAsUint32[3] = this.data.getUint32(12, false);
 	}
 
 	public get dayOfWeek() {
@@ -85,6 +99,7 @@ export class SeedCalculator {
 	}
 	public set dayOfWeek(value: number) {
 		this.data.setUint8(15, this.toBCD(value));
+		this.dataAsUint32[3] = this.data.getUint32(12, false);
 	}
 
 	public get hour() {
@@ -96,6 +111,7 @@ export class SeedCalculator {
 		if (!this._is3DS && value >= 12)
 			v += 0x40;
 		this.data.setUint8(16, v);
+		this.dataAsUint32[4] = this.data.getUint32(16, false);
 	}
 
 	public get minute() {
@@ -103,6 +119,7 @@ export class SeedCalculator {
 	}
 	public set minute(value: number) {
 		this.data.setUint8(17, this.toBCD(value));
+		this.dataAsUint32[4] = this.data.getUint32(16, false);
 	}
 
 	public get second() {
@@ -110,13 +127,15 @@ export class SeedCalculator {
 	}
 	public set second(value: number) {
 		this.data.setUint8(18, this.toBCD(value));
+		this.dataAsUint32[4] = this.data.getUint32(16, false);
 	}
 
 	public get buttons() {
 		return this.data.getUint32(28, true) ^ BUTTON_MASK;
 	}
 	public set buttons(value: number) {
-		this.data.setUint32(28, value ^ BUTTON_MASK, true);
+		this.data.setUint16(28, value ^ BUTTON_MASK, true);
+		this.dataAsUint32[7] = this.data.getUint32(28, false);
 	}
 
 	private toBCD(input: number) {
@@ -129,6 +148,12 @@ export class SeedCalculator {
 	}
 
 	public constructor(macAddress: string, dateTime: Date, _3DS: boolean = false) {
+		for (let i = 0; i < 80; i++) {
+			this.dataAsUint32.push(0);
+		}
+		this.dataAsUint32[8] = 0x80000000;
+		this.dataAsUint32[15] = 0x00000100;
+
 		this.vFrame = 0; // we have set this before setting the MAC, because of the way the setters handle their overlap
 		this.is3DS = _3DS;
 		this.buttons = 0;
@@ -137,10 +162,107 @@ export class SeedCalculator {
 		this.setDateTime(dateTime);
 	}
 
-	public async getSeed() {
-		let sha1 = await crypto.subtle.digest("SHA-1", this.data);
-		let sha1Ints = new Uint32Array(sha1);
-		return (sha1Ints[0] ^ sha1Ints[1] ^ sha1Ints[2] ^ sha1Ints[3] ^ sha1Ints[4]) >>> 0; // >>> converts to uint32, all other bitwise operators are signed
+	public getSeed() {
+		// SHA-1
+		// We aren't using crypto.sublte because it's horribly slow due to the overhead of async.
+		let buffer = this.dataAsUint32;
+		for (let i = 16; i < 80; i++) {
+			let t = buffer[i - 3] ^ buffer[i - 8] ^ buffer[i - 14] ^ buffer[i - 16];
+			buffer[i] = (t << 1) | (t >>> 31);
+		}
+
+		let a = 0x67452301;
+		let b = 0xEFCDAB89;
+		let c = 0x98BADCFE;
+		let d = 0x10325476;
+		let e = 0xC3D2E1F0;
+		let f = 0;
+
+		for (let i = 0; i < 18; /**/) {
+			f = ((a << 5) | (a >>> 27)) + (d ^ (b & (c ^ d))) + e + 0x5A827999 + buffer[i++];
+			b = (b << 30) | (b >>> 2);
+			e = ((f << 5) | (f >>> 27)) + (c ^ (a & (b ^ c))) + d + 0x5A827999 + buffer[i++];
+			a = (a << 30) | (a >>> 2);
+			d = ((e << 5) | (e >>> 27)) + (b ^ (f & (a ^ b))) + c + 0x5A827999 + buffer[i++];
+			f = (f << 30) | (f >>> 2);
+			c = ((d << 5) | (d >>> 27)) + (a ^ (e & (f ^ a))) + b + 0x5A827999 + buffer[i++];
+			e = (e << 30) | (e >>> 2);
+			b = ((c << 5) | (c >>> 27)) + (f ^ (d & (e ^ f))) + a + 0x5A827999 + buffer[i++];
+			d = (d << 30) | (d >>> 2);
+			a = ((b << 5) | (b >>> 27)) + (e ^ (c & (d ^ e))) + f + 0x5A827999 + buffer[i++];
+			c = (c << 30) | (c >>> 2);
+		}
+		f = ((a << 5) | (a >>> 27)) + (d ^ (b & (c ^ d))) + e + 0x5A827999 + buffer[18];
+		b = (b << 30) | (b >>> 2);
+		e = ((f << 5) | (f >>> 27)) + (c ^ (a & (b ^ c))) + d + 0x5A827999 + buffer[19];
+		a = (a << 30) | (a >>> 2);
+
+		for (let i = 20; i < 38; /**/) {
+			d = ((e << 5) | (e >>> 27)) + (f ^ a ^ b) + c + 0x6ED9EBA1 + buffer[i++];
+			f = (f << 30) | (f >>> 2);
+			c = ((d << 5) | (d >>> 27)) + (e ^ f ^ a) + b + 0x6ED9EBA1 + buffer[i++];
+			e = (e << 30) | (e >>> 2);
+			b = ((c << 5) | (c >>> 27)) + (d ^ e ^ f) + a + 0x6ED9EBA1 + buffer[i++];
+			d = (d << 30) | (d >>> 2);
+			a = ((b << 5) | (b >>> 27)) + (c ^ d ^ e) + f + 0x6ED9EBA1 + buffer[i++];
+			c = (c << 30) | (c >>> 2);
+			f = ((a << 5) | (a >>> 27)) + (b ^ c ^ d) + e + 0x6ED9EBA1 + buffer[i++];
+			b = (b << 30) | (b >>> 2);
+			e = ((f << 5) | (f >>> 27)) + (a ^ b ^ c) + d + 0x6ED9EBA1 + buffer[i++];
+			a = (a << 30) | (a >>> 2);
+		}
+		d = ((e << 5) | (e >>> 27)) + (f ^ a ^ b) + c + 0x6ED9EBA1 + buffer[38];
+		f = (f << 30) | (f >>> 2);
+		c = ((d << 5) | (d >>> 27)) + (e ^ f ^ a) + b + 0x6ED9EBA1 + buffer[39];
+		e = (e << 30) | (e >>> 2);
+
+		for (let i = 40; i < 58; /**/) {
+			b = ((c << 5) | (c >>> 27)) + ((d & e) | ((d ^ e) & f)) + a + 0x8F1BBCDC + buffer[i++];
+			d = (d << 30) | (d >>> 2);
+			a = ((b << 5) | (b >>> 27)) + ((c & d) | ((c ^ d) & e)) + f + 0x8F1BBCDC + buffer[i++];
+			c = (c << 30) | (c >>> 2);
+			f = ((a << 5) | (a >>> 27)) + ((b & c) | ((b ^ c) & d)) + e + 0x8F1BBCDC + buffer[i++];
+			b = (b << 30) | (b >>> 2);
+			e = ((f << 5) | (f >>> 27)) + ((a & b) | ((a ^ b) & c)) + d + 0x8F1BBCDC + buffer[i++];
+			a = (a << 30) | (a >>> 2);
+			d = ((e << 5) | (e >>> 27)) + ((f & a) | ((f ^ a) & b)) + c + 0x8F1BBCDC + buffer[i++];
+			f = (f << 30) | (f >>> 2);
+			c = ((d << 5) | (d >>> 27)) + ((e & f) | ((e ^ f) & a)) + b + 0x8F1BBCDC + buffer[i++];
+			e = (e << 30) | (e >>> 2);
+		}
+		b = ((c << 5) | (c >>> 27)) + ((d & e) | ((d ^ e) & f)) + a + 0x8F1BBCDC + buffer[58];
+		d = (d << 30) | (d >>> 2);
+		a = ((b << 5) | (b >>> 27)) + ((c & d) | ((c ^ d) & e)) + f + 0x8F1BBCDC + buffer[59];
+		c = (c << 30) | (c >>> 2);
+
+		for (let i = 60; i < 78; /**/) {
+			f = ((a << 5) | (a >>> 27)) + (b ^ c ^ d) + e + 0xCA62C1D6 + buffer[i++];
+			b = (b << 30) | (b >>> 2);
+			e = ((f << 5) | (f >>> 27)) + (a ^ b ^ c) + d + 0xCA62C1D6 + buffer[i++];
+			a = (a << 30) | (a >>> 2);
+			d = ((e << 5) | (e >>> 27)) + (f ^ a ^ b) + c + 0xCA62C1D6 + buffer[i++];
+			f = (f << 30) | (f >>> 2);
+			c = ((d << 5) | (d >>> 27)) + (e ^ f ^ a) + b + 0xCA62C1D6 + buffer[i++];
+			e = (e << 30) | (e >>> 2);
+			b = ((c << 5) | (c >>> 27)) + (d ^ e ^ f) + a + 0xCA62C1D6 + buffer[i++];
+			d = (d << 30) | (d >>> 2);
+			a = ((b << 5) | (b >>> 27)) + (c ^ d ^ e) + f + 0xCA62C1D6 + buffer[i++];
+			c = (c << 30) | (c >>> 2);
+		}
+		f = ((a << 5) | (a >>> 27)) + (b ^ c ^ d) + e + 0xCA62C1D6 + buffer[78];
+		b = (b << 30) | (b >>> 2);
+		e = ((f << 5) | (f >>> 27)) + (a ^ b ^ c) + d + 0xCA62C1D6 + buffer[79];
+		a = (a << 30) | (a >>> 2);
+
+		e += 0x67452301;
+		f += 0xEFCDAB89;
+		a += 0x98BADCFE;
+		b += 0x10325476;
+		c += 0xC3D2E1F0;
+
+		// Seed is calculated by XOR-ing each 32-bit section of the hash
+		let beSeed = e ^ f ^ a ^ b ^ c;
+		return ((beSeed << 24) | ((beSeed & 0xff00) << 8) | ((beSeed & 0xff0000) >> 8) | (beSeed >>> 24)) >>> 0;
 	}
 
 	public setDateTime(dt: Date) {
