@@ -13,6 +13,8 @@ describe('SeedCalculator', () => {
 		seedCalc.timer0 = 400;
 		seedCalc.vCount = 123;
 		seedCalc.vFrame = 5;
-		assert(await seedCalc.getSeed() == 0xf2b9aa20);
+		let seed = seedCalc.getSeed();
+		console.log(seed.toString(16));
+		assert(seedCalc.getSeed() == 0xf2b9aa20);
 	});
 });

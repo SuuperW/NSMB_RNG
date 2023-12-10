@@ -60,11 +60,12 @@ export class GuideComponent implements AfterViewInit {
 	}
 
 	onLoadStepComponent(component: StepComponent) {
+		let ths = this;
 		component.progress.add((progressStatus: string[]) => {
-			this.isInProgress = progressStatus.length != 0;
-			this.progressStatus = progressStatus.slice();
+			ths.isInProgress = progressStatus.length != 0;
+			ths.progressStatus = progressStatus.slice();
 			// Since we're updating proerties outside of events that Angular expects to modify this component, we need to manually call detectChanges.
-			this.cdr.detectChanges();
+			ths.cdr.detectChanges();
 		});
 		
 	}
