@@ -41,8 +41,7 @@ namespace NSMB_RNG
 			set
 			{
 				_is3DS = value;
-				// Hour format depends on is3DS, but can be read correctly without regard to is3DS.
-				// This is entirely based on pprng, though. I haven't figured out 3DS RNG init yet.
+				// Hour setter updates the byte value (it depends on is3DS)
 				Hour = Hour;
 			}
 		}
