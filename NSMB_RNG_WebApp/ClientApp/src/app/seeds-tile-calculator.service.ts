@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
-import { WorkerService } from './worker-wrapper';
+import { WorkerService } from './worker.service';
 
 import * as rng from './functions/rng';
 

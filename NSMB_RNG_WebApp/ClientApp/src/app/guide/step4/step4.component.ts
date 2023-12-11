@@ -5,7 +5,8 @@ import { TileDisplayComponent } from '../../tile-display/tile-display.component'
 import { SeedTileCalculatorService } from '../../seeds-tile-calculator.service';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
-import { RngParams, SearchParams, searchForSeeds } from '../../functions/rng-params-search';
+import { RngParams, SearchParams } from '../../functions/rng-params-search';
+import { WorkerService } from '../../worker.service';
 
 @Component({
 	selector: 'app-step4',
@@ -21,6 +22,7 @@ import { RngParams, SearchParams, searchForSeeds } from '../../functions/rng-par
 })
 export class Step4Component extends StepComponent {
 	seedService: SeedTileCalculatorService = inject(SeedTileCalculatorService);
+	worker: WorkerService = inject(WorkerService);
 	http: HttpClient = inject(HttpClient);
 
 	form = new FormGroup({
@@ -60,7 +62,7 @@ export class Step4Component extends StepComponent {
 		}
 	}
 
-	submit() {
+	async submit() {
 		if (this.seeds.length == 0) {
 			alert('Finish entering your tile pattern before submitting.');
 			return;
@@ -93,19 +95,19 @@ export class Step4Component extends StepComponent {
 			let rngParams: RngParams[] = [];
 			let fullSearch = this.searchParams === undefined;
 			if (this.searchParams) {
-				rngParams = searchForSeeds(this.seeds, this.searchParams);
+				rngParams = await this.worker.searchForSeeds(this.seeds, this.searchParams);
 				if (rngParams.length == 0)
 					fullSearch = true;
 			}
 			// Otherwise, do a full search.
 			if (fullSearch) {
-				rngParams = searchForSeeds(this.seeds, {
+				rngParams = await this.worker.searchForSeeds(this.seeds, new SearchParams({
 					mac: userInputParams.macInput,
 					minTimer0: 0x300,
 					maxTimer0: 0x22ff,
 					is3DS: userInputParams.consoleType == '3DS',
 					datetime: this.date,
-				});
+				}));
 			}
 			let result = {
 				foundParams: rngParams,
@@ -121,8 +123,10 @@ export class Step4Component extends StepComponent {
 
 			// Set up narrower search params
 			if (rngParams.length != 0) {
+				// It's a list, but we don't loop through it. If there are two, one is a false positive and we can't know which.
+				console.log(rngParams[0]);
 				if (fullSearch) {
-					this.searchParams = {
+					this.searchParams = new SearchParams({
 						mac: userInputParams.macInput,
 						is3DS: userInputParams.consoleType == '3DS',
 						datetime: this.date,
@@ -132,7 +136,7 @@ export class Step4Component extends StepComponent {
 						maxVCount: rngParams[0].vCount + 3,
 						minVFrame: rngParams[0].vFrame,
 						maxVFrame: rngParams[0].vFrame,
-					};
+					});
 				} else if (this.searchParams) { // is never undefined, but code analysis doesn't know that
 					this.searchParams.minTimer0 = Math.min(this.searchParams.minTimer0, rngParams[0].timer0 - 10);
 					this.searchParams.maxTimer0 = Math.max(this.searchParams.minTimer0, rngParams[0].timer0 + 10);
@@ -170,6 +174,7 @@ export class Step4Component extends StepComponent {
 			alert('We have found everything we need! Go to the next step.');
 		} else {
 			// TODO: Offer choice to search +/-1 second.
+			// These numbers are kinda arbitrary. The intent is to detect when something is wrong so we/user don't waste time endlessly entering bad patterns.
 			if ((this.submitCount >= 3 && this.totalMatchedPatterns == 0) || (this.submitCount >= 5 && this.totalMatchedPatterns == 1)) {
 				alert('Your tile patterns aren\'t matching anything we expect. This could indicate that you have \
 incorrectly entered something, such as mac address or date. Or it might mean you\'re not following the correct \

@@ -1,21 +1,13 @@
-import { Injectable } from "@angular/core";
 import * as rng from "./functions/rng";
+import * as paramSearch from "./functions/rng-params-search";
 
-let workerSupported: boolean = !!window.Worker;
-if (!workerSupported) {
-	// Should we really be concerned about this? caniuse says 98% of users will have a browser that supports workers.
-	alert('Your browser doesn\'t support web workers. The page will freeze during computations, which may make it seem like the web page has crashed.');
-}
-
+let workerSupported: boolean = !!Worker;
 type dict = { [key: string]: any };
 
-@Injectable({
-	providedIn: 'root',
-})
-// A service that wraps a web worker, allowing outside code to call worker methods as async methods.
-export class WorkerService {
+// A class that wraps a web worker, allowing outside code to call worker methods as async methods.
+export class WorkerWrapper {
 	private worker: Worker | undefined;
-	private resolvers: { [i: number]: ((value: dict | PromiseLike<dict>) => void) } = {};
+	private resolvers: { [i: number]: ((value: any | PromiseLike<any>) => void) } = {};
 	private lastId = 0;
 
 	constructor() {
@@ -34,13 +26,13 @@ export class WorkerService {
 		}
 	}
 
-	private async call(functionName: string, copyData: any) {
+	private async call(functionName: string, copyData: dict) {
 		this.lastId++;
 
 		// Create a Promise that we can resolve in the worker's onmessage handler.
 		let id = this.lastId;
 		let this2 = this;
-		let promise = new Promise<dict>(function (resolve, _) {
+		let promise = new Promise<any>(function (resolve, _) {
 			this2.resolvers[id] = resolve;
 		});
 
@@ -63,5 +55,12 @@ export class WorkerService {
 			return await this.call(rng.findRow2Matches.name, { seeds: seedsRow1, row2: row2 }) as number[];
 		else
 			return rng.findRow2Matches(seedsRow1, row2);
+	}
+
+	async searchForSeeds(seeds: number[], options: paramSearch.SearchParams) {
+		if (this.worker)
+			return await this.call(paramSearch.searchForSeeds.name, { seeds: seeds, options: options }) as paramSearch.RngParams[];
+		else
+			return paramSearch.searchForSeeds(seeds, options);
 	}
 }
