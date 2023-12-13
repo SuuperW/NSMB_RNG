@@ -1,5 +1,6 @@
 import { AfterViewInit, ChangeDetectorRef, Component, ViewChild, inject } from '@angular/core';
 import { FormGroup } from '@angular/forms';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 
 import { ComponentContainer } from '../component-container';
 import { StepComponent } from './step';
@@ -12,6 +13,7 @@ import { Step6Component } from './step6/step6.component';
 import { Step7Component } from './step7/step7.component';
 import { CommonModule } from '@angular/common';
 import { Step0Component } from './step0/step0.component';
+import { PopupDialogComponent } from '../popup-dialog/popup-dialog.component';
 
 interface TI {
 	new(): StepComponent
@@ -26,6 +28,7 @@ interface TI {
 		Step1Component,
 		ComponentContainer,
 		CommonModule,
+		MatDialogModule,
 	],
 })
 export class GuideComponent implements AfterViewInit {
@@ -33,6 +36,8 @@ export class GuideComponent implements AfterViewInit {
 		Step0Component, Step1Component, Step2Component, Step3Component, Step4Component,
 		Step5Component, Step6Component, Step7Component,
 	];
+
+	dialog: MatDialog = inject(MatDialog);
 
 	@ViewChild(ComponentContainer<StepComponent>) stepContainer!: ComponentContainer<StepComponent>;
 	get stepComponent() {
@@ -78,7 +83,11 @@ export class GuideComponent implements AfterViewInit {
 
 	next() {
 		if (this.stepComponent?.form.invalid || this.stepComponent?.errorStatus) {
-			alert(this.getErrorsForForm(this.stepComponent?.form, this.stepComponent?.errorStatus));
+			this.dialog.open(PopupDialogComponent, {
+				data: {
+					message: [this.getErrorsForForm(this.stepComponent?.form, this.stepComponent?.errorStatus)]
+				}
+			});
 			return;
 		}
 
