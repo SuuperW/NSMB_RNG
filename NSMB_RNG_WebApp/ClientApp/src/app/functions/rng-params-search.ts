@@ -21,7 +21,7 @@ type SearchParamsParams = {
 	is3DS?: boolean;
 	buttons?: number;
 }
-export class SearchParams {
+export class SearchParams implements SearchParamsParams {
 	mac: string;
 	datetime: Date;
 	minTimer0: number;

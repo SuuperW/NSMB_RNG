@@ -27,32 +27,32 @@ addEventListener('message', async (event: MessageEvent) => {
 				// Use 4 workers
 				let options: SearchParams[] = [];
 				options.push(new SearchParams({
+					...event.data.options,
 					minTimer0: event.data.options.minTimer0,
 					minVCount: event.data.options.minVCount,
 					maxTimer0: (event.data.options.maxTimer0 + event.data.options.minTimer0) >>> 1,
 					maxVCount: (event.data.options.maxVCount + event.data.options.minVCount) >>> 1,
-					...event.data.options
 				}));
 				options.push(new SearchParams({
+					...event.data.options,
 					minTimer0: options[0].maxTimer0 + 1,
 					minVCount: event.data.options.minVCount,
 					maxTimer0: event.data.options.maxTimer0,
 					maxVCount: (event.data.options.minVCount + event.data.options.minVCount) >>> 1,
-					...event.data.options
 				}));
 				options.push(new SearchParams({
+					...event.data.options,
 					minTimer0: event.data.options.minTimer0,
 					minVCount: options[0].maxVCount + 1,
 					maxTimer0: (event.data.options.maxTimer0 + event.data.options.minTimer0) >>> 1,
 					maxVCount: event.data.options.maxVCount,
-					...event.data.options
 				}));
 				options.push(new SearchParams({
+					...event.data.options,
 					minTimer0: options[0].maxTimer0 + 1,
 					minVCount: options[0].maxVCount + 1,
 					maxTimer0: event.data.options.maxTimer0,
 					maxVCount: event.data.options.maxVCount,
-					...event.data.options
 				}));
 
 				let promises: Promise<RngParams[]>[] = [];

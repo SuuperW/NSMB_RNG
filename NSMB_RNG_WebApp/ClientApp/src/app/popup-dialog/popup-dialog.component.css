@@ -1,0 +1,10 @@
+.popup {
+	padding: 0.9em;
+	max-width: 60vw; /* vw instead of % is necessary. % will cause popup to be way too small because multiple nested divs will each have 60% (dumb Material) */
+}
+
+@media (orientation: portrait) {
+	.popup {
+		max-width: 90vw;
+	}
+}
