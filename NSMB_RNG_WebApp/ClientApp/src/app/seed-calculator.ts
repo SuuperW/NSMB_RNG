@@ -71,7 +71,7 @@ export class SeedCalculator {
 	}
 
 	public get year() {
-		return this.fromBCD(this.data.getUint8(12));
+		return this.fromBCD(this.data.getUint8(12)) + 2000;
 	}
 	public set year(value: number) {
 		this.data.setUint8(12, this.toBCD(value));
