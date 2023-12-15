@@ -1,7 +1,7 @@
 /// <reference lib="webworker" />
 
 import { findRow2Matches } from './functions/rng';
-import { RngParams, SearchParams, searchForSeeds } from './functions/rng-params-search';
+import { RngParams, SearchParams, searchForSeeds, searchForTime } from './functions/rng-params-search';
 // This import causes a warning about circular dependency. Apparently it's from webpack and could lead to improper caching by browsers...???
 // I don't understand how it works, and I'm going to ignore it because I cannot find a staisfactory solution.
 import { WorkerWrapper } from './worker-wrapper';
@@ -65,6 +65,71 @@ addEventListener('message', async (event: MessageEvent) => {
 				}
 				postMessage({ data: result, id: event.data.id });
 			}
+			return;
+		}
+		case searchForTime.name: {
+			// We received simple data. Convert to proper types.
+			let seeds = new Set<number>(event.data.seeds);
+			let params: RngParams = event.data.params;
+			params.datetime = new Date(params.datetime);
+
+			if (event.data.minYear) {
+				postMessage({
+					data: searchForTime(seeds, params, event.data.minYear, event.data.maxYear),
+					id: event.data.id,
+				});
+			} else {
+				// Initialize
+				let cYear = 2000;
+				let maxYear = params.is3DS ? 2050 : 2100;
+				let initialSeconds = params.datetime.getSeconds();
+				let workers: WorkerWrapper[] = [];
+				for (let i = 0; i < Math.max(1, navigator.hardwareConcurrency - 1); i++) {
+					workers.push(new WorkerWrapper());
+				}
+
+				// Set up promise that we'll resolve once work is complete
+				let foundTime: Date | null = null;
+				let resolvePromise: (value: Date | null) => void;
+				let promise = new Promise<Date | null>(function (resolve, _) {
+					resolvePromise = resolve;
+				});
+
+				// Function to start checking next year after searching current year finishes
+				let attachThen = (p: Promise<Date | null>, workerId: number) => {
+					p.then((dt) => {
+						if (foundTime) return; // another worker found a time already
+						if (dt) { // this worker found a time
+							foundTime = dt;
+							resolvePromise(dt);
+							return;
+						}
+						// If we have gone through all years, increment seconds and start over.
+						if (cYear == maxYear) {
+							cYear = 2000;
+							params.datetime.setSeconds(params.datetime.getSeconds() + 1);
+							if (params.datetime.getSeconds() == initialSeconds) {
+								// This will probably never happen
+								foundTime = new Date(); // set this so other workers will stop
+								resolvePromise(null);
+								return;
+							}
+						}
+						attachThen(workers[workerId].searchForTime(event.data.seeds, params, cYear, ++cYear), workerId);
+					});
+				}
+
+				// Start all workers
+				for (let i = 0; i < navigator.hardwareConcurrency - 1; i++) {
+					attachThen(workers[i].searchForTime(event.data.seeds, params, cYear, ++cYear), i);
+				}
+
+				postMessage({
+					data: await promise,
+					id: event.data.id,
+				});
+			}
+
 			return;
 		}
 		default: {

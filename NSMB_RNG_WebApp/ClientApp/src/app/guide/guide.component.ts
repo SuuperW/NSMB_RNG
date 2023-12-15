@@ -50,6 +50,7 @@ export class GuideComponent implements AfterViewInit {
 	progressStatus: string[] = [];
 
 	constructor(private cdr: ChangeDetectorRef) {
+		// Auto-advance step for testing
 		if (!localStorage.getItem('consoleType') || !localStorage.getItem('gameVersion'))
 			return;
 
@@ -62,6 +63,14 @@ export class GuideComponent implements AfterViewInit {
 			return;
 
 		this.currentStep = 4;
+		if (!localStorage.getItem('rngParams'))
+			return;
+
+		this.currentStep = 5;
+		if (!localStorage.getItem('manipDatetime'))
+			return;
+
+		this.currentStep = 6;
 	}
 
 	onLoadStepComponent(component: StepComponent) {
@@ -76,7 +85,7 @@ export class GuideComponent implements AfterViewInit {
 	}
 
 	ngAfterViewInit() {
-		this.stepContainer.componentCreated.add(this.onLoadStepComponent);
+		this.stepContainer.componentCreated.add(this.onLoadStepComponent.bind(this));
 		if (this.stepContainer.component)
 			this.onLoadStepComponent(this.stepContainer.component);
 	}

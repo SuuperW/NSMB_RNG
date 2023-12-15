@@ -80,3 +80,29 @@ export const searchForSeeds = (seeds: number[], options: SearchParams) => {
 
 	return results;
 }
+
+export const searchForTime = (seeds: Set<number>, params: RngParams, minYear: number, maxYearExclusive: number) => {
+	let dt = new Date(minYear, 0, 1, 0, 0, params.datetime.getSeconds());
+	let sc = new SeedCalculator(params.mac, dt, params.is3DS);
+	sc.timer0 = params.timer0;
+	sc.vCount = params.vCount;
+	sc.vFrame = params.vFrame;
+	sc.buttons = params.buttons;
+
+	while (dt.getFullYear() < maxYearExclusive) {
+		for (let hour = 0; hour < 24; hour++) {
+			sc.hour = hour;
+			for (let min = 0; min < 60; min++) {
+				sc.minute = min;
+				if (seeds.has(sc.getSeed())) {
+					return dt;
+				}
+			}
+		}
+
+		dt.setDate(dt.getDate() + 1);
+		sc.setDateTime(dt);
+	}
+
+	return null;
+}

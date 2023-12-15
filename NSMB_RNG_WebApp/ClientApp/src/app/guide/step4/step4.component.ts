@@ -163,6 +163,7 @@ export class Step4Component extends StepComponent {
 		}
 		if (paramsToUse) {
 			this.errorStatus = undefined;
+			localStorage.setItem('rngParams', JSON.stringify(paramsToUse));
 			this.dialog.open(PopupDialogComponent, {
 				maxWidth: '60vw',
 				data: {

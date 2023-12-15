@@ -63,4 +63,16 @@ export class WorkerWrapper {
 		else
 			return paramSearch.searchForSeeds(seeds, options);
 	}
+
+	async searchForTime(seeds: number[], params: paramSearch.RngParams, minYear?: number, maxYear?: number) {
+		if (this.worker)
+			return await this.call(paramSearch.searchForTime.name, {
+				seeds: seeds,
+				params: params,
+				minYear: minYear,
+				maxYear: maxYear,
+			}) as Date | null;
+		else
+			return paramSearch.searchForTime(new Set(seeds), params, 2000, params.is3DS ? 2050 : 2100);
+	}
 }
