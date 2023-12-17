@@ -1,7 +1,7 @@
 <p>Your RNG initialization time is {{ manipDatetime }}.</p>
 <p>
 	Set your console's clock and load the game so that RNG is initialized at {{ manipDatetime }}.<br />
-	Then go to 1-2 and get the tile pattern.
+	Then go to 1-2 and get the tile pattern. When you enter the first row, the second row will automatically be shown.
 </p>
 
 <ng-container [formGroup]="form">
@@ -9,6 +9,15 @@
 	<input id="row1Input" placeholder="first row tiles (7)" formControlName="row1Input" />
 
 	<app-tile-display [tileCount]="7" [tiles]="this.form.value.row1Input" (tilesOut)="row1Changed($event)"></app-tile-display>
+	<app-tile-display [tileCount]="11" [tiles]="this.row2"></app-tile-display>
 </ng-container>
 
 <p>{{ feedback }}</p>
+
+<div [hidden]="!this.isGood">
+	<p>
+		You're all set to begin speedrun attempts!<br />
+		Go to the game's main menu and start a new game. You won't need to set the clock again until you close the game.<br />
+		Review instructions for how to manipulate RNG during attempts <a href="notyetbuilt">here</a>.
+	</p>
+</div>

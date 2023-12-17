@@ -1,4 +1,5 @@
 import * as rng from "./functions/rng";
+import { findRow2Matches } from "./functions/tiles";
 import * as paramSearch from "./functions/rng-params-search";
 
 let workerSupported: boolean = !!Worker;
@@ -52,9 +53,9 @@ export class WorkerWrapper {
 		// unless I'm transferring a lot of data. Then we should use a Transferrable.
 		// Yet, making a Uint32Array and transferring the buffer seems no faster.
 		if (this.worker)
-			return await this.call(rng.findRow2Matches.name, { seeds: seedsRow1, row2: row2 }) as number[];
+			return await this.call(findRow2Matches.name, { seeds: seedsRow1, row2: row2 }) as number[];
 		else
-			return rng.findRow2Matches(seedsRow1, row2);
+			return findRow2Matches(seedsRow1, row2);
 	}
 
 	async searchForSeeds(seeds: number[], options: paramSearch.SearchParams) {

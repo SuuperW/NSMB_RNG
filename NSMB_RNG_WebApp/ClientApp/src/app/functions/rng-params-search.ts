@@ -1,4 +1,5 @@
-import { SeedCalculator } from "../seed-calculator";
+import { SeedCalculator } from '../seed-calculator';
+import { getRow1 } from './tiles';
 
 export type RngParams = {
 	timer0: number,
@@ -95,6 +96,8 @@ export const searchForTime = (seeds: Set<number>, params: RngParams, minYear: nu
 			for (let min = 0; min < 60; min++) {
 				sc.minute = min;
 				if (seeds.has(sc.getSeed())) {
+					dt.setHours(hour);
+					dt.setMinutes(min);
 					return dt;
 				}
 			}
@@ -105,4 +108,25 @@ export const searchForTime = (seeds: Set<number>, params: RngParams, minYear: nu
 	}
 
 	return null;
+}
+
+export type SeedRow = { pattern: string, seed: number };
+export const getAllPossibleRow1 = (options: SearchParams) => {
+	let sc = new SeedCalculator(options.mac, options.datetime, options.is3DS);
+	sc.buttons = options.buttons;
+	let results: SeedRow[] = [];
+
+	for (let timer0 = options.minTimer0; timer0 <= options.maxTimer0; timer0++) {
+		sc.timer0 = timer0;
+		for (let vCount = options.minVCount; vCount <= options.maxVCount; vCount++) {
+			sc.vCount = vCount;
+			for (let vFrame = options.minVFrame; vFrame <= options.maxVFrame; vFrame++) {
+				sc.vFrame = vFrame;
+				let seed = sc.getSeed();
+				results.push({ pattern: getRow1(seed), seed: seed });
+			}
+		}
+	}
+
+	return results;
 }

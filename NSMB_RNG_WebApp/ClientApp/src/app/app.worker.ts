@@ -1,6 +1,6 @@
 /// <reference lib="webworker" />
 
-import { findRow2Matches } from './functions/rng';
+import { findRow2Matches } from "./functions/tiles";
 import { RngParams, SearchParams, searchForSeeds, searchForTime } from './functions/rng-params-search';
 // This import causes a warning about circular dependency. Apparently it's from webpack and could lead to improper caching by browsers...???
 // I don't understand how it works, and I'm going to ignore it because I cannot find a staisfactory solution.
