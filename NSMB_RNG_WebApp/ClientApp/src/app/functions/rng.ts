@@ -1,39 +1,3 @@
-const STEPS_BEFORE_ROW1 = 1937;
-const TILES_PER_ROW = 27;
-
-export const findRow2Matches = (seedsRow1: number[], row2: string): number[] => {
-	let letters = ['B', 'E', 'I', 'C', 'P', 'S'];
-	let tiles: number[] = [];
-	for (let i = 0; i < row2.length; i++) {
-		let id = letters.indexOf(row2[i]);
-		if (id == -1)
-			return [];
-		tiles.push(id);
-	}
-
-	let seedsRow2: number[] = [];
-	for (let v of seedsRow1) {
-		let r = v;
-		for (let i = 0; i < STEPS_BEFORE_ROW1 + TILES_PER_ROW - 1; i++)
-			r = nextState(r);
-
-		// Check if this value matches the input for 11 tiles.
-		let match = true;
-		for (let i = 0; i < tiles.length; i++) {
-			r = nextState(r);
-			let tID = tileIDFromState(r);
-			if (tID != tiles[i]) {
-				match = false;
-				break;
-			}
-		}
-		if (match) {
-			seedsRow2.push(...previousState(v));
-		}
-	}
-	return seedsRow2;
-}
-
 export const nextState = (v: number) => {
 	// Number.MAX_SAFE_INTEGER > (0x0019660D * 0xffffffff + 0x3C6EF35F)  is true, so this should be safe.
 	let a = 0x0019660D * v + 0x3C6EF35F;
@@ -88,5 +52,3 @@ export const previousState = (v: number) => {
 export const tileIDFromState = (v: number) => {
 	return ((v >> 8) & 0x7) % 6;
 }
-
-

@@ -63,6 +63,7 @@ export class Step5Component extends StepComponent {
 		const status = 'Finding date and time for RNG manip...'
 		this.addProgress(status);
 		let params: RngParams = JSON.parse(localStorage.getItem('rngParams')!);
+		params.datetime = new Date(params.datetime);
 		let result = await this.worker.searchForTime(this.form.value.route == 'normal' ? normalSeeds : miniSeeds, params);
 
 		if (result) {
