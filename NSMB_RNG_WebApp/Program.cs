@@ -9,8 +9,6 @@ namespace NSMB_RNG_WebApp
 	internal static class Config
 	{
 		public const string ApiRotuePrefix = "/asp/";
-
-		public static string LookupPath = "";
 	}
 
 	public class Program
@@ -18,14 +16,17 @@ namespace NSMB_RNG_WebApp
 		public static void Main(string[] args)
 		{
 			var jsonConfig = System.Text.Json.JsonDocument.Parse(File.ReadAllText("config.json")).RootElement;
-			Config.LookupPath = jsonConfig.GetProperty("lookupPath").GetString()!;
-			if (!Directory.Exists(Config.LookupPath))
-				throw new FileNotFoundException("Cannot find lookup directory specified in config.json.");
+			if (jsonConfig.TryGetProperty("lookupPath", out var lookupPath))
+			{
+				if (!Directory.Exists(lookupPath.GetString()))
+					throw new DirectoryNotFoundException("Cannot find lookup directory specified in config.json.");
+				Environment.SetEnvironmentVariable("lookup_PATH", lookupPath.GetString());
+			}
 			if (jsonConfig.TryGetProperty("7z_PATH", out var config7z))
 			{
 				if (!File.Exists(config7z.GetString()))
 					throw new FileNotFoundException("Cannot find 7z file specified in config.json.");
-				Environment.SetEnvironmentVariable("7z_PATH", jsonConfig.GetProperty("7z_PATH").GetString());
+				Environment.SetEnvironmentVariable("7z_PATH", config7z.GetString());
 			}
 
 			var builder = WebApplication.CreateBuilder(args);

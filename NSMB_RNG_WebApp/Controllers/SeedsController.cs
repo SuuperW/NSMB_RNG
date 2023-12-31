@@ -34,7 +34,7 @@ namespace NSMB_RNG_WebApp.Controllers
 			}
 
 			// How much processing should be done on server vs in browser?
-			TilesFor12.SeedFinder sf = new TilesFor12.SeedFinder(tiles, Config.LookupPath);
+			TilesFor12.SeedFinder sf = new TilesFor12.SeedFinder(tiles);
 			sf.WaitForInit();
 
 			if (sf.error)

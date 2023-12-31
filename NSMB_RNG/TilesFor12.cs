@@ -24,18 +24,9 @@ namespace NSMB_RNG
 			public event Action? Ready;
 			private Task initTask;
 
-			private string lookupArchivePath = "";
-
 			public SeedFinder(int[] first7Tiles, bool cli = false)
 			{
 				this.cli = cli;
-				initTask = Init(first7Tiles);
-			}
-
-			public SeedFinder(int[] first7Tiles, string lookupArchivePath)
-			{
-				this.lookupArchivePath = lookupArchivePath;
-				this.cli = true;
 				initTask = Init(first7Tiles);
 			}
 
@@ -119,7 +110,8 @@ namespace NSMB_RNG
 				string filePath = Path.Combine("lookup", folder, file);
 				if (!File.Exists(filePath))
 				{
-					if (lookupArchivePath == "")
+					string? lookupArchivePath = Environment.GetEnvironmentVariable("lookup_PATH");
+					if (lookupArchivePath == null)
 					{
 						if (!await DownloadChunk(folder))
 							return new List<uint>();
@@ -145,6 +137,11 @@ namespace NSMB_RNG
 						throw new Exception("There shouldn't be any files that big.");
 				}
 				fs.Close();
+
+				// We might want to delete the downloaded/extracted file from the cloud server in production
+				// to reduce storage space requirements. However I'm going to ignore that issue for now.
+				// Maybe we'll never end up accumulating enough files for that to matter.
+				// A better solution to this problem might include re-thinking how lookups are stored.
 
 				// The file contains a list of 4-byte values, but these are not exactly the values we want.
 				// To get the values we want, we have to first multiply the value by 5, then add it to the previous value.
@@ -185,20 +182,24 @@ namespace NSMB_RNG
 				}
 				return values;
 			}
-			private bool ExtractFile(string source, string destination)
+
+			private bool ExtractFile(string archivePath, string outDir, string? fileName = null)
 			{
 				// If the directory doesn't exist, create it.
-				if (!Directory.Exists(destination))
-					Directory.CreateDirectory(destination);
+				if (!Directory.Exists(outDir))
+					Directory.CreateDirectory(outDir);
 
-				string zPath = "7za.exe";
+				string zPath = Environment.GetEnvironmentVariable("7z_PATH") ?? "7za.exe";
 				try
 				{
 					ProcessStartInfo psi = new ProcessStartInfo();
 					psi.WindowStyle = ProcessWindowStyle.Hidden;
 					psi.UseShellExecute = true;
 					psi.FileName = zPath;
-					psi.Arguments = "x " + source + " -o" + destination;
+					if (fileName == null)
+						psi.Arguments = $"x {archivePath} -o{outDir} -aos";
+					else
+						psi.Arguments = $"e {archivePath} -o{outDir} {fileName} -r";
 					Process? process = Process.Start(psi);
 					if (process != null)
 						process.WaitForExit();
@@ -208,8 +209,9 @@ namespace NSMB_RNG
 					return false;
 				}
 
-				return File.Exists(destination + "/00");
+				return File.Exists($"{outDir}/{fileName ?? "00"}");
 			}
+
 			static HttpClient? client;
 			private async Task<bool> DownloadChunk(string file)
 			{
@@ -251,32 +253,6 @@ namespace NSMB_RNG
 				File.Delete(archivePath);
 
 				return true;
-			}
-
-			private bool ExtractFile(string archivePath, string outDir, string fileName)
-			{
-				// If the directory doesn't exist, create it.
-				if (!Directory.Exists(outDir))
-					Directory.CreateDirectory(outDir);
-
-				string zPath = Environment.GetEnvironmentVariable("7z_PATH") ?? "7za.exe";
-				try
-				{
-					ProcessStartInfo psi = new ProcessStartInfo();
-					psi.WindowStyle = ProcessWindowStyle.Hidden;
-					psi.UseShellExecute = true;
-					psi.FileName = zPath;
-					psi.Arguments = "e " + archivePath + " -o" + outDir + " " + fileName + " -r";
-					Process? process = Process.Start(psi);
-					if (process != null)
-						process.WaitForExit();
-				}
-				catch
-				{
-					return false;
-				}
-
-				return File.Exists(outDir + "/" + fileName);
 			}
 
 			/// <summary>
