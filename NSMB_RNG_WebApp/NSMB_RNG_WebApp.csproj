@@ -23,6 +23,23 @@
   <ItemGroup>
     <ProjectReference Include="..\NSMB_RNG\NSMB_RNG.csproj" />
   </ItemGroup>
+  
+  <!-- Don't publish config files, but do show them. -->
+  <ItemGroup>
+    <Content Remove="config.*.json" />
+    <None Include="config.*.json" />
+    <Content Remove="config_example.json" />
+    <None Include="config_example.json" />
+  </ItemGroup>
+    <!-- Copy and rename the config file for current configuration. -->
+  <Target Name="CopyConfig" BeforeTargets="BeforeBuild">
+    <Copy SourceFiles="config.$(Configuration).json" DestinationFiles="config.json" />
+    <!-- Include the copied file in the build output. This would happen by default ONLY if the file had already existed before build. -->
+    <ItemGroup>
+	  <Content Remove="config.json" />
+      <Content Include="config.json" CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
+  </Target>
 
   <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">
     <!-- Ensure Node.js is installed -->

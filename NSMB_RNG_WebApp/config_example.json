@@ -1,4 +1,5 @@
 {
 	"lookupPath": "C:/lookup/",
-	"7z_PATH": "C:/7zip/7za.exe"
+	"7z_PATH": "C:/7zip/7za.exe",
+	"NOTE":  "You should name your config file config.[configuration].json where [configuration] is the build configuration. During build the file config.[configuration].json will be copied and renamed to config.json."
 }
