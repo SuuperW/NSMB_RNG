@@ -81,6 +81,7 @@ export const searchForSeeds = (seeds: number[], options: SearchParams) => {
 
 	return results;
 }
+searchForSeeds.workerName = 'sfs';
 
 export const searchForTime = (seeds: Set<number>, params: RngParams, minYear: number, maxYearExclusive: number) => {
 	let dt = new Date(minYear, 0, 1, 0, 0, params.datetime.getSeconds());
@@ -109,6 +110,7 @@ export const searchForTime = (seeds: Set<number>, params: RngParams, minYear: nu
 
 	return null;
 }
+searchForTime.workerName = 'sft';
 
 export type SeedRow = { pattern: string, seed: number };
 export const getAllPossibleRow1 = (options: SearchParams) => {

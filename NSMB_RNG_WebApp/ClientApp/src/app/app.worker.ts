@@ -8,14 +8,17 @@ import { WorkerWrapper } from './worker-wrapper';
 
 addEventListener('message', async (event: MessageEvent) => {
 	switch (event.data.func) {
-		case findRow2Matches.name: {
+		// All function names should be given a workerName property in the file in which they're defined.
+		// The reason for this is that minification results in functions having different actual names
+		// in the worker's js file compared to the main js file.
+		case findRow2Matches.workerName: {
 			postMessage({
 				data: findRow2Matches(event.data.seeds, event.data.row2),
 				id: event.data.id,
 			});
 			return;
 		}
-		case searchForSeeds.name: {
+		case searchForSeeds.workerName: {
 			if (event.data.options.minVCount > 0 || event.data.options.maxVCount < 263) {
 				// We have restricted search params, probably not very helpful to create workers for a relatively short operation.
 				// Also we don't want to recursively create 4, 16, 64, etc. workers.
@@ -67,7 +70,7 @@ addEventListener('message', async (event: MessageEvent) => {
 			}
 			return;
 		}
-		case searchForTime.name: {
+		case searchForTime.workerName: {
 			// We received simple data. Convert to proper types.
 			let seeds = new Set<number>(event.data.seeds);
 			let params: RngParams = event.data.params;

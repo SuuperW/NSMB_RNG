@@ -35,6 +35,7 @@ export const findRow2Matches = (seedsRow1: number[], row2: string): number[] => 
 	}
 	return seedsRow2;
 }
+findRow2Matches.workerName = 'fr2m';
 
 export const getRow1 = (seed: number) => {
 	let r = seed;

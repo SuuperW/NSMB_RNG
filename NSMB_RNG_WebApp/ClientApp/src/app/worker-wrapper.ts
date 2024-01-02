@@ -53,21 +53,21 @@ export class WorkerWrapper {
 		// unless I'm transferring a lot of data. Then we should use a Transferrable.
 		// Yet, making a Uint32Array and transferring the buffer seems no faster.
 		if (this.worker)
-			return await this.call(findRow2Matches.name, { seeds: seedsRow1, row2: row2 }) as number[];
+			return await this.call(findRow2Matches.workerName, { seeds: seedsRow1, row2: row2 }) as number[];
 		else
 			return findRow2Matches(seedsRow1, row2);
 	}
 
 	async searchForSeeds(seeds: number[], options: paramSearch.SearchParams) {
 		if (this.worker)
-			return await this.call(paramSearch.searchForSeeds.name, { seeds: seeds, options: options }) as paramSearch.RngParams[];
+			return await this.call(paramSearch.searchForSeeds.workerName, { seeds: seeds, options: options }) as paramSearch.RngParams[];
 		else
 			return paramSearch.searchForSeeds(seeds, options);
 	}
 
 	async searchForTime(seeds: number[], params: paramSearch.RngParams, minYear?: number, maxYear?: number) {
 		if (this.worker)
-			return await this.call(paramSearch.searchForTime.name, {
+			return await this.call(paramSearch.searchForTime.workerName, {
 				seeds: seeds,
 				params: params,
 				minYear: minYear,
