@@ -16,8 +16,6 @@ namespace NSMB_RNG_WebApp.Controllers
 			_logger = logger;
 		}
 
-		// TODO: I get a 500 internal server error (AmbiguousMatchException) if the post request's content doesn't match the model.
-		// Obviously, such a request should be a 400 Bad Request instead.
 		[HttpPost]
 		public void LogSeedFindResults(SeedFindResultRaw result)
 		{
