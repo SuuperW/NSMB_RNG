@@ -7,3 +7,5 @@ output/*
 ignore/**
 NSMB_RNG_WebApp/config.json
 NSMB_RNG_WebApp/config.*.json
+NSMB_RNG_WebApp/resultLog.json
+

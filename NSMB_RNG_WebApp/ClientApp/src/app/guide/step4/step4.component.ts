@@ -10,6 +10,14 @@ import { RngParams, SearchParams } from '../../functions/rng-params-search';
 import { WorkerService } from '../../worker.service';
 import { PopupDialogComponent } from '../../popup-dialog/popup-dialog.component';
 
+type result = {
+	foundParams: RngParams[],
+	seeds: number[],
+	row1: string,
+	row2: string,
+	count: number
+}
+
 @Component({
 	selector: 'app-step4',
 	standalone: true,
@@ -49,13 +57,7 @@ export class Step4Component extends StepComponent {
 	totalMatchedPatterns: number = 0;
 
 	searchParams: SearchParams | undefined;
-	results: {
-		foundParams: RngParams[],
-		seeds: number[],
-		row1: string,
-		row2: string,
-		count: number
-	}[] = [];
+	results: result[] = [];
 	private getAllRngParams() {
 		return this.results.flatMap((result) => result.foundParams);
 	}
@@ -72,7 +74,7 @@ export class Step4Component extends StepComponent {
 		}
 	}
 
-	async submit(secondsOffset: number = 0) {
+	async submit() {
 		if (this.seeds.length == 0) {
 			this.dialog.open(PopupDialogComponent, {
 				data: {
@@ -86,7 +88,7 @@ export class Step4Component extends StepComponent {
 		this.submitCount++;
 		const status = 'Finding RNG initialization parameters...';
 		this.addProgress(status);
-		await this.processTilePattern(-1, secondsOffset);
+		await this.processTilePattern();
 		this.removeProgress(status);
 
 		// These numbers are kinda arbitrary. The intent is to detect when something is wrong so we/user don't waste time endlessly entering bad patterns.
@@ -122,11 +124,11 @@ export class Step4Component extends StepComponent {
 				this.dialog.open(PopupDialogComponent, {
 					data: {
 						message: ['Unfortunately, we didn\'t find anything useful.',
-							'This might mean you incorrectly entered something. For example, you might have a type in your mac address.',
+							'This might mean you incorrectly entered something. For example, you might have a typo in your mac address.',
 							'Or it might mean you\'re not following the correct process to collect tile patterns.', // TODO: Make and refer to detailed instructions + video.
 							'Or, there might be something that is affecting RNG that I don\'t know about. ' +
 							'If you need help, record a video of you viewing your MAC address, setting date and time, and getting a tile ' +
-							'pattern on your console. Send the video to @suuperw on Discord and I\'ll see if I can figure out what the problem is.'
+							'pattern on your console. Send the video to @suuper on Discord and I\'ll see if I can figure out what the problem is.'
 						],
 					}
 				});
@@ -183,7 +185,6 @@ export class Step4Component extends StepComponent {
 		let userInputParams = {
 			macInput: localStorage.getItem('mac')!,
 			consoleType: localStorage.getItem('consoleType'),
-			dtInput: this.date,
 			row1Input: this.lastFirstRow,
 			row2Input: this.lastSecondRow,
 		};
@@ -201,6 +202,7 @@ export class Step4Component extends StepComponent {
 			for (let r of this.results) {
 				if (r.row1 == userInputParams.row1Input && r.row2 == userInputParams.row2Input) {
 					r.count++;
+					this.postResults(r, r.foundParams.length == 0 ? 0 : r.foundParams[0].datetime.getSeconds() - this.date.getSeconds());
 					return r.foundParams.length > 0;
 				}
 			}
@@ -286,10 +288,26 @@ export class Step4Component extends StepComponent {
 			}
 		}
 
-		this.http.post<string>('asp/seedfindingresults', result);
 		this.inProgressCount--;
-
+		this.postResults(result, secondsOffset);
 		return result.foundParams.length > 0;
+	}
+
+	private postResults(results: result, offsetSeconds: number) {
+		// The default behaviour for Date values is to convert them to UTC. We do not want that, we want to ignore timezones entirely.
+		let dtStr: Date | string = this.date;
+		dtStr.setMinutes(dtStr.getMinutes() - dtStr.getTimezoneOffset());
+		dtStr = dtStr.toISOString().slice(0, -1);
+
+		let postData: any = {
+			...results,
+			datetime: dtStr,
+			gameVersion: localStorage.getItem('gameVersion'),
+			mac: localStorage.getItem('mac'),
+			is3DS: localStorage.getItem('consoleType') == '3DS',
+			offsetUsed: offsetSeconds,
+		};
+		this.http.post<string>('asp/submitResults', postData).subscribe(); // need to subscribe or it won't actually send the request?
 	}
 
 	async row1Changed(tiles: string) {
