@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.SpaProxy" Version="6.0.23" />
+    <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.37.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
@@ -33,8 +34,8 @@
     <None Include="config_example.json" />
   </ItemGroup>
     <!-- Copy and rename the config file for current configuration. -->
-  <Target Name="CopyConfig" BeforeTargets="BeforeBuild">
-    <Copy SourceFiles="config.$(Configuration).json" DestinationFiles="config.json" />
+  <Target Name="CopyConfig" BeforeTargets="Build">
+    <Copy SourceFiles="config.$(Configuration).json" DestinationFiles="config.json" SkipUnchangedFiles="true" />
     <!-- Include the copied file in the build output. This would happen by default ONLY if the file had already existed before build. -->
     <ItemGroup>
 	  <Content Remove="config.json" />

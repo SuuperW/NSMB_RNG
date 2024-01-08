@@ -16,21 +16,20 @@ namespace NSMB_RNG_WebApp
 	{
 		public static void Main(string[] args)
 		{
+			// Set environment variables based on config file.
 			var jsonConfig = System.Text.Json.JsonDocument.Parse(File.ReadAllText("config.json")).RootElement;
-			if (jsonConfig.TryGetProperty("lookupPath", out var lookupPathElement))
+			foreach (var prop in jsonConfig.EnumerateObject())
 			{
-				string lookupPath = lookupPathElement.GetString() ?? "";
-				if (!Directory.Exists(lookupPath))
-					throw new DirectoryNotFoundException($"Cannot find lookup directory specified in config.json: {lookupPath}");
-				Environment.SetEnvironmentVariable("lookup_PATH", lookupPath);
+				string val = prop.Value.GetString() ?? "";
+				Environment.SetEnvironmentVariable(prop.Name, val);
 			}
-			if (jsonConfig.TryGetProperty("7z_PATH", out var config7zElement))
-			{
-				string config7z = config7zElement.GetString() ?? "";
-				if (!File.Exists(config7z))
-					throw new FileNotFoundException($"Cannot find 7z file specified in config.json: {config7z}");
-				Environment.SetEnvironmentVariable("7z_PATH", config7z);
-			}
+			string? lookupPath = Environment.GetEnvironmentVariable("lookupPath");
+			if (!string.IsNullOrEmpty(lookupPath) && !Directory.Exists(lookupPath))
+				throw new DirectoryNotFoundException($"Cannot find lookup directory specified in config.json: {lookupPath}");
+			string? config7z = Environment.GetEnvironmentVariable("7z_PATH");
+			if (!string.IsNullOrEmpty(config7z) && !File.Exists(config7z))
+				throw new FileNotFoundException($"Cannot find 7z file specified in config.json: {config7z}");
+
 
 			var builder = WebApplication.CreateBuilder(args);
 

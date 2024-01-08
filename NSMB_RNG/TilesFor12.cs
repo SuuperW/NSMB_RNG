@@ -110,7 +110,7 @@ namespace NSMB_RNG
 				string filePath = Path.Combine("lookup", folder, file);
 				if (!File.Exists(filePath))
 				{
-					string? lookupArchivePath = Environment.GetEnvironmentVariable("lookup_PATH");
+					string? lookupArchivePath = Environment.GetEnvironmentVariable("lookupPath");
 					if (lookupArchivePath == null)
 					{
 						if (!await DownloadChunk(folder))
