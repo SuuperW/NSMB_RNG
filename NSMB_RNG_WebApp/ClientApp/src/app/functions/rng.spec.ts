@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
-import * as rng from './rng';
+import * as tiles from './tiles';
 import { assert } from '../../test/assert';
 
 describe('RNG functions', () => {
@@ -22,7 +22,7 @@ describe('RNG functions', () => {
 		];
 
 		for (let i = 0; i < inputSeeds.length; i++) {
-			let output = rng.findRow2Matches(inputSeeds[i], row2[i].toUpperCase());
+			let output = tiles.findRow2Matches(inputSeeds[i], row2[i].toUpperCase());
 			assert(output.length == expectedSeeds[i].length);
 			for (let j = 0; j < output.length; j++) {
 				assert(expectedSeeds[i].indexOf(output[j]) != -1);
