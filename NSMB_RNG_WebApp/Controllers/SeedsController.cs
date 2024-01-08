@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using NSMB_RNG;
+using NSMB_RNG_WebApp.Models;
 using System;
 using System.Collections.Generic;
 
@@ -11,35 +12,22 @@ namespace NSMB_RNG_WebApp.Controllers
 	{
 		[HttpGet]
 		[Route("{row1:alpha}")]
-		public List<uint> Seeds(string row1)
+		public ActionResult<List<uint>> Seeds(string row1)
 		{
+			// Validate and parse the tile pattern
 			if (string.IsNullOrEmpty(row1) || row1.Length != 7)
-			{
-				BadRequest("Invalid tile pattern.");
-				return new List<uint>();
-			}
-			row1 = row1.ToUpper();
+				return BadRequest("Invalid tile pattern.");
+			int[]? tiles = TileRow.Parse(row1);
+			if (tiles == null)
+				return BadRequest("Invalid tile pattern.");
 
-			int[] tiles = new int[7];
-			char[] letters = new char[] { 'B', 'E', 'I', 'C', 'P', 'S' };
-			for (int i = 0; i < tiles.Length; i++)
-			{
-				tiles[i] = Array.IndexOf(letters, row1[i]);
-				if (tiles[i] == -1)
-				{
-					BadRequest("Invalid tile pattern.");
-					return new List<uint>();
-				}
-			}
-
-			// How much processing should be done on server vs in browser?
+			// Grab the possible seeds (this method does more work than we need, but the code already exists)
 			TilesFor12.SeedFinder sf = new TilesFor12.SeedFinder(tiles);
 			sf.WaitForInit();
-
 			if (sf.error)
 				throw new Exception("error");
 
-			return sf.lookupResults;
+			return new ActionResult<List<uint>>(sf.lookupResults);
 		}
 	}
 }

@@ -18,5 +18,18 @@ namespace NSMB_RNG_WebApp.Models
 
 			return true;
 		}
+
+		public static int[]? Parse(string row)
+		{
+			row = row.ToUpper();
+			int[] bytes = new int[row.Length];
+			for (int i = 0; i < bytes.Length; i++)
+			{
+				bytes[i] = Array.IndexOf(letters, row[i]);
+				if (bytes[i] == -1)
+					return null;
+			}
+			return bytes;
+		}
 	}
 }
