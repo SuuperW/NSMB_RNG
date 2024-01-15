@@ -223,15 +223,14 @@ export class Step4Component extends StepComponent {
 		let rngParams: RngParams[] = [];
 		let fullSearch = this.searchParams === undefined;
 		if (this.searchParams && secondsOffset == 0) {
-			let offset: number;
-			[rngParams, offset] = await this.searchPlusMinusOneSecond(seeds, this.searchParams);
+			[rngParams, secondsOffset] = await this.searchPlusMinusOneSecond(seeds, this.searchParams);
 			if (rngParams.length == 0) {
 				fullSearch = true;
-			} else if (offset != 0) {
+			} else if (secondsOffset != 0) {
 				this.dialog.open(PopupDialogComponent, {
 					data: {
 						message: [
-							`RNG was initialized 1 second too ${offset == 1 ? 'late' : 'early'}.`,
+							`RNG was initialized 1 second too ${secondsOffset == 1 ? 'late' : 'early'}.`,
 							`It\'s OK this time, but for best results try to get RNG to intialize at ${this.date.getTime()} in the future.`,
 						]
 					}
