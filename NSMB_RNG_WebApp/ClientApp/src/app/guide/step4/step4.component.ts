@@ -88,7 +88,14 @@ export class Step4Component extends StepComponent {
 		this.submitCount++;
 		const status = 'Finding RNG initialization parameters...';
 		this.addProgress(status);
-		await this.processTilePattern();
+		let anyFound = this.totalMatchedPatterns > 0;
+		let result = await this.processTilePattern({});
+		if (!anyFound && result) {
+			// On the first success, go back to failed patterns to check +/-1 second
+			for (let i = 0; i < this.results.length - 1; i++) {
+				await this.processTilePattern({ resultId: i, allowFull: false });
+			}
+		}
 		this.removeProgress(status);
 
 		// These numbers are kinda arbitrary. The intent is to detect when something is wrong so we/user don't waste time endlessly entering bad patterns.
@@ -101,10 +108,10 @@ export class Step4Component extends StepComponent {
 			let promise: Promise<boolean> = (async () => { return true })();
 			for (let i = 0; i < this.results.length; i++) {
 				promise = promise.then((v) => {
-					return this.processTilePattern(i, -1);
+					return this.processTilePattern({ resultId: i, secondsOffset: -1 });
 				})
 				.then((v) => {
-					if (!v) return this.processTilePattern(i, +1);
+					if (!v) return this.processTilePattern({ resultId: i, secondsOffset: +1 });
 					else return true;
 				});
 
@@ -175,11 +182,14 @@ export class Step4Component extends StepComponent {
 	}
 
 	// This function will look for RNG initialization parameters for the given seeds.
-	// The date used is this.date plus the seconds offset.
 	// It uses this.searchParams if available (and if it is available, searches +/-1 seconds automatically)
 	// and updates this.searchParams according to results.
 	// The results are added to this.results, or if resultId is given results are updated instead.
-	private async processTilePattern(resultId: number = -1, secondsOffset: number = 0) {
+	private async processTilePattern({
+		resultId = -1, // The ID of the result to re-process, or -1 for a potentially new pattern.
+		secondsOffset = 0, // How many seconds from the target time to search with.
+		allowFull = true, // Set to false to only do the quick search with this.searchParams.
+	}) {
 		let date = this.date;
 		date.setSeconds(date.getSeconds() + secondsOffset);
 		let userInputParams = {
@@ -212,33 +222,24 @@ export class Step4Component extends StepComponent {
 		// If we have previous results, base search on that.
 		let rngParams: RngParams[] = [];
 		let fullSearch = this.searchParams === undefined;
-		if (this.searchParams) {
-			rngParams = await this.worker.searchForSeeds(seeds, this.searchParams);
+		if (this.searchParams && secondsOffset == 0) {
+			let offset: number;
+			[rngParams, offset] = await this.searchPlusMinusOneSecond(seeds, this.searchParams);
 			if (rngParams.length == 0) {
-				let o = new SearchParams(this.searchParams);
-				o.datetime.setSeconds(o.datetime.getSeconds() - 1);
-				rngParams = await this.worker.searchForSeeds(seeds, o);
-				if (rngParams.length == 0) {
-					o.datetime.setSeconds(o.datetime.getSeconds() + 2);
-					rngParams = await this.worker.searchForSeeds(seeds, o);
-					if (rngParams.length == 0) {
-						fullSearch = true;
+				fullSearch = true;
+			} else if (offset != 0) {
+				this.dialog.open(PopupDialogComponent, {
+					data: {
+						message: [
+							`RNG was initialized 1 second too ${offset == 1 ? 'late' : 'early'}.`,
+							`It\'s OK this time, but for best results try to get RNG to intialize at ${this.date.getTime()} in the future.`,
+						]
 					}
-				}
-				if (resultId == -1 && rngParams.length != 0) {
-					this.dialog.open(PopupDialogComponent, {
-						data: {
-							message: [
-								`RNG was initialized at the wrong time: ${o.datetime.getTime()}.`,
-								`It\'s OK this time, but for best results try to get RNG to intialize at ${this.date.getTime()} in the future.`,
-							]
-						}
-					});
-				}
+				});
 			}
 		}
 		// Otherwise, do a full search.
-		if (fullSearch) {
+		if (fullSearch && allowFull) {
 			rngParams = await this.worker.searchForSeeds(seeds, new SearchParams({
 				mac: userInputParams.macInput,
 				minTimer0: 0x300,
@@ -290,6 +291,21 @@ export class Step4Component extends StepComponent {
 		this.inProgressCount--;
 		this.postResults(result, secondsOffset);
 		return result.foundParams.length > 0;
+	}
+	private async searchPlusMinusOneSecond(seeds: number[], searchParams: SearchParams): Promise<[RngParams[], number]> {
+		let offsets = [0, -1, +1];
+		for (let offset of offsets) {
+			// set time
+			let o = new SearchParams(searchParams);
+			o.datetime.setSeconds(o.datetime.getSeconds() + offset);
+			// search
+			let rngParams = await this.worker.searchForSeeds(seeds, o);
+			if (rngParams.length > 0) {
+				return [rngParams, offset];
+			}
+		}
+		
+		return [[], 0];
 	}
 
 	private postResults(results: result, offsetSeconds: number) {
