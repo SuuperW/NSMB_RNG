@@ -14,7 +14,6 @@ describe('SeedCalculator', () => {
 		seedCalc.vCount = 123;
 		seedCalc.vFrame = 5;
 		let seed = seedCalc.getSeed();
-		console.log(seed.toString(16));
 		assert(seedCalc.getSeed() == 0xf2b9aa20);
 	});
 });

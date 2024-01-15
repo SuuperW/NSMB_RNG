@@ -7,9 +7,9 @@ let letters = ['B', 'E', 'I', 'C', 'P', 'S'];
 export const findRow2Matches = (seedsRow1: number[], row2: string): number[] => {
 	let tiles: number[] = [];
 	for (let i = 0; i < row2.length; i++) {
-		let id = letters.indexOf(row2[i]);
+		let id = letters.indexOf(row2[i].toUpperCase());
 		if (id == -1)
-			return [];
+			throw "Invalid row2.";
 		tiles.push(id);
 	}
 

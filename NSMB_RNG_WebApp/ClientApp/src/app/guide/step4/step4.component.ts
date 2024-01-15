@@ -267,7 +267,6 @@ export class Step4Component extends StepComponent {
 		// Set up narrower search params
 		if (rngParams.length != 0) {
 			// It's a list, but we don't loop through it. If there are two, one is a false positive and we can't know which.
-			console.log(rngParams[0]);
 			if (fullSearch) {
 				this.searchParams = new SearchParams({
 					mac: userInputParams.macInput,
