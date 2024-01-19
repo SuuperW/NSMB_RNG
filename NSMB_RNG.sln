@@ -15,16 +15,22 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NSMB_RNG_GUI", "NSMB_RNG_GU
 		{A50E1C5C-9C8E-4C4F-A59B-9BC93F2EFE16} = {A50E1C5C-9C8E-4C4F-A59B-9BC93F2EFE16}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NSMB_RNG_WebApp", "NSMB_RNG_WebApp\NSMB_RNG_WebApp.csproj", "{0D37BD91-C71F-441E-9E6A-2022BE21B27D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NSMB_RNG_WebApp", "NSMB_RNG_WebApp\NSMB_RNG_WebApp.csproj", "{0D37BD91-C71F-441E-9E6A-2022BE21B27D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		AzureRelease|Any CPU = AzureRelease|Any CPU
+		AzureRelease|x64 = AzureRelease|x64
 		Debug|Any CPU = Debug|Any CPU
 		Debug|x64 = Debug|x64
 		Release|Any CPU = Release|Any CPU
 		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A50E1C5C-9C8E-4C4F-A59B-9BC93F2EFE16}.AzureRelease|Any CPU.ActiveCfg = Release|Any CPU
+		{A50E1C5C-9C8E-4C4F-A59B-9BC93F2EFE16}.AzureRelease|Any CPU.Build.0 = Release|Any CPU
+		{A50E1C5C-9C8E-4C4F-A59B-9BC93F2EFE16}.AzureRelease|x64.ActiveCfg = Release|x64
+		{A50E1C5C-9C8E-4C4F-A59B-9BC93F2EFE16}.AzureRelease|x64.Build.0 = Release|x64
 		{A50E1C5C-9C8E-4C4F-A59B-9BC93F2EFE16}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A50E1C5C-9C8E-4C4F-A59B-9BC93F2EFE16}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A50E1C5C-9C8E-4C4F-A59B-9BC93F2EFE16}.Debug|x64.ActiveCfg = Debug|x64
@@ -33,6 +39,10 @@ Global
 		{A50E1C5C-9C8E-4C4F-A59B-9BC93F2EFE16}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A50E1C5C-9C8E-4C4F-A59B-9BC93F2EFE16}.Release|x64.ActiveCfg = Release|x64
 		{A50E1C5C-9C8E-4C4F-A59B-9BC93F2EFE16}.Release|x64.Build.0 = Release|x64
+		{D9610138-D4F4-40A2-960A-F07E5D7FAD95}.AzureRelease|Any CPU.ActiveCfg = Release|Any CPU
+		{D9610138-D4F4-40A2-960A-F07E5D7FAD95}.AzureRelease|Any CPU.Build.0 = Release|Any CPU
+		{D9610138-D4F4-40A2-960A-F07E5D7FAD95}.AzureRelease|x64.ActiveCfg = Release|Any CPU
+		{D9610138-D4F4-40A2-960A-F07E5D7FAD95}.AzureRelease|x64.Build.0 = Release|Any CPU
 		{D9610138-D4F4-40A2-960A-F07E5D7FAD95}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D9610138-D4F4-40A2-960A-F07E5D7FAD95}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D9610138-D4F4-40A2-960A-F07E5D7FAD95}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -41,6 +51,10 @@ Global
 		{D9610138-D4F4-40A2-960A-F07E5D7FAD95}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D9610138-D4F4-40A2-960A-F07E5D7FAD95}.Release|x64.ActiveCfg = Release|Any CPU
 		{D9610138-D4F4-40A2-960A-F07E5D7FAD95}.Release|x64.Build.0 = Release|Any CPU
+		{7986F2D5-1642-4B81-BC0D-7E3800EBC668}.AzureRelease|Any CPU.ActiveCfg = Release|Any CPU
+		{7986F2D5-1642-4B81-BC0D-7E3800EBC668}.AzureRelease|Any CPU.Build.0 = Release|Any CPU
+		{7986F2D5-1642-4B81-BC0D-7E3800EBC668}.AzureRelease|x64.ActiveCfg = Release|Any CPU
+		{7986F2D5-1642-4B81-BC0D-7E3800EBC668}.AzureRelease|x64.Build.0 = Release|Any CPU
 		{7986F2D5-1642-4B81-BC0D-7E3800EBC668}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7986F2D5-1642-4B81-BC0D-7E3800EBC668}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7986F2D5-1642-4B81-BC0D-7E3800EBC668}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -49,6 +63,10 @@ Global
 		{7986F2D5-1642-4B81-BC0D-7E3800EBC668}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7986F2D5-1642-4B81-BC0D-7E3800EBC668}.Release|x64.ActiveCfg = Release|Any CPU
 		{7986F2D5-1642-4B81-BC0D-7E3800EBC668}.Release|x64.Build.0 = Release|Any CPU
+		{0D37BD91-C71F-441E-9E6A-2022BE21B27D}.AzureRelease|Any CPU.ActiveCfg = AzureRelease|Any CPU
+		{0D37BD91-C71F-441E-9E6A-2022BE21B27D}.AzureRelease|Any CPU.Build.0 = AzureRelease|Any CPU
+		{0D37BD91-C71F-441E-9E6A-2022BE21B27D}.AzureRelease|x64.ActiveCfg = Release|Any CPU
+		{0D37BD91-C71F-441E-9E6A-2022BE21B27D}.AzureRelease|x64.Build.0 = Release|Any CPU
 		{0D37BD91-C71F-441E-9E6A-2022BE21B27D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0D37BD91-C71F-441E-9E6A-2022BE21B27D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0D37BD91-C71F-441E-9E6A-2022BE21B27D}.Debug|x64.ActiveCfg = Debug|Any CPU

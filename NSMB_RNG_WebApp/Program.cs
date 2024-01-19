@@ -16,12 +16,15 @@ namespace NSMB_RNG_WebApp
 	{
 		public static void Main(string[] args)
 		{
-			// Set environment variables based on config file.
-			var jsonConfig = System.Text.Json.JsonDocument.Parse(File.ReadAllText("config.json")).RootElement;
-			foreach (var prop in jsonConfig.EnumerateObject())
+			// Set environment variables based on optional config file.
+			if (File.Exists("config.json"))
 			{
-				string val = prop.Value.GetString() ?? "";
-				Environment.SetEnvironmentVariable(prop.Name, val);
+				var jsonConfig = System.Text.Json.JsonDocument.Parse(File.ReadAllText("config.json")).RootElement;
+				foreach (var prop in jsonConfig.EnumerateObject())
+				{
+					string val = prop.Value.GetString() ?? "";
+					Environment.SetEnvironmentVariable(prop.Name, val);
+				}
 			}
 			string? lookupPath = Environment.GetEnvironmentVariable("lookupPath");
 			if (!string.IsNullOrEmpty(lookupPath) && !Directory.Exists(lookupPath))

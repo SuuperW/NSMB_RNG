@@ -1,0 +1,54 @@
+﻿trigger:
+- main
+
+pool:
+  vmImage: 'windows-latest'
+
+variables:
+  solution: 'NSMB_RNG.sln'
+  buildPlatform: 'Any CPU'
+  buildConfiguration: 'Release'
+
+jobs:
+- job:
+  displayName: BuildAndPublish
+  steps:
+  - task: NuGetToolInstaller@1
+
+  - task: NuGetCommand@2
+    enabled: false
+    inputs:
+      restoreSolution: '$(solution)'
+
+  - task: CmdLine@2
+    inputs:
+      script: 'dotnet build NSMB_RNG_WebApp/NSMB_RNG_WebApp.csproj --output build -c AzureRelease'
+
+  - task: VSTest@2
+    inputs:
+      platform: '$(buildPlatform)'
+      configuration: '$(buildConfiguration)'
+    
+    # This fails due to az cli not being logged in on the build machine.
+  - task: CmdLine@2
+    enabled: false
+    inputs:
+      script: 'az deployment sub create --template-file NSMB_RNG_WebApp/main.bicep -l eastus'
+    
+  - task: AzureResourceManagerTemplateDeployment@3
+    inputs:
+      deploymentScope: 'Subscription'
+      azureResourceManagerConnection: 'Azure subscription 1(a640296f-c5a4-4df0-8f83-e642fe428870)'
+      subscriptionId: 'a640296f-c5a4-4df0-8f83-e642fe428870'
+      location: 'East US'
+      templateLocation: 'Linked artifact'
+      csmFile: 'NSMB_RNG_WebApp/main.bicep'
+      deploymentMode: 'Incremental'
+    
+  - task: AzureRmWebAppDeployment@4
+    inputs:
+      ConnectionType: 'AzureRM'
+      azureSubscription: 'Azure subscription 1(a640296f-c5a4-4df0-8f83-e642fe428870)'
+      appType: 'webApp'
+      WebAppName: 'NSMB-RNG'
+      packageForLinux: '$(System.DefaultWorkingDirectory)/build'
