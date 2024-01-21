@@ -17,6 +17,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NSMB_RNG_GUI", "NSMB_RNG_GU
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NSMB_RNG_WebApp", "NSMB_RNG_WebApp\NSMB_RNG_WebApp.csproj", "{0D37BD91-C71F-441E-9E6A-2022BE21B27D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TEST_NSMB_RNG", "TEST_NSMB_RNG\TEST_NSMB_RNG.csproj", "{5D171BCD-6258-4116-BDD7-640DDD33FE88}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		AzureRelease|Any CPU = AzureRelease|Any CPU
@@ -40,7 +42,6 @@ Global
 		{A50E1C5C-9C8E-4C4F-A59B-9BC93F2EFE16}.Release|x64.ActiveCfg = Release|x64
 		{A50E1C5C-9C8E-4C4F-A59B-9BC93F2EFE16}.Release|x64.Build.0 = Release|x64
 		{D9610138-D4F4-40A2-960A-F07E5D7FAD95}.AzureRelease|Any CPU.ActiveCfg = Release|Any CPU
-		{D9610138-D4F4-40A2-960A-F07E5D7FAD95}.AzureRelease|Any CPU.Build.0 = Release|Any CPU
 		{D9610138-D4F4-40A2-960A-F07E5D7FAD95}.AzureRelease|x64.ActiveCfg = Release|Any CPU
 		{D9610138-D4F4-40A2-960A-F07E5D7FAD95}.AzureRelease|x64.Build.0 = Release|Any CPU
 		{D9610138-D4F4-40A2-960A-F07E5D7FAD95}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -52,7 +53,6 @@ Global
 		{D9610138-D4F4-40A2-960A-F07E5D7FAD95}.Release|x64.ActiveCfg = Release|Any CPU
 		{D9610138-D4F4-40A2-960A-F07E5D7FAD95}.Release|x64.Build.0 = Release|Any CPU
 		{7986F2D5-1642-4B81-BC0D-7E3800EBC668}.AzureRelease|Any CPU.ActiveCfg = Release|Any CPU
-		{7986F2D5-1642-4B81-BC0D-7E3800EBC668}.AzureRelease|Any CPU.Build.0 = Release|Any CPU
 		{7986F2D5-1642-4B81-BC0D-7E3800EBC668}.AzureRelease|x64.ActiveCfg = Release|Any CPU
 		{7986F2D5-1642-4B81-BC0D-7E3800EBC668}.AzureRelease|x64.Build.0 = Release|Any CPU
 		{7986F2D5-1642-4B81-BC0D-7E3800EBC668}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -75,6 +75,18 @@ Global
 		{0D37BD91-C71F-441E-9E6A-2022BE21B27D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0D37BD91-C71F-441E-9E6A-2022BE21B27D}.Release|x64.ActiveCfg = Release|Any CPU
 		{0D37BD91-C71F-441E-9E6A-2022BE21B27D}.Release|x64.Build.0 = Release|Any CPU
+		{5D171BCD-6258-4116-BDD7-640DDD33FE88}.AzureRelease|Any CPU.ActiveCfg = Release|Any CPU
+		{5D171BCD-6258-4116-BDD7-640DDD33FE88}.AzureRelease|Any CPU.Build.0 = Release|Any CPU
+		{5D171BCD-6258-4116-BDD7-640DDD33FE88}.AzureRelease|x64.ActiveCfg = Release|Any CPU
+		{5D171BCD-6258-4116-BDD7-640DDD33FE88}.AzureRelease|x64.Build.0 = Release|Any CPU
+		{5D171BCD-6258-4116-BDD7-640DDD33FE88}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5D171BCD-6258-4116-BDD7-640DDD33FE88}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5D171BCD-6258-4116-BDD7-640DDD33FE88}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{5D171BCD-6258-4116-BDD7-640DDD33FE88}.Debug|x64.Build.0 = Debug|Any CPU
+		{5D171BCD-6258-4116-BDD7-640DDD33FE88}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5D171BCD-6258-4116-BDD7-640DDD33FE88}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5D171BCD-6258-4116-BDD7-640DDD33FE88}.Release|x64.ActiveCfg = Release|Any CPU
+		{5D171BCD-6258-4116-BDD7-640DDD33FE88}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

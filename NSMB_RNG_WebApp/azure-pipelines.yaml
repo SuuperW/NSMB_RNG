@@ -7,7 +7,9 @@ pool:
 variables:
   solution: 'NSMB_RNG.sln'
   buildPlatform: 'Any CPU'
-  buildConfiguration: 'Release'
+  buildConfiguration: 'AzureRelease'
+  targetFramework: 'net6.0'
+  NUGET_PACKAGES: $(Pipeline.Workspace)/.nugetPackages
 
 jobs:
 - job:
@@ -37,17 +39,15 @@ jobs:
   - task: NuGetToolInstaller@1
   - task: CmdLine@2
     inputs:
-      script: 'dotnet build NSMB_RNG_WebApp/NSMB_RNG_WebApp.csproj --output build -c AzureRelease'
-
-  - task: VSTest@2
-    inputs:
-      platform: '$(buildPlatform)'
-      configuration: '$(buildConfiguration)'
+      # dotnet test will trigger a build
+      script: |
+        dotnet test -c $(buildConfiguration)
+        cd NSMB_RNG_WebApp/ClientApp && npm test && cd ../..
     
   # Deploy
   - task: ArchiveFiles@2
     inputs:
-      rootFolderOrFile: 'build'
+      rootFolderOrFile: 'NSMB_RNG_WebApp/bin/$(buildConfiguration)/$(targetFramework)'
       includeRootFolder: false
       archiveType: 'zip'
       archiveFile: 'pub.zip'

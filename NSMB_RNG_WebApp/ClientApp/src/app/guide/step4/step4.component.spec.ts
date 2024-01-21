@@ -82,7 +82,7 @@ describe('Step4Component', () => {
 
 		assert(component.submitCount == 1);
 		assert(component.totalMatchedPatterns == 0);
-	});
+	}, 15000); // submit will do a full search, which may take longer than the default 5 second limit
 
 	it('recognizes +1/-1 second on past patterns after finding params', async () => {
 		// simulate submission of -1 second pattern:
