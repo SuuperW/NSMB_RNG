@@ -2,59 +2,21 @@
 - main
 
 pool:
-  vmImage: 'windows-latest'
+  name: Default
 
 variables:
   solution: 'NSMB_RNG.sln'
   buildPlatform: 'Any CPU'
   buildConfiguration: 'AzureRelease'
   targetFramework: 'net6.0'
+  # Place NuGet packages outside source directory so they persist between builds.
   NUGET_PACKAGES: $(Pipeline.Workspace)/.nugetPackages
 
 jobs:
 - job:
   displayName: BuildAndPublish
   steps:
-  # Cache things. These speed up the pipeline.
-  - task: Cache@2
-    displayName: "Cache NuGet packages"
+  - task: Bash@3
     inputs:
-      path: $(NUGET_PACKAGES)
-      # The official recommendation is to use packages.lock.json in the key.
-      # However, I don't want to do this because that's a hacky (indirect) was of solving the cache problem.
-      # This would result in having a new file in the repository that could change randomly. (unless I take care to manage dependency upgrades, which I don't want to bother with)
-      # So instead I use the .csproj, which is where dependencys are defined. This should work plenty well enough.
-      key: '"NuGet" | "$(Agent.OS)" | NSMB_RNG_WebApp/NSMB_RNG_WebApp.csproj'
-      restoreKeys: '"NuGet" | "$(Agent.OS)"'
-
-  - task: Cache@2
-    displayName: "Cache node modules"
-    inputs:
-      path: NSMB_RNG_WebApp/ClientApp/node_modules
-      # Here we use the lock file because npm forces us to have it anyway.
-      key: '"node_modules" | "$(Agent.OS)" | NSMB_RNG_WebApp/ClientApp/package-lock.json'
-      restoreKeys: '"node_modules" | "$(Agent.OS)"'
-
-  # Biuld and test
-  - task: NuGetToolInstaller@1
-  - task: CmdLine@2
-    inputs:
-      script: |
-        dotnet publish -c $(buildConfiguration)
-        dotnet test -c $(buildConfiguration)
-        cd NSMB_RNG_WebApp/ClientApp && npm test && cd ../..
-    
-  # Deploy
-  - task: ArchiveFiles@2
-    inputs:
-      rootFolderOrFile: 'NSMB_RNG_WebApp/bin/$(buildConfiguration)/$(targetFramework)/publish'
-      includeRootFolder: false
-      archiveType: 'zip'
-      archiveFile: 'pub.zip'
-      replaceExistingArchive: true
-  - task: AzureCLI@2
-    inputs:
-      azureSubscription: 'Azure subscription 1(a640296f-c5a4-4df0-8f83-e642fe428870)'
-      scriptType: 'batch'
-      scriptLocation: 'scriptPath'
-      scriptPath: NSMB_RNG_WebApp/azDeploy.bat
+      filePath: 'NSMB_RNG_WebApp/pipeline'
+      

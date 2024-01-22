@@ -1,0 +1,38 @@
+﻿#!/bin/bash
+
+nmPath=$BUILD_SOURCESDIRECTORY/NSMB_RNG_WebApp/ClientApp/node_modules
+
+cleanup() {
+	echo "Pipeline cleanup"
+	mv $nmPath $PIPELINE_WORKSPACE/node_modules &> /dev/null
+}
+run() {
+	# Run a command and exit on non-zero exit codes.
+	$@
+	code=$?
+	if [ $code != 0 ]; then
+		cleanup
+		echo "##vso[task.logissue type=error] Error running $1"
+		exit $code
+	fi
+}
+
+echo "Pipeline init"
+# This might fail due to node_modules not being in the pipeline workspace. That's OK.
+mv $PIPELINE_WORKSPACE/node_modules $nmPath &> /dev/null
+
+echo "Building"
+run dotnet publish -c $BUILDCONFIGURATION
+
+echo "Running tests"
+run dotnet test -c $BUILDCONFIGURATION
+cd NSMB_RNG_WebApp/ClientApp && run "npm test" && cd ../..
+
+echo "Running infrastructure deployment"
+run az deployment sub create --template-file NSMB_RNG_WebApp/main.bicep -l eastus -o none
+
+echo "Running software deployment"
+run 7za.exe a azpub.zip \"./NSMB_RNG_WebApp/bin/$BUILDCONFIGURATION/$TARGETFRAMEWORK/publish/**\"
+run az webapp deployment source config-zip --src azpub.zip -n NSMB-RNG -g NSMB_RNG
+
+cleanup
