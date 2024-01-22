@@ -54,7 +54,11 @@ namespace NSMB_RNG_WebApp
 			IFileProvider? staticFileProvider = null;
 			// In dev mode SPA files will be in ClientApp/dist. In release/prod they should be copied into wwwroot.
 			if (app.Environment.IsDevelopment())
-				staticFileProvider = new PhysicalFileProvider(Path.Combine(builder.Environment.ContentRootPath, "ClientApp/dist"));
+			{
+				string devDistDir = Path.Combine(builder.Environment.ContentRootPath, "ClientApp/dist");
+				Directory.CreateDirectory(devDistDir); // It may not yet exist. Angular app is build after ASP app starts.
+				staticFileProvider = new PhysicalFileProvider(devDistDir);
+			}
 			StaticFileOptions sfOptions = new StaticFileOptions() { FileProvider = staticFileProvider };
 			app.MapFallbackToFile("index.html", sfOptions);
 
