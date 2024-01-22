@@ -18,5 +18,5 @@ jobs:
   steps:
   - task: Bash@3
     inputs:
-      filePath: 'NSMB_RNG_WebApp/pipeline'
+      filePath: 'NSMB_RNG_WebApp/deployment/pipeline'
       
