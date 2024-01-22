@@ -52,16 +52,6 @@
     <Message Importance="high" Text="Restoring dependencies using 'npm'. This may take several minutes..." />
     <Exec WorkingDirectory="$(SpaRoot)" Command="npm install" />
   </Target>
-
-  <!-- When building for Azure, build Angular app and include its files -->
-  <Target Name="RunNodeBuild" BeforeTargets="Build" Condition="'$(Configuration)' == 'AzureRelease'" >
-    <Exec WorkingDirectory="$(SpaRoot)" Command="npm install" />
-    <Exec WorkingDirectory="$(SpaRoot)" Command="npm run build -- --configuration production" />
-    <ItemGroup>
-      <SpaDist Include="$(SpaRoot)dist\**" />
-    </ItemGroup>
-    <Copy SourceFiles="@(SpaDist)" DestinationFiles="@(SpaDist->'$(OutDir)wwwroot\%(RecursiveDir)%(Filename)%(Extension)')" />
-  </Target>
   
   <Target Name="PublishRunWebpack" AfterTargets="ComputeFilesToPublish">
     <!-- As part of publishing, ensure the JS resources are freshly built in production mode -->

@@ -39,15 +39,15 @@ jobs:
   - task: NuGetToolInstaller@1
   - task: CmdLine@2
     inputs:
-      # dotnet test will trigger a build
       script: |
+        dotnet publish -c $(buildConfiguration)
         dotnet test -c $(buildConfiguration)
         cd NSMB_RNG_WebApp/ClientApp && npm test && cd ../..
     
   # Deploy
   - task: ArchiveFiles@2
     inputs:
-      rootFolderOrFile: 'NSMB_RNG_WebApp/bin/$(buildConfiguration)/$(targetFramework)'
+      rootFolderOrFile: 'NSMB_RNG_WebApp/bin/$(buildConfiguration)/$(targetFramework)/publish'
       includeRootFolder: false
       archiveType: 'zip'
       archiveFile: 'pub.zip'
