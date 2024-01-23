@@ -1,11 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Azure.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Cosmos;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using NSMB_RNG;
 using NSMB_RNG_WebApp.Models;
 using System;
-using System.ComponentModel;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -58,35 +57,29 @@ namespace NSMB_RNG_WebApp.Controllers
 			System.IO.File.AppendAllText(fileName, json.ToString(Formatting.None));
 		}
 
-		private async Task<Microsoft.Azure.Cosmos.Container> GetCosmosContainer()
+		private Container GetCosmosContainer()
 		{
 			string? DbName = Environment.GetEnvironmentVariable("CosmosDbName");
 			string? ContainerName = Environment.GetEnvironmentVariable("CosmosContainerName");
-			string? PrimaryKey = Environment.GetEnvironmentVariable("CosmosPrimaryKey");
 			string? EndpointUri = Environment.GetEnvironmentVariable("CosmosEndpointUri");
-			if (DbName == null || ContainerName == null || PrimaryKey == null || EndpointUri == null)
+			if (DbName == null || ContainerName == null || EndpointUri == null)
 				throw new Exception("Unable to retrieve environment variables required for CosmosDB connection.");
 
-			CosmosClient cosmosClient = new CosmosClient(EndpointUri, PrimaryKey);
-			var dResult = await cosmosClient.CreateDatabaseIfNotExistsAsync(DbName, ThroughputProperties.CreateManualThroughput(400));
-			if ((dResult.StatusCode & (System.Net.HttpStatusCode.OK | System.Net.HttpStatusCode.Created)) == 0)
-				throw new Exception("Failed to conenct to CosmosDB, or to create/get database.");
-			Database database = dResult.Database;
+			string? PrimaryKey = Environment.GetEnvironmentVariable("CosmosPrimaryKey");
+			CosmosClient cosmosClient;
+			if (PrimaryKey != null)
+				// The option to access by primary key is provided to support dev environment.
+				cosmosClient = new CosmosClient(EndpointUri, PrimaryKey);
+			else
+				// This should be used in production. It'll use the system-assigned managed identity.
+				cosmosClient = new CosmosClient(EndpointUri, new DefaultAzureCredential());
 
-			var props = new ContainerProperties(ContainerName, "/mac");
-			props.IndexingPolicy.ExcludedPaths.Add(new ExcludedPath() { Path = "/*" });
-			props.IndexingPolicy.IncludedPaths.Clear();
-			props.IndexingPolicy.IncludedPaths.Add(new IncludedPath() { Path = "/mac/?" });
-			props.IndexingPolicy.IncludedPaths.Add(new IncludedPath() { Path = "/_ts/?" });
-			var cResult = await database.CreateContainerIfNotExistsAsync(props);
-			if ((cResult.StatusCode & (System.Net.HttpStatusCode.OK | System.Net.HttpStatusCode.Created)) == 0)
-				throw new Exception("Failed to create/get container.");
-			return cResult.Container;
+			return cosmosClient.GetContainer(DbName, ContainerName);
 		}
 
 		private async Task LogToCosmos(RngParamsResult rngParamsResult)
 		{
-			Microsoft.Azure.Cosmos.Container container = await GetCosmosContainer();
+			Container container = GetCosmosContainer();
 
 			JObject item = JObject.FromObject(rngParamsResult);
 			item["id"] = Guid.NewGuid().ToString(); // a required property per CosmosDB
