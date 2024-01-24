@@ -1,10 +1,14 @@
 import { Component } from '@angular/core';
+import { MatExpansionModule } from '@angular/material/expansion';
 
 @Component({
 	selector: 'app-manip-in-run',
 	standalone: true,
 	templateUrl: './manip-in-run.component.html',
-	styleUrls: ['./manip-in-run.component.css']
+	styleUrls: ['./manip-in-run.component.css'],
+	imports: [
+		MatExpansionModule,
+	],
 })
 export class ManipInRunComponent {
 	manipDatetime: string;

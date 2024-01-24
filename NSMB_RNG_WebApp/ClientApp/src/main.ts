@@ -10,6 +10,7 @@ import { AppComponent } from './app/app.component';
 import { environment } from './environments/environment';
 import routeConfig from './routeConfig';
 import { HttpClientModule } from '@angular/common/http';
+import { provideAnimations } from '@angular/platform-browser/animations';
 
 export function getBaseUrl() {
 	return document.getElementsByTagName('base')[0].href;
@@ -28,6 +29,7 @@ bootstrapApplication(AppComponent, {
 		provideProtractorTestingSupport(),
 		provideRouter(routeConfig),
 		importProvidersFrom(HttpClientModule),
+		provideAnimations(), // required for the expansion panels; if this is missing, Angular will lie to you in an error message
 	],
 })
 .catch(err => console.error(err));

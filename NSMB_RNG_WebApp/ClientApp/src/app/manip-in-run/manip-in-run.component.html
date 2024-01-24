@@ -15,5 +15,121 @@
 <br />
 <h3>If you are using the mini route:</h3>
 <p>
-	Coming soon.
+	RNG manipulation for mini route is significantly more complicated, as you need to put RNG in a precise state in multiple parts of the run. Detailed instructions are provided below, but first here are some of the ways RNG can be manipulated:
 </p>
+<ul>
+	<li>Double jump: Doing a double jump moves RNG forward by one state. Since we use an 8 state cycle here, doing 8 double jumps is equivalent to doing 0. Note that this is only for double jumps: wheter or not you do a triple jump afterward does not matter.</li>
+	<li>Wall jump: Doing a wall jump moves RNG forward by one state, exactly the same as a double jump.</li>
+	<li>Breaking brick block: Breaking a brick block moves RNG forward by 14 states. This is equivalent to moving forward 6 states (14 minus 8), or moving backward 2 states (14 minus 16).</li>
+	<li>Background RNG: Some level areas automatically move the RNG state forward without you doing anything. In these areas, how quickly you complete that area affects RNG state. The frequency and exact timing itself depends on RNG, which means that doing a double jump might end up causing background RNG to happen more or less than it otherwise would. RNG state moves forward about 2-3 times per second on average.</li>
+	<li>Inventory RNG: Having an item in your inventory causes RNG to move forward by one state every time the powerup's animation ends. This is similar to background RNG in that it happens without you doing anything, but is much slower.</li>
+</ul>
+<p>
+	Additionally, it is preferable to get your score up to 100,000+ points before starting 5-2. This will prevent the flying block from re-spawning after 5-2, which saves time. This also affects RNG and makes RNG manipulation in 5-2 easier.
+</p>
+<mat-accordion>
+	<mat-expansion-panel>
+		<mat-expansion-panel-header>
+			<mat-panel-title>1-1</mat-panel-title>
+		</mat-expansion-panel-header>
+		<p>
+			RNG must be in a specific state at the end of 1-1, and you can control it by doing double jumps in 1-1. The number of double jumps depends on the initial RNG state, which can be determined based on the arrangement of toads at the end of the intro cutscene, just before it fades out. The 8 possible arrangements and the corresponding number of double jumps are:
+		</p>
+		<ul class="toad">
+			<li><img src="assets/t1.png" alt="toads 1" />2, 10</li>
+			<li><img src="assets/t2.png" alt="toads 2" />0, 8</li>
+			<li><img src="assets/t3.png" alt="toads 3" />1, 9</li>
+			<li><img src="assets/t4.png" alt="toads 4" />4, 12</li>
+			<li><img src="assets/t5.png" alt="toads 5" />6, 14</li>
+			<li><img src="assets/t6.png" alt="toads 6" />1, 9</li>
+			<li><img src="assets/t7.png" alt="toads 7" />5, 13</li>
+			<li><img src="assets/t8.png" alt="toads 8" />7, 15</li>
+		</ul>
+	</mat-expansion-panel>
+	<mat-expansion-panel>
+		<mat-expansion-panel-header>
+			<mat-panel-title>1-2 and 1-Tower</mat-panel-title>
+		</mat-expansion-panel-header>
+		<p>
+			The underground area of 1-2 has background RNG, so RNG state will not always be the same if you just try to go fast. Fortunately, you can determine the RNG state after the underground section by looking at the wall on the left after exiting the pipe. One of the blocks will have a dot on it:
+		</p>
+		<img src="assets/12EndDot.png" alt="common wall dot" />
+		<p>
+			This is probably the most common position for the dot. It will move up by 1 block for each extra RNG state change. So, it moves up if you are slower and down if you are faster.<br />
+			RNG must be in a specific state at the end of 1-Tower, and you can vary the number of wall/double jumps in 1-Tower and in the ending area of 1-2 to get it there.<br />
+			With the dot in the above position, you should break 5 bricks (the required number for the secret exit), and do 8 wall/double jumps. If the dot is lower, add 1 wall/double jump for each block lower that it is. If it is higher, add 1 for each block.<br />
+			RNG should ideally be in one of 6 states when you finish 1-2. The 2 states you do not want would have the dot in these positions:
+		</p>
+		<img src="assets/BadDot1.png" alt="dot near Mario" /><img src="assets/BadDot2.png" alt="dot up high" />
+		<p>If the dot is in one of those places, do a wall/double jump in the ending area of 1-2. (If you want to always do a wall jump, then you should add a double jump when the dot is one block lower than in the shown positions.)</p>
+	</mat-expansion-panel>
+	<mat-expansion-panel>
+		<mat-expansion-panel-header>
+			<mat-panel-title>1-Cannon</mat-panel-title>
+		</mat-expansion-panel-header>
+		<p>
+			Do one double jump in 1-Cannon. This double jump cannot be traded for one in 1-Tower. It MUST be done in 1-Cannon.
+		</p>
+	</mat-expansion-panel>
+	<mat-expansion-panel>
+		<mat-expansion-panel-header>
+			<mat-panel-title>5-1</mat-panel-title>
+		</mat-expansion-panel-header>
+		<p>5-1 has background RNG. RNG maniuplation up to this point was done to make finishing 5-1 with the correct RNG state as easy as possible.</p>
+		<ul>
+			<li>Do not do any double jumps or break any bricks, until you are within ~3 blocks away from the flagpole.</li>
+			<li>Do a double jump ~3 blocks or fewer away from the flagpole, and finish while the in-game timer is between 365.41 and 365.66.</li>
+			<li>You cannot wait for the in-game timer after doing the double jump. The double jump must be done very close to the time you finish.</li>
+		</ul>
+		<p>
+			Doing QSG will make this much easier. You need to go a little slow at the start. Refer to <a href="https://youtu.be/YLlI4kq7Bso?si=5eDK8imgRaTv9UBZ&t=227">this run by Josh</a> for an example of doing 5-1 correctly. Notice that he ran into a block before QSG; that is intentional! It's a good way to control speed so you can finish at the right time. You will still need to pay attention to snowbanks and slopes, as sliding on slopes is slower than jumping over them.
+		</p>
+	</mat-expansion-panel>
+	<mat-expansion-panel>
+		<mat-expansion-panel-header>
+			<mat-panel-title>5-2</mat-panel-title>
+		</mat-expansion-panel-header>
+		<p>
+			5-2 has background RNG in all areas. RNG can be in multiple states when you enter the underground section, depending on how quickly you grabbed the shell powerup. You can tell which state RNG is in by looking at the number of tiles after the last cloud tile at the bottom of the screen:
+		</p>
+		<img src="assets/TilesOf52.png" alt="" />
+		<p>
+			Fortunately, there are multiple good RNG states for the end of 5-2. This makes timing much easier than 5-1. And the last area is also consistent (as there are no significant obstacles), so you only need to worry about the underground section.<br />
+			If you got at least 100,000 points before 5-2, break the first brick in the underground section, do not do any wall/double jumps or break any other bricks, and:
+		</p>
+		<ul>
+			<li>Two tiles: exit the underground section before IGT (in-game timer) reaches 367.23.</li>
+			<li>Three tiles: go slightly slow (meaning, don't pixel stop to turn around at the pipe) and exit the underground section before the piranha plant comes out and hurts you.</li>
+			<li>Four tiles: exit the underground section before IGT reachest 367.75.</li>
+			<li>Another number: you messed up. Don't break the brick, go a little slow, and get lucky.</li>
+		</ul>
+		<p>If you did not get at least 100,000 points, do not break any bricks and exit the underground section between IGT 367.96 and 367.31. The exact timing range varies depending on how fast you entered the pipe in the first area, but the given timings fit within the time window for having 2, 3, or 4 tiles after the last cloud.</p>
+	</mat-expansion-panel>
+	<mat-expansion-panel>
+		<mat-expansion-panel-header>
+			<mat-panel-title>5-3</mat-panel-title>
+		</mat-expansion-panel-header>
+		<p>
+			5-3 has background RNG, and due to hyperspeed it is not feasible to play in a consistent manner. Fortunately, all 8 RNG states are workable in 5-Ghost so you can ignore RNG in this level.
+		</p>
+	</mat-expansion-panel>
+	<mat-expansion-panel>
+		<mat-expansion-panel-header>
+			<mat-panel-title>5-Ghost</mat-panel-title>
+		</mat-expansion-panel-header>
+		<p>
+			The last part of the run where you need to worry about RNG is getting a mini mushroom from the hammer bro. The powerup it gives is determined at the time you defeat it, which provides enough time to determine the RNG state and take appropriate action without slowing down.<br />
+			RNG state is determined by looking at the timing of the second "Touch!" animation above your inventory item. There are 5 possible timings, but you can separate them into two groups: the latest possible animation, and everything else. They are rather close together, so accuarely juding the timing may be difficult. Choose whatever visual or auditory cue works best for you. Here's a video showing the latest possible animation:
+		</p>
+		<video src="assets/AnimationDemonstration.mp4" controls></video>
+		<p>To manipulate RNG, you should:</p>
+		<ul>
+			<li>Quickly do a wall jump at the start, and land directly onto the upper platform. This requires a max height (or close to max height) wall jump.</li>
+			<li>Do a max height jump from the upper platform. The height causes the broozers to attack in a consistent manner. Otherwise they could change RNG unpredictably based on subtle changes in jump height.</li>
+			<li>If the animation was the latest possible, do a double jump on the stairs (this is frame perfect). If you miss the double jump you sill have a decent chance of getting a mini mushroom, as there are multiple RNG states with this same animation timing.</li>
+			<li>If the animation is not the latest possible, do not double jump.</li>
+		</ul>
+	</mat-expansion-panel>
+</mat-accordion>
+<!-- Enable scrolling down so that the last bit of content is higher on the screen. -->
+<div class="scrollpad"></div>
