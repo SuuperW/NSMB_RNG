@@ -1,26 +1,30 @@
-<p>Now to collect RNG data. This comes in the form of tile patterns.</p>
-<p>You will need a saved file in the game before doing this.</p>
+<p>
+	Now to collect RNG data. This comes in the form of tile patterns.
+	You will need a saved file in the game before doing this.
+</p>
 <p>
 	Load the game as in step 3, making sure RNG is initialized at the exact same time.*<br />
-	Further, ensure you do NOT hold any buttons during the game's start-up sequence.**<br />
+	Further, ensure you do NOT hold any buttons during the game's start-up sequence.<br />
 	As a reminder, your target time for RNG initialization is {{ targetDateTime }}.<br />
 	Then, load your saved file. This must be done BEFORE the intro cutscene begins playing.<br />
 	If you've left the game running on the title screen long enough for the cutscene to play, reset the system clock and reload the game.<br />
 	Go to world 1-2 and enter the level. Pause the game while the top row of tiles is still on-screen.<br />
-	Your tile pattern is the first 7 tiles in the topmost row to Mario's right plus all 11 visible tiles in the second row.<br />
+	Your tile pattern is the first 7 inner tiles in the topmost row plus all 11 visible inner tiles in the second row.<br />
+	Each tile will be represented as a letter. See below for an example and then each letter with its associated tile.<br />
 </p>
-<p>Enter one letter for each tile. Here are the letters for each tile:</p>
+<p>Example: The following image shows the tile pattern "icbpbei" and "psbibcbpsbi", and the bottom row is "bieeceeeppc".</p>
+<img class="example" src="assets/exampleTilePattern.jpg" alt="An example picture of 1-2" />
+<br />
+<p>Here are the letters for each tile. You can type or click the tile images to input your pattern.</p>
 <div class="tileLetters">
-	<div class="tileWithLetter">B <img src="assets/tileB.png" class="tileImage" /></div>
-	<div class="tileWithLetter">C <img src="assets/tileC.png" class="tileImage" /></div>
-	<div class="tileWithLetter">E <img src="assets/tileE.png" class="tileImage" /></div>
-	<div class="tileWithLetter">I <img src="assets/tileI.png" class="tileImage" /></div>
-	<div class="tileWithLetter">P <img src="assets/tileP.png" class="tileImage" /></div>
-	<div class="tileWithLetter">S <img src="assets/tileS.png" class="tileImage" /></div>
+	<div class="tileWithLetter">B <img src="assets/tileB.png" class="tileImage" (click)="tileClick('b')" /></div>
+	<div class="tileWithLetter">C <img src="assets/tileC.png" class="tileImage" (click)="tileClick('c')" /></div>
+	<div class="tileWithLetter">E <img src="assets/tileE.png" class="tileImage" (click)="tileClick('e')" /></div>
+	<div class="tileWithLetter">I <img src="assets/tileI.png" class="tileImage" (click)="tileClick('i')" /></div>
+	<div class="tileWithLetter">P <img src="assets/tileP.png" class="tileImage" (click)="tileClick('p')" /></div>
+	<div class="tileWithLetter">S <img src="assets/tileS.png" class="tileImage" (click)="tileClick('s')" /></div>
 </div>
-
-<p>Example: The following image shows the tile pattern "xxxxxxx" and "xxxxxxxxxxx", and the bottom row is "xxxxxxxxxxx".</p>
-<img src="assets/exampleTilePattern.png" />
+<br />
 
 <ng-container [formGroup]="form">
 	<label for="row1Input">First row</label>
@@ -31,20 +35,22 @@
 
 	<app-tile-display [tileCount]="7" [tiles]="this.form.value.row1Input" (tilesOut)="row1Changed($event)"></app-tile-display>
 	<app-tile-display [tileCount]="11" [tiles]="this.form.value.row2Input" (tilesOut)="row2Changed($event)"></app-tile-display>
-	<p>----- bottom row (If the bottom row in game doesn't match one of the rows below, you made a typo.) -----</p>
-	<p class="warning" [hidden]="!this.patternIsInvalid">The tile pattern you entered is not possible. Check for typos.</p>
-	<app-tile-display *ngFor="let row of this.bottomRows" class="bottomRow" [tileCount]="11" [tiles]="row"></app-tile-display>
+	<p class="tileHeight">----- bottom row (If the bottom row in game doesn't match one of the rows below, you made a typo.) -----</p>
+	<p class="warning tileHeight" [hidden]="!this.patternIsInvalid">The tile pattern you entered is not possible. Check for typos.</p>
+	<div class="spinner tileImage" [hidden]="!this.computingLastRow"></div>
+	<app-tile-display *ngFor="let row of this.bottomRows" [hidden]="this.patternIsInvalid || this.computingLastRow" [tileCount]="11" [tiles]="row"></app-tile-display>
 </ng-container>
+<br />
+
 
 <button class="btn-primary" (click)="submit()">Submit</button>
 <p>Patterns submitted: {{ submitCount }}<p>
 <p>
-	After submitting your tile pattern, reboot the console, reset the clock, and get another tile pattern.<br />
+	After submitting your tile pattern, reboot the console and get another tile pattern using the same process.<br />
 	Submit every tile pattern you get, even if it is exactly the same as one you already submitted.<br />
 	You will be required to collect several tile patterns.<br />
 </p>
 
 <p class="fine-print">
 	*The app should be able to detect if you're off by one second, but it will be less reliable with more mistakes. If you load the game and are not confident RNG was initialized at the correct time, try again before getting a tile pattern.<br />
-	**This would invalidate the data collected from the tile pattern, and the app will not detect this.
 </p>

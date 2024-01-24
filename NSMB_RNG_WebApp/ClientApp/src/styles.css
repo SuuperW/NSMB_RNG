@@ -40,10 +40,35 @@ input.ng-invalid.ng-touched {
 }
 
 .tileImage {
-	min-width: 3em;
-	min-height: 3em;
+	height: min(3rem, 5.6vw);
+	width: min(3rem, 5.6vw); /* 5.6vw is the largest vw that won't ever cause an 11-tile row to wrap to a second row inside the page's container element. */
+}
+.tileHeight {
+	height: min(3rem, 5.6vw);
+	display: flex;
+	align-items: center;
+	margin-top: 0;
+	margin-bottom: 0;
+	padding-top: 0;
+	padding-bottom: 0;
 }
 
 app-tile-display {
 	display: block;
+}
+
+.spinner {
+	border: 4px solid rgba(0, 0, 0, 0.1);
+	border-top: 4px solid #3498db;
+	border-radius: 50%;
+	animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+	0% {
+		transform: rotate(0deg);
+	}
+	100% {
+		transform: rotate(360deg);
+	}
 }

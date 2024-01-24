@@ -60,6 +60,7 @@ export class Step4Component extends StepComponent {
 	lastSecondRow: string = '';
 	bottomRows: string[] = [''];
 	patternIsInvalid: boolean = false;
+	computingLastRow: boolean = false;
 
 	submitCount: number = 0;
 	inProgressCount: number = 0;
@@ -374,6 +375,7 @@ export class Step4Component extends StepComponent {
 
 		if (tiles.length == 11 && this.lastFirstRow.length == 7) {
 			const status = "Finding seeds...";
+			this.computingLastRow = true;
 			this.addProgress(status);
 			this.seeds = await this.seedService.getPossibleSeedsFor(this.lastFirstRow, tiles) as number[];
 			this.removeProgress(status);
@@ -383,15 +385,24 @@ export class Step4Component extends StepComponent {
 
 			if (this.seeds.length == 0) {
 				this.patternIsInvalid = true;
-				return;
+			} else {
+				let rows: Set<string> = new Set();
+				this.bottomRows = [];
+				for (let seed of this.seeds)
+					rows.add(this.seedService.getBottomRow(seed));
+				for (let row of rows)
+					this.bottomRows.push(row);
 			}
-
-			let rows: Set<string> = new Set();
-			this.bottomRows = [];
-			for (let seed of this.seeds)
-				rows.add(this.seedService.getBottomRow(seed));
-			for (let row of rows)
-				this.bottomRows.push(row);
 		}
+
+		this.computingLastRow = false;
+	}
+
+	tileClick(letter: string) {
+		let control = this.form.controls.row1Input;
+		if (this.lastFirstRow.length >= 7) {
+			control = this.form.controls.row2Input;
+		}
+		control.setValue((control.value ?? '') + letter);
 	}
 }

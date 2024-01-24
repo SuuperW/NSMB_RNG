@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
+import { TilePreloaderService } from '../tile-preloader.service';
 
 const noTile = 'assets/none.png';
 
@@ -13,6 +14,8 @@ const noTile = 'assets/none.png';
 	styleUrls: ['./tile-display.component.css'],
 })
 export class TileDisplayComponent {
+	private _preloader: TilePreloaderService = inject(TilePreloaderService)
+
 	private _tileCount: number = 0;
 	@Input() set tileCount(value: number) {
 		this._tileCount = value;
@@ -56,7 +59,7 @@ export class TileDisplayComponent {
 		else {
 			while (charIndex < this._tileCount) {
 				charIndex++;
-				this.imageSrc[charIndex] = 'assets/none.png';
+				this.imageSrc[charIndex] = noTile;
 			}
 		}
 
@@ -66,7 +69,7 @@ export class TileDisplayComponent {
 			this.tilesOut.emit('');
 	}
 
-	private imageSrc: string[] = ['assets/none.png'];
+	private imageSrc: string[] = [noTile];
 
 
 	@Output() tilesOut = new EventEmitter<string>();
@@ -75,6 +78,6 @@ export class TileDisplayComponent {
 		if (index >= 0 && index < this.imageSrc.length)
 			return this.imageSrc[index];
 		else
-			return 'assets/none.png';
+			return noTile;
 	}
 }
