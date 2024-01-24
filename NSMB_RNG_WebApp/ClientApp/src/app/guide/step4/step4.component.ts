@@ -17,6 +17,15 @@ type result = {
 	row2: string,
 	count: number
 }
+type ProcessingInputs = {
+	row1: string,
+	row2: string,
+	seeds: number[],
+	mac: string,
+	consoleType: string,
+	date: Date,
+	priorResultId: number,
+}
 
 @Component({
 	selector: 'app-step4',
@@ -84,16 +93,20 @@ export class Step4Component extends StepComponent {
 			return;
 		}
 
+		let pi = this.getProcessingInputs();
+		this.form.controls.row1Input.setValue('');
+		this.form.controls.row2Input.setValue('');
+
 		// TODO: Disable submit button?
 		this.submitCount++;
 		const status = 'Finding RNG initialization parameters...';
 		this.addProgress(status);
 		let anyFound = this.totalMatchedPatterns > 0;
-		let result = await this.processTilePattern({});
+		let result = await this.processTilePattern(pi);
 		if (!anyFound && result) {
 			// On the first success, go back to failed patterns to check +/-1 second
 			for (let i = 0; i < this.results.length - 1; i++) {
-				await this.processTilePattern({ resultId: i, allowFull: false });
+				await this.processTilePattern(this.getProcessingInputs(i), 0, false);
 			}
 		}
 		this.removeProgress(status);
@@ -108,10 +121,10 @@ export class Step4Component extends StepComponent {
 			let promise: Promise<boolean> = (async () => { return true })();
 			for (let i = 0; i < this.results.length; i++) {
 				promise = promise.then((v) => {
-					return this.processTilePattern({ resultId: i, secondsOffset: -1 });
+					return this.processTilePattern(this.getProcessingInputs(i), -1 );
 				})
 				.then((v) => {
-					if (!v) return this.processTilePattern({ resultId: i, secondsOffset: +1 });
+					if (!v) return this.processTilePattern(this.getProcessingInputs(i), +1 );
 					else return true;
 				});
 
@@ -181,36 +194,38 @@ export class Step4Component extends StepComponent {
 		}
 	}
 
+	private getProcessingInputs(resultId: number = -1): ProcessingInputs {
+		let processingInputs: ProcessingInputs = {
+			mac: localStorage.getItem('mac')!,
+			consoleType: localStorage.getItem('consoleType')!,
+			row1: this.lastFirstRow,
+			row2: this.lastSecondRow,
+			seeds: this.seeds,
+			date: this.date,
+			priorResultId: resultId
+		};
+		if (resultId != -1) {
+			processingInputs.row1 = this.results[resultId].row1;
+			processingInputs.row2 = this.results[resultId].row2;
+			processingInputs.seeds = this.results[resultId].seeds;
+		}
+		return processingInputs;
+	}
+
 	// This function will look for RNG initialization parameters for the given seeds.
 	// It uses this.searchParams if available (and if it is available, searches +/-1 seconds automatically)
 	// and updates this.searchParams according to results.
 	// The results are added to this.results, or if resultId is given results are updated instead.
-	private async processTilePattern({
-		resultId = -1, // The ID of the result to re-process, or -1 for a potentially new pattern.
+	private async processTilePattern(processingInptus: ProcessingInputs,
 		secondsOffset = 0, // How many seconds from the target time to search with.
 		allowFull = true, // Set to false to only do the quick search with this.searchParams.
-	}) {
-		let date = this.date;
-		date.setSeconds(date.getSeconds() + secondsOffset);
-		let userInputParams = {
-			macInput: localStorage.getItem('mac')!,
-			consoleType: localStorage.getItem('consoleType'),
-			row1Input: this.lastFirstRow,
-			row2Input: this.lastSecondRow,
-		};
-		let seeds: number[];
-		if (resultId != -1) {
-			userInputParams.row1Input = this.results[resultId].row1;
-			userInputParams.row2Input = this.results[resultId].row2;
-			seeds = this.results[resultId].seeds;
-		} else {
-			seeds = this.seeds;
-		}
+	) {
+		processingInptus.date.setSeconds(processingInptus.date.getSeconds() + secondsOffset);
 
 		// Did we already look for rng params for this tile pattern?
-		if (resultId == -1) {
+		if (processingInptus.priorResultId == -1) {
 			for (let r of this.results) {
-				if (r.row1 == userInputParams.row1Input && r.row2 == userInputParams.row2Input) {
+				if (r.row1 == processingInptus.row1 && r.row2 == processingInptus.row2) {
 					r.count++;
 					this.postResults(r, r.foundParams.length == 0 ? 0 : r.foundParams[0].datetime.getSeconds() - this.date.getSeconds());
 					return r.foundParams.length > 0;
@@ -223,7 +238,7 @@ export class Step4Component extends StepComponent {
 		let rngParams: RngParams[] = [];
 		let fullSearch = this.searchParams === undefined;
 		if (this.searchParams && secondsOffset == 0) {
-			[rngParams, secondsOffset] = await this.searchPlusMinusOneSecond(seeds, this.searchParams);
+			[rngParams, secondsOffset] = await this.searchPlusMinusOneSecond(processingInptus.seeds, this.searchParams);
 			if (rngParams.length == 0) {
 				fullSearch = true;
 			} else if (secondsOffset != 0) {
@@ -239,39 +254,41 @@ export class Step4Component extends StepComponent {
 		}
 		// Otherwise, do a full search.
 		if (fullSearch && allowFull) {
-			rngParams = await this.worker.searchForSeeds(seeds, new SearchParams({
-				mac: userInputParams.macInput,
+			rngParams = await this.worker.searchForSeeds(processingInptus.seeds, new SearchParams({
+				mac: processingInptus.mac,
 				minTimer0: 0x300,
 				maxTimer0: 0x22ff,
-				is3DS: userInputParams.consoleType == '3DS',
-				datetime: date,
+				is3DS: processingInptus.consoleType == '3DS',
+				datetime: processingInptus.date,
 			}));
 		}
 		let result = {
 			foundParams: rngParams,
-			seeds: seeds,
-			row1: userInputParams.row1Input,
-			row2: userInputParams.row2Input,
+			seeds: processingInptus.seeds,
+			row1: processingInptus.row1,
+			row2: processingInptus.row2,
 			count: 1,
 		};
-		if (result.foundParams.length != 0 && (resultId == -1 || this.results[resultId].foundParams.length == 0))
-			this.totalMatchedPatterns++;
-		if (resultId == -1) {
+
+		let id = processingInptus.priorResultId;
+		if (id == -1) {
 			this.results.push(result);
 		} else if (result.foundParams.length != 0) {
 			// Update, but only if we found something.
-			result.count = this.results[resultId].count;
-			this.results[resultId] = result;
+			result.count = this.results[id].count;
+			this.results[id] = result;
 		}
+		if (result.foundParams.length != 0 && (id == -1 || this.results[id].foundParams.length == 0))
+			this.totalMatchedPatterns++;
 
 		// Set up narrower search params
 		if (rngParams.length != 0) {
 			// It's a list, but we don't loop through it. If there are two, one is a false positive and we can't know which.
 			if (fullSearch) {
 				this.searchParams = new SearchParams({
-					mac: userInputParams.macInput,
-					is3DS: userInputParams.consoleType == '3DS',
-					datetime: date,
+					mac: processingInptus.mac,
+					is3DS: processingInptus.consoleType == '3DS',
+					datetime: processingInptus.date,
 					minTimer0: rngParams[0].timer0 - 10,
 					maxTimer0: rngParams[0].timer0 + 10,
 					minVCount: rngParams[0].vCount - 3,
