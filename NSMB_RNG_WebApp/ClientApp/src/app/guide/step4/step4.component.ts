@@ -98,7 +98,6 @@ export class Step4Component extends StepComponent {
 		this.form.controls.row1Input.setValue('');
 		this.form.controls.row2Input.setValue('');
 
-		// TODO: Disable submit button?
 		this.submitCount++;
 		const status = 'Finding RNG initialization parameters...';
 		this.addProgress(status);
@@ -138,7 +137,7 @@ export class Step4Component extends StepComponent {
 					],
 				}
 			});
-			await promise; //? Not needed if we decide not to disable submit button
+			await promise;
 			this.removeProgress(statusBadTime);
 
 			if (tooManyBadPatterns()) {
