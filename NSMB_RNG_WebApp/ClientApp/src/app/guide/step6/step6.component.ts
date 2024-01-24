@@ -5,6 +5,7 @@ import { TileDisplayComponent } from '../../tile-display/tile-display.component'
 import { RngParams, SearchParams, SeedRow, getAllPossibleRow1 } from '../../functions/rng-params-search';
 import { getRow1, getRow2 } from '../../functions/tiles';
 import { SeedCalculator } from '../../seed-calculator';
+import { RouterModule } from '@angular/router';
 
 @Component({
 	selector: 'app-step6',
@@ -14,6 +15,7 @@ import { SeedCalculator } from '../../seed-calculator';
 	imports: [
 		ReactiveFormsModule,
 		TileDisplayComponent,
+		RouterModule,
 	],
 })
 export class Step6Component extends StepComponent {

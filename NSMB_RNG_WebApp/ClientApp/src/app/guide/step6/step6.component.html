@@ -2,6 +2,7 @@
 <p>
 	Set your console's clock and load the game so that RNG is initialized at {{ manipDatetime }}.<br />
 	Then go to 1-2 and get the tile pattern. When you enter the first row, the second row will automatically be shown.
+	If you don't get the right pattern the first time, that's OK and normal. We'll tell you if you got it.
 </p>
 
 <ng-container [formGroup]="form">
@@ -18,6 +19,6 @@
 	<p>
 		You're all set to begin speedrun attempts!<br />
 		Go to the game's main menu and start a new game. You won't need to set the clock again until you close the game.<br />
-		Review instructions for how to manipulate RNG during attempts <a href="notyetbuilt">here</a>.
+		Review instructions for how to manipulate RNG during attempts <a [routerLink]="['/in-run']">here</a>.
 	</p>
 </div>
