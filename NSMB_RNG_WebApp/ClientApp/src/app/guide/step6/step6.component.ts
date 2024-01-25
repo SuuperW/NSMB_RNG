@@ -19,7 +19,7 @@ import { RouterModule } from '@angular/router';
 	],
 })
 export class Step6Component extends StepComponent {
-	manipDatetime: Date = new Date(localStorage.getItem('manipDatetime')!);
+	manipDatetime: string;
 
 	form = new FormGroup({
 		row1Input: new FormControl(''),
@@ -38,8 +38,11 @@ export class Step6Component extends StepComponent {
 
 	constructor() {
 		super();
+
 		let params: RngParams = JSON.parse(localStorage.getItem('rngParams')!);
-		params.datetime = this.manipDatetime;
+		let date = new Date(localStorage.getItem('manipDatetime')!);
+		params.datetime = date;
+		this.manipDatetime = `${date.toDateString()} ${date.toLocaleTimeString()}`;
 
 		// Find all tile patterns that we should expect
 		let sc = new SeedCalculator(params.mac, params.datetime, params.is3DS);

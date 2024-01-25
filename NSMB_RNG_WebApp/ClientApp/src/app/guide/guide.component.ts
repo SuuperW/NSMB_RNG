@@ -48,29 +48,7 @@ export class GuideComponent implements AfterViewInit {
 	isInProgress: boolean = false;
 	progressStatus: string[] = [];
 
-	constructor(private cdr: ChangeDetectorRef) {
-		// Auto-advance step for testing
-		if (!localStorage.getItem('consoleType') || !localStorage.getItem('gameVersion'))
-			return;
-
-		this.currentStep = 2;
-		if (!localStorage.getItem('mac'))
-			return;
-
-		this.currentStep = 3;
-		if (!localStorage.getItem('datetime'))
-			return;
-
-		this.currentStep = 4;
-		if (!localStorage.getItem('rngParams'))
-			return;
-
-		this.currentStep = 5;
-		if (!localStorage.getItem('manipDatetime'))
-			return;
-
-		this.currentStep = 6;
-	}
+	constructor(private cdr: ChangeDetectorRef) { }
 
 	onLoadStepComponent(component: StepComponent) {
 		let ths = this;
