@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { Step6Component } from './step6.component';
 import { RngParams } from '../../functions/rng-params-search';
+import { RouterTestingModule } from '@angular/router/testing';
 
 describe('Step6Component', () => {
 	let component: Step6Component;
@@ -9,7 +10,7 @@ describe('Step6Component', () => {
 
 	beforeEach(async () => {
 		await TestBed.configureTestingModule({
-			imports: [ Step6Component ]
+			imports: [ Step6Component, RouterTestingModule ]
 		})
 			.compileComponents();
 
