@@ -201,7 +201,7 @@ export class Step4Component extends StepComponent {
 			row1: this.lastFirstRow,
 			row2: this.lastSecondRow,
 			seeds: this.seeds,
-			date: this.date,
+			date: new Date(this.date),
 			priorResultId: resultId
 		};
 		if (resultId != -1) {
@@ -246,7 +246,7 @@ export class Step4Component extends StepComponent {
 					data: {
 						message: [
 							`RNG was initialized 1 second too ${secondsOffset == 1 ? 'late' : 'early'}.`,
-							`It\'s OK this time, but for best results try to get RNG to intialize at ${this.date.getTime()} in the future.`,
+							`It\'s OK this time, but for best results try to get RNG to intialize at ${this.targetDateTime} in the future.`,
 						]
 					}
 				});
@@ -262,6 +262,8 @@ export class Step4Component extends StepComponent {
 				datetime: processingInptus.date,
 			}));
 		}
+
+		let id = processingInptus.priorResultId;
 		let result = {
 			foundParams: rngParams,
 			seeds: processingInptus.seeds,
@@ -269,8 +271,8 @@ export class Step4Component extends StepComponent {
 			row2: processingInptus.row2,
 			count: 1,
 		};
-
-		let id = processingInptus.priorResultId;
+		if (result.foundParams.length != 0 && (id == -1 || this.results[id].foundParams.length == 0))
+			this.totalMatchedPatterns++;
 		if (id == -1) {
 			this.results.push(result);
 		} else if (result.foundParams.length != 0) {
@@ -278,8 +280,6 @@ export class Step4Component extends StepComponent {
 			result.count = this.results[id].count;
 			this.results[id] = result;
 		}
-		if (result.foundParams.length != 0 && (id == -1 || this.results[id].foundParams.length == 0))
-			this.totalMatchedPatterns++;
 
 		// Set up narrower search params
 		if (rngParams.length != 0) {
@@ -326,9 +326,9 @@ export class Step4Component extends StepComponent {
 
 	private postResults(results: result, offsetSeconds: number) {
 		// The default behaviour for Date values is to convert them to UTC. We do not want that, we want to ignore timezones entirely.
-		let dtStr: Date | string = this.date;
-		dtStr.setMinutes(dtStr.getMinutes() - dtStr.getTimezoneOffset());
-		dtStr = dtStr.toISOString().slice(0, -1);
+		let convertedDate = new Date(this.date);
+		convertedDate.setMinutes(convertedDate.getMinutes() - convertedDate.getTimezoneOffset());
+		let dtStr = convertedDate.toISOString().slice(0, -1);
 
 		let postData: any = {
 			...results,

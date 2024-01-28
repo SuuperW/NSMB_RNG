@@ -44,7 +44,7 @@ export class SearchParams implements SearchParamsParams {
 		buttons = 0,
 	}: SearchParamsParams) {
 		this.mac = mac;
-		this.datetime = datetime;
+		this.datetime = new Date(datetime);
 		this.minTimer0 = minTimer0;
 		this.maxTimer0 = maxTimer0;
 		this.minVCount = minVCount;
