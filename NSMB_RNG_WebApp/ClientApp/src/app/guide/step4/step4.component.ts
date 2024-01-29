@@ -241,7 +241,7 @@ export class Step4Component extends StepComponent {
 			[rngParams, secondsOffset] = await this.searchPlusMinusOneSecond(processingInptus.seeds, this.searchParams);
 			if (rngParams.length == 0) {
 				fullSearch = true;
-			} else if (secondsOffset != 0) {
+			} else if (secondsOffset != 0 && processingInptus.priorResultId == -1) {
 				this.dialog.open(PopupDialogComponent, {
 					data: {
 						message: [
