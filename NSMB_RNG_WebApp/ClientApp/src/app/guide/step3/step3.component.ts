@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { AfterViewInit, Component } from '@angular/core';
 import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { StepComponent } from '../step';
 
@@ -13,24 +13,62 @@ import { StepComponent } from '../step';
 })
 export class Step3Component extends StepComponent {
 	form = new FormGroup({
-		dtInput: new FormControl(localStorage.getItem('datetime') ?? this.getDateTime(), (c: AbstractControl) => {
-			// Do I need to check range?
-			if (c.value) {
-				localStorage.setItem('datetime', c.value);
-				return null;
+		dtInput: new FormControl(localStorage.getItem('datetime') ?? this.dateTimeToString(null), (c: AbstractControl) => {
+			if (this.form === undefined) return { err: 'not initialized' }; // this gets called once before component initialization finishes
+
+			let dt = new Date(c.value);
+			// Some browsers (especially mobile) do not support settings the seconds of a datetime element via the native UI.
+			// If the user entered 0 seconds, that is probably why. Display buttons to increment/decrement the seconds.
+			if (dt.getSeconds() === 0) {
+				this.unhideStepperButtons();
+				// Try to minimize number of clicks the user will need.
+				dt.setSeconds(10);
+				c.setValue(this.dateTimeToString(dt));
+			}
+
+			if (!isNaN(dt.getHours())) {
+				let year = dt.getFullYear();
+				let maxYear = localStorage.getItem('consoleType') === '3DS' ? 2050 : 2100;
+				if (year < 2000 || year >= maxYear)
+					return { 'err': `Invalid date. You should not be able to set year ${year} on your DS.` };
+				else {
+					localStorage.setItem('datetime', c.value);
+					return null;
+				}
 			} else {
-				return { 'err': 'Enter the date and time on which RNG was initialized.' };
+				return { err: 'Enter the date and time on which RNG was initialized.' };
 			}
 		}),
 	});
 
-	getDateTime() {
-		if (localStorage.getItem('datetime'))
-			return localStorage.getItem('datetime');
+	private unhideStepperButtons() {
+		let buttons = document.querySelectorAll('.stepperButton');
+		buttons.forEach((b) => { // regular for loop syntax doesn't work??
+			b.classList.remove('hide');
+		});
+	}
 
-		let dt = new Date();
-		dt.setMinutes(dt.getMinutes() - dt.getTimezoneOffset());
-		dt.setMilliseconds(0);
-		return dt.toISOString().slice(0, -1);
+	step(n: number) {
+		let dtInput = document.querySelector('#dtInput') as HTMLInputElement;
+		if (n === 1)
+			dtInput.stepUp();
+		else
+			dtInput.stepDown();
+		// Angular's ReactiveFormsModule does not work correctly when using stepUp and stepDown.
+		this.form.controls.dtInput.setValue(dtInput.value);
+	}
+
+	dateTimeToString(input: string | Date | null) {
+		if (input === null && localStorage.getItem('datetime'))
+			return localStorage.getItem('datetime')!;
+
+		if (input === null)
+			input = new Date();
+		if (typeof input === 'string')
+			input = new Date(input);
+
+		input.setMinutes(input.getMinutes() - input.getTimezoneOffset());
+		input.setMilliseconds(0);
+		return input.toISOString().slice(0, -1);
 	}
 }

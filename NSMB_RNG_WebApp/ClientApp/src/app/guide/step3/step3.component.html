@@ -17,7 +17,9 @@
 
 <ng-container [formGroup]="form">
 	<label for="dtInput">Date + Time: </label>
-	<input id="dtInput" type="datetime-local" min="2000-01-01" max="2099-12-31 23:59:59" step="1" formControlName="dtInput" />
+	<input id="dtInput" type="datetime-local" step="1" formControlName="dtInput" />
+	<button class="hide stepperButton" (click)="step(-1)">-</button>
+	<button class="hide stepperButton" (click)="step(1)">+</button>
 </ng-container>
 
 <p>
