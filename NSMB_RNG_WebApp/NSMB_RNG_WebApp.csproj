@@ -29,21 +29,22 @@
     <!-- Don't publish config files, but do show them. Config files are for testing only. -->
     <Content Remove="config.*.json" />
     <None Include="config.*.json" />
+    <!-- If this exists, remove it. We'll conditionally delete the file or re-include it later. -->
+    <Content Remove="config.json" />
   </ItemGroup>
   <PropertyGroup>
     <SourceConfig>config.$(Configuration).json</SourceConfig>
   </PropertyGroup>
 
     <!-- Copy and rename the config file for current configuration. -->
-  <Target Name="CopyConfig" BeforeTargets="Build" Condition="Exists($(SourceConfig))">
+  <Target Name="CopyConfig" BeforeTargets="BeforeBuild" Condition="Exists($(SourceConfig))">
     <Copy SourceFiles="$(SourceConfig)" DestinationFiles="config.json" SkipUnchangedFiles="true" />
-    <!-- Include the copied file in the build output. This would happen by default ONLY if the file had already existed before build. -->
+    <!-- Include the copied file in the build output. -->
     <ItemGroup>
-      <Content Remove="config.json" />
       <Content Include="config.json" CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
   </Target>
-  <Target Name="DeleteOldConfig" BeforeTargets="Build" Condition="!Exists($(SourceConfig))">
+  <Target Name="DeleteOldConfig" BeforeTargets="BeforeBuild" Condition="!Exists($(SourceConfig))">
     <Delete Files="config.json" />
   </Target>
 
