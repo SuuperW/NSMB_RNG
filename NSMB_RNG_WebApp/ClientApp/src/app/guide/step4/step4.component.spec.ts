@@ -47,6 +47,8 @@ describe('Step4Component', () => {
 			minVFrame: 5,
 			maxVFrame: 5,
 		};
+		// We must also set some localstorage for step4 to access.
+		localStorage.setItem('mac', '40f407f7d421');
 	});
 
 	it('should create', () => {

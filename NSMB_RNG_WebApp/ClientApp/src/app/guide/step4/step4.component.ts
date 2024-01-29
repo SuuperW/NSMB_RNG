@@ -9,6 +9,8 @@ import { CommonModule } from '@angular/common';
 import { RngParams, SearchParams } from '../../functions/rng-params-search';
 import { WorkerService } from '../../worker.service';
 import { PopupDialogComponent } from '../../popup-dialog/popup-dialog.component';
+import { PrecomputedPatterns } from '../precomputed-patterns';
+import { getRow1, getRow2 } from '../../functions/tiles';
 
 type result = {
 	foundParams: RngParams[],
@@ -26,6 +28,17 @@ type ProcessingInputs = {
 	date: Date,
 	priorResultId: number,
 }
+
+let knownParams = [
+	// timer0 min, max, vCount min, max, vFrame
+	[0x566, 0x567, 0x26, 0x27, 5], // DSi, 3DS
+	[0x564, 0x565, 0xe8, 0xe8, 6], // DSLite
+	[0x556, 0x557, 0x38, 0x39, 8], // DSPhat
+	[0x20ca, 0x20ca, 0xa, 0xb, 6], // 3DS, non-US
+	[0x20a8, 0x20a8, 0x26, 0x27, 5], // 3DS
+	[0x56c, 0x56c, 0x18, 0x18, 5], // 3DS
+	//[0x566, 0x567, 0x9, 0xa, 6],
+]
 
 @Component({
 	selector: 'app-step4',
@@ -72,6 +85,9 @@ export class Step4Component extends StepComponent {
 		return this.results.flatMap((result) => result.foundParams);
 	}
 
+	knownPatterns: PrecomputedPatterns;
+	knownSearchParams: SearchParams[];
+
 	constructor() {
 		super();
 		let dtStr = localStorage.getItem('datetime');
@@ -81,6 +97,28 @@ export class Step4Component extends StepComponent {
 		} else {
 			this.date = new Date();
 			this.targetDateTime = 'INVALID [go back and enter a date and time!]';
+		}
+
+		let is3DS = localStorage.getItem('consoleType') == '3DS';
+		let basicParams = new SearchParams({
+			mac: localStorage.getItem('mac')!,
+			is3DS: is3DS,
+			datetime: this.date,
+			buttons: 0,
+			minTimer0: 0,
+			maxTimer0: 0,
+		});
+		this.knownPatterns = new PrecomputedPatterns();
+		this.knownSearchParams = [];
+		for (let kp of knownParams) {
+			let sp = new SearchParams(basicParams);
+			sp.minTimer0 = kp[0];
+			sp.maxTimer0 = kp[1];
+			sp.minVCount = kp[2];
+			sp.maxVCount = kp[3];
+			sp.minVFrame = sp.maxVFrame = kp[4];
+			this.knownPatterns.addParams(sp, 1);
+			this.knownSearchParams.push(sp);
 		}
 	}
 
@@ -234,14 +272,18 @@ export class Step4Component extends StepComponent {
 		}
 		// If not, search for rng params
 		this.inProgressCount++;
-		// If we have previous results, base search on that.
 		let rngParams: RngParams[] = [];
-		let fullSearch = this.searchParams === undefined;
-		if (this.searchParams && secondsOffset == 0) {
-			[rngParams, secondsOffset] = await this.searchPlusMinusOneSecond(processingInptus.seeds, this.searchParams);
-			if (rngParams.length == 0) {
-				fullSearch = true;
-			} else if (secondsOffset != 0 && processingInptus.priorResultId == -1) {
+		if (secondsOffset == 0) {
+			// If we have previous results, base search on that.
+			// If not, use known params from other consoles.
+			let searchParams = this.searchParams ? [this.searchParams] : this.knownSearchParams;
+			for (let sp of searchParams) {
+				[rngParams, secondsOffset] = await this.searchPlusMinusOneSecond(processingInptus.seeds, sp);
+				if (rngParams.length != 0)
+					break;
+
+			}
+			if (secondsOffset != 0 && processingInptus.priorResultId == -1) {
 				this.dialog.open(PopupDialogComponent, {
 					data: {
 						message: [
@@ -252,8 +294,11 @@ export class Step4Component extends StepComponent {
 				});
 			}
 		}
-		// Otherwise, do a full search.
-		if (fullSearch && allowFull) {
+
+		// We should do a full search if no results were found by prior searches.
+		let didFullSearch = false;
+		if (rngParams.length == 0 && allowFull) {
+			didFullSearch = true;
 			rngParams = await this.worker.searchForSeeds(processingInptus.seeds, new SearchParams({
 				mac: processingInptus.mac,
 				minTimer0: 0x300,
@@ -284,7 +329,7 @@ export class Step4Component extends StepComponent {
 		// Set up narrower search params
 		if (rngParams.length != 0) {
 			// It's a list, but we don't loop through it. If there are two, one is a false positive and we can't know which.
-			if (fullSearch) {
+			if (didFullSearch) {
 				this.searchParams = new SearchParams({
 					mac: processingInptus.mac,
 					is3DS: processingInptus.consoleType == '3DS',
@@ -341,11 +386,29 @@ export class Step4Component extends StepComponent {
 		this.http.post<string>('asp/submitResults', postData).subscribe(); // need to subscribe or it won't actually send the request?
 	}
 
+	private _changedByUser = true;
+	private _row2SetByAutocomplete = false;
 	async row1Changed(tiles: string) {
 		this.lastFirstRow = tiles;
 		this.seeds = [];
-		if (!tiles || tiles.length != 7)
+
+		// Auto-complete
+		let precomputedResult = this.knownPatterns.getPatternInfo(tiles);
+		if (!precomputedResult.ambiguous && precomputedResult.match) {
+			this._row2SetByAutocomplete = true;
+			this._changedByUser = false;
+			this.form.controls.row2Input.setValue(getRow2(precomputedResult.match.seed));
+			// set seeds after setting row2; setting row2 will clear seeds
+			this.setSeeds([precomputedResult.match.seed]);
+			this.lastFirstRow = getRow1(precomputedResult.match.seed);
+		} else if (this._row2SetByAutocomplete) {
+			this.form.controls.row2Input.setValue('');
+			this._row2SetByAutocomplete = false;
+		}
+
+		if (tiles.length != 7) {
 			return;
+		}
 
 		const status = 'Getting seed candidates from server...';
 		this.addProgress(status);
@@ -360,7 +423,7 @@ export class Step4Component extends StepComponent {
 			return;
 		}
 
-		if (this.lastSecondRow.length == 11)
+		if (this.lastSecondRow.length == 11 && !this._row2SetByAutocomplete)
 			this.row2Changed(this.lastSecondRow);
 	}
 
@@ -368,33 +431,46 @@ export class Step4Component extends StepComponent {
 	async row2Changed(tiles: string) {
 		this.patternIsInvalid = false;
 		this.lastSecondRow = tiles;
+		let r2cc = ++this.r2cc;
+
+		if (!this._changedByUser) {
+			// Angular will not call this handler at the time the value is set. The handler will get called later.
+			// Thus, the caller cannot handle setting _changedByUser back to true. We must do it here.
+			this._changedByUser = true;
+			return;
+		}
+
 		this.seeds = [];
 		this.bottomRows = [''];
-		let r2cc = ++this.r2cc;
+		this._row2SetByAutocomplete = false;
 
 		if (tiles.length == 11 && this.lastFirstRow.length == 7) {
 			const status = "Finding seeds...";
 			this.computingLastRow = true;
 			this.addProgress(status);
-			this.seeds = await this.seedService.getPossibleSeedsFor(this.lastFirstRow, tiles) as number[];
+			let seeds = await this.seedService.getPossibleSeedsFor(this.lastFirstRow, tiles) as number[];
 			this.removeProgress(status);
 
 			if (r2cc != this.r2cc)
 				return; // User triggered this method again before getPossibleSeedsFor returned.
 
-			if (this.seeds.length == 0) {
+			if (seeds.length == 0)
 				this.patternIsInvalid = true;
-			} else {
-				let rows: Set<string> = new Set();
-				this.bottomRows = [];
-				for (let seed of this.seeds)
-					rows.add(this.seedService.getBottomRow(seed));
-				for (let row of rows)
-					this.bottomRows.push(row);
-			}
+			this.setSeeds(seeds);
 		}
 
 		this.computingLastRow = false;
+	}
+
+	setSeeds(seeds: number[]) {
+		this.seeds = seeds;
+
+		let rows: Set<string> = new Set();
+		this.bottomRows = [];
+		for (let seed of this.seeds)
+			rows.add(this.seedService.getBottomRow(seed));
+		for (let row of rows)
+			this.bottomRows.push(row);
 	}
 
 	tileClick(letter: string) {
