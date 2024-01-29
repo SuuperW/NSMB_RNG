@@ -11,6 +11,7 @@ const LOCAL_ASP = {
 const PROXY_CONFIG = {
 	"/asp/**": LOCAL_ASP,
 	"/favicon.ico": LOCAL_ASP,
+	"/assets/**": LOCAL_ASP,
 };
 
 module.exports = PROXY_CONFIG;

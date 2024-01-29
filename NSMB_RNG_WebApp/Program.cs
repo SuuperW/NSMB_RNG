@@ -51,7 +51,15 @@ namespace NSMB_RNG_WebApp
 
 			// While running in dev mode, we access the app through a proxy which hosts the SPA.
 			// In production, we access the ASP.NET app directly. Thus, ASP.NET needs to serve the SPA's files.
-			app.UseStaticFiles(); // defaults to serving from wwwroot
+			app.UseStaticFiles(new StaticFileOptions()
+			{
+				OnPrepareResponse = (c) =>
+				{
+					if (c.Context.Request.Path.Value?.Contains("assets") ?? false)
+						c.Context.Response.Headers.CacheControl = "max-age=604800";
+				}
+			}); 
+
 			// In order to make the SPAs routing work, we fall back to index.html for URLs unknown to ASP.
 			// The SPA will then look at the requested URL and apply its own routing.
 			IFileProvider? staticFileProvider = null;
