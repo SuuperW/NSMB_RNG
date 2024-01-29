@@ -396,9 +396,13 @@ export class Step4Component extends StepComponent {
 		let precomputedResult = this.knownPatterns.getPatternInfo(tiles);
 		if (!precomputedResult.ambiguous && precomputedResult.match) {
 			this._row2SetByAutocomplete = true;
-			this._changedByUser = false;
-			this.form.controls.row2Input.setValue(getRow2(precomputedResult.match.seed));
-			// set seeds after setting row2; setting row2 will clear seeds
+			let row2 = getRow2(precomputedResult.match.seed);
+			// _changedByUser being false will short-circuit the event handler.
+			// However, the event handler does not happen until later on so we cannot
+			// un-set _changedByUser afterwards. The handler must do that for us.
+			// Additionally, the event handler will only be triggered if the set value is different from the current value.
+			if (row2 != this.form.value.row2Input) this._changedByUser = false;
+			this.form.controls.row2Input.setValue(row2);
 			this.setSeeds([precomputedResult.match.seed]);
 			this.lastFirstRow = getRow1(precomputedResult.match.seed);
 		} else if (this._row2SetByAutocomplete) {
@@ -475,7 +479,7 @@ export class Step4Component extends StepComponent {
 
 	tileClick(letter: string) {
 		let control = this.form.controls.row1Input;
-		if (this.lastFirstRow.length >= 7) {
+		if ((this.form.value.row1Input?.length ?? 0) >= 7) {
 			control = this.form.controls.row2Input;
 		}
 		control.setValue((control.value ?? '') + letter);

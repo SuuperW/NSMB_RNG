@@ -35,7 +35,7 @@
 
 	<app-tile-display [tileCount]="7" [tiles]="this.form.value.row1Input" (tilesOut)="row1Changed($event)"></app-tile-display>
 	<app-tile-display [tileCount]="11" [tiles]="this.form.value.row2Input" (tilesOut)="row2Changed($event)"></app-tile-display>
-	<p class="tileHeight">----- bottom row (If the bottom row in game doesn't match one of the rows below, you made a typo.) -----</p>
+	<p class="tileHeight">----- bottom row (Verify this matches your actual bottom row. If not, then above tiles are wrong.) -----</p>
 	<p class="warning tileHeight" [hidden]="!this.patternIsInvalid">The tile pattern you entered is not possible. Check for typos.</p>
 	<div class="spinner tileImage" [hidden]="!this.computingLastRow"></div>
 	<app-tile-display *ngFor="let row of this.bottomRows" [hidden]="this.patternIsInvalid || this.computingLastRow" [tileCount]="11" [tiles]="row"></app-tile-display>
