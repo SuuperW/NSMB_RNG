@@ -394,7 +394,10 @@ export class Step4Component extends StepComponent {
 
 		// Auto-complete
 		let precomputedResult = this.knownPatterns.getPatternInfo(tiles);
-		if (!precomputedResult.ambiguous && precomputedResult.match) {
+		if (!precomputedResult.ambiguous && precomputedResult.match && precomputedResult.extraTiles! > 0) {
+			// We only do the auto-completion if the user has entered 1 more tile than we need for a match.
+			// This is to reduce the confusion of having lots of bad autocompletes when the users rng params aren't known.
+
 			this._row2SetByAutocomplete = true;
 			let row2 = getRow2(precomputedResult.match.seed);
 			// _changedByUser being false will short-circuit the event handler.

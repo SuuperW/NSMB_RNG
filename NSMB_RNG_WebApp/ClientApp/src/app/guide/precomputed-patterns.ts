@@ -57,7 +57,7 @@ export class PrecomputedPatterns {
 		}
 	}
 
-	getPatternInfo(row1: string): { ambiguous: boolean, match?: match } {
+	getPatternInfo(row1: string): { ambiguous: boolean, match?: match, extraTiles?: number } {
 		if (row1.length > 7) return { ambiguous: false };
 		if (row1.length < 2) return { ambiguous: true };
 
@@ -76,6 +76,7 @@ export class PrecomputedPatterns {
 				return {
 					ambiguous: false,
 					match: next as match,
+					extraTiles: remainingTiles.length,
 				}
 			}
 			tree = next as _tileTree;
