@@ -36,7 +36,9 @@ export class Step2Component extends StepComponent {
 	form = new FormGroup({
 		mac: new FormControl(localStorage.getItem('mac') ?? '00:09:bf:00:00:00', (c: AbstractControl<string>) => {
 			let m = c.value.trim();
-			if (m.match(/^([\dabcdef]{2}:){5}[\dabcdef]{2}$/i) || m.match(/^[\dabcdef]{12}$/i)) {
+			let sep = c.value[2];
+			let _17charRegEx = new RegExp(`^([\\dabcdef]{2}${sep}){5}[\\dabcdef]{2}$`, 'i');
+			if ((sep && !sep.match(/[\d\w]/) && m.match(_17charRegEx)) || m.match(/^[\dabcdef]{12}$/i)) {
 				if (m == this.lastValidation) return null;
 				this.lastValidation = m;
 
