@@ -87,6 +87,7 @@ export class Step4Component extends StepComponent {
 
 	knownPatterns: PrecomputedPatterns;
 	knownSearchParams: SearchParams[];
+	requiredFullSearch: boolean = false;
 
 	constructor() {
 		super();
@@ -151,7 +152,10 @@ export class Step4Component extends StepComponent {
 
 		// These numbers are kinda arbitrary. The intent is to detect when something is wrong so we/user don't waste time endlessly entering bad patterns.
 		const tooManyBadPatterns = () => {
-			return (this.submitCount >= 3 && this.totalMatchedPatterns == 0) || (this.submitCount >= 5 && this.totalMatchedPatterns == 1);
+			return (this.submitCount >= 3 && this.totalMatchedPatterns == 0) ||
+			       // Don't show this message if the user has only found one pattern so far and it might be good.
+			       (this.results.length > 1 && this.submitCount >= 5 && this.totalMatchedPatterns == 1) ||
+			       (this.submitCount >= 8 && this.totalMatchedPatterns == 2);
 		};
 		if (tooManyBadPatterns()) {
 			const statusBadTime = 'Checking +1/-1 second for all patterns... (this may take a long time)';
@@ -159,17 +163,17 @@ export class Step4Component extends StepComponent {
 			let promise: Promise<boolean> = (async () => { return true })();
 			for (let i = 0; i < this.results.length; i++) {
 				promise = promise.then((v) => {
-					return this.processTilePattern(this.getProcessingInputs(i), -1 );
+					return this.processTilePattern(this.getProcessingInputs(i), -1);
 				})
-				.then((v) => {
-					if (!v) return this.processTilePattern(this.getProcessingInputs(i), +1 );
-					else return true;
-				});
+					.then((v) => {
+						if (!v) return this.processTilePattern(this.getProcessingInputs(i), +1);
+						else return true;
+					});
 
 			}
 			this.dialog.open(PopupDialogComponent, {
 				data: {
-					message: ['Your tile patterns aren\'t matching anything we expect.',
+					message: ['We haven\'t been able to find RNG params that match your RNG values/tile patterns.',
 						'This might mean the game is initializing RNG one second earlier or later than you think.',
 						'We\'re going to re-calculate with +/-1 second to see if this is the case.',
 					],
@@ -221,14 +225,32 @@ export class Step4Component extends StepComponent {
 				if (paramsToUse) break;
 			}
 		}
+		if (!paramsToUse && this.submitCount === 4 && this.results.length == 1 && this.totalMatchedPatterns == 1) {
+			// If the user keeps getting the same pattern over and over, and it looks good.
+			if (this.requiredFullSearch) {
+				// We'll only show this message about RNG params maybe being wrong if the one found RNG params don't match any known good ones.
+				this.dialog.open(PopupDialogComponent, {
+					data: {
+						message: ['You got the same tiles four times in a row. This is unusual: normally RNG is not this consistent.',
+							'We did find RNG params, and you may proceed to the next step. However, the results have a slight chance of being wrong.',
+							'You may want to try to get another pattern. Going back and using a different date or time might help. Getting two patterns would allow cross-referencing the results to verify they are correct. If you choose to continue and try to get another pattern, you will be alerted if the RNG params already found can be verified correct.',
+						],
+					}
+				});
+			}
+			paramsToUse = this.results[0].foundParams[0];
+		}
+
 		if (paramsToUse) {
 			this.errorStatus = undefined;
 			localStorage.setItem('rngParams', JSON.stringify(paramsToUse));
-			this.dialog.open(PopupDialogComponent, {
-				data: {
-					message: ['We have found everything we need! Go to the next step.'],
-				}
-			});
+			if (this.totalMatchedPatterns > 1 || !this.requiredFullSearch) { // If not, we arleady displayed a message.
+				this.dialog.open(PopupDialogComponent, {
+					data: {
+						message: ['We have found everything we need! Go to the next step.'],
+					}
+				});
+			}
 		}
 	}
 
@@ -330,6 +352,7 @@ export class Step4Component extends StepComponent {
 		if (rngParams.length != 0) {
 			// It's a list, but we don't loop through it. If there are two, one is a false positive and we can't know which.
 			if (didFullSearch) {
+				this.requiredFullSearch = true;
 				this.searchParams = new SearchParams({
 					mac: processingInptus.mac,
 					is3DS: processingInptus.consoleType == '3DS',
