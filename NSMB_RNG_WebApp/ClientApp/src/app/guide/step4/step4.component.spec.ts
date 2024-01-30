@@ -12,6 +12,10 @@ describe('Step4Component', () => {
 	let mockHttpClient: MockHttpClient;
 
 	beforeEach(async () => {
+		// We must set some localstorage for step4 to access.
+		let mac = '40f407f7d421';
+		localStorage.setItem('mac', mac);
+
 		await TestBed.configureTestingModule({ imports: [Step4Component] }).compileComponents();
 		// Using the providers property in configureTestingModule does not work for some reason I don't understand.
 		// It ends up providing the mock to the component's services, but not to the component itself.
@@ -39,7 +43,7 @@ describe('Step4Component', () => {
 			buttons: 0,
 			datetime: new Date(2023, 10, 24, 1, 0, 15),
 			is3DS: false,
-			mac: '40f407f7d421',
+			mac: mac,
 			minTimer0: 1375,
 			maxTimer0: 1390,
 			minVCount: 35,
@@ -47,8 +51,6 @@ describe('Step4Component', () => {
 			minVFrame: 5,
 			maxVFrame: 5,
 		};
-		// We must also set some localstorage for step4 to access.
-		localStorage.setItem('mac', '40f407f7d421');
 	});
 
 	it('should create', () => {
