@@ -39,7 +39,7 @@ describe('Step4Component', () => {
 		// Since we'll be submitting, the component will search for rng params.
 		// A full search would take a long time; let's not do that.
 		// This is also where we set the date, system, and MAC address for the tests.
-		component.searchParams = {
+		(component.resultManager as any).range = {
 			buttons: 0,
 			datetime: new Date(2023, 10, 24, 1, 0, 15),
 			is3DS: false,
@@ -51,6 +51,8 @@ describe('Step4Component', () => {
 			minVFrame: 5,
 			maxVFrame: 5,
 		};
+		// We also must put a something here
+		(component.resultManager as any).results.push({ result: [0] });
 	});
 
 	it('should create', () => {
@@ -84,26 +86,26 @@ describe('Step4Component', () => {
 		await component.row2Changed('cbciesceibc');
 		await component.submit();
 
-		assert(component.submitCount == 1);
-		assert(component.totalMatchedPatterns == 0);
+		assert(component.resultManager.submitCount == 1);
+		assert(component.resultManager.totalMatchedPatterns == 0);
 	}, 15000); // submit will do a full search, which may take longer than the default 5 second limit
 
 	it('recognizes +1/-1 second on past patterns after finding params', async () => {
 		// simulate submission of -1 second pattern:
-		component.results = [{
+		(component.resultManager as any).results = [{
 			count: 1,
-			foundParams: [],
+			result: [],
 			row1: 'siebeib',
 			row2: 'piibseceipe',
 			seeds: [...previousState(nextState(781790593))],
 		}];
-		component.submitCount = 1;
-		component.totalMatchedPatterns = 0;
+		(component.resultManager as any).submitCount = 1;
+		(component.resultManager as any).totalMatchedPatterns = 0;
 
 		await component.row1Changed('ebeseee');
 		await component.row2Changed('isbepebibbs');
 		await component.submit();
 
-		assert(component.totalMatchedPatterns == 2);
+		assert(component.resultManager.totalMatchedPatterns == 2);
 	});
 });

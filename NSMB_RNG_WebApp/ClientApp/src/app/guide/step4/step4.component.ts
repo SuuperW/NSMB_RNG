@@ -11,14 +11,8 @@ import { WorkerService } from '../../worker.service';
 import { PopupDialogComponent } from '../../popup-dialog/popup-dialog.component';
 import { PrecomputedPatterns } from '../precomputed-patterns';
 import { getRow1, getRow2 } from '../../functions/tiles';
+import { RngParamsSearch, RngParamsSearchResultManager, SearchInputs } from '../rng-params-search-result-manager';
 
-type result = {
-	foundParams: RngParams[],
-	seeds: number[],
-	row1: string,
-	row2: string,
-	count: number
-}
 type ProcessingInputs = {
 	row1: string,
 	row2: string,
@@ -26,7 +20,7 @@ type ProcessingInputs = {
 	mac: string,
 	consoleType: string,
 	date: Date,
-	priorResultId: number,
+	isRedo?: boolean,
 }
 
 let knownParams = [
@@ -67,6 +61,7 @@ export class Step4Component extends StepComponent {
 
 	targetDateTime: string;
 	date: Date;
+	generalInputs: { mac: string, consoleType: string, date: Date }
 
 	seeds: number[] = [];
 	lastFirstRow: string = '';
@@ -75,19 +70,13 @@ export class Step4Component extends StepComponent {
 	patternIsInvalid: boolean = false;
 	computingLastRow: boolean = false;
 
-	submitCount: number = 0;
 	inProgressCount: number = 0;
-	totalMatchedPatterns: number = 0;
-
-	searchParams: SearchParams | undefined;
-	results: result[] = [];
-	private getAllRngParams() {
-		return this.results.flatMap((result) => result.foundParams);
-	}
 
 	knownPatterns: PrecomputedPatterns;
 	knownSearchParams: SearchParams[];
 	requiredFullSearch: boolean = false;
+
+	resultManager: RngParamsSearchResultManager;
 
 	constructor() {
 		super();
@@ -99,6 +88,7 @@ export class Step4Component extends StepComponent {
 			this.date = new Date();
 			this.targetDateTime = 'INVALID [go back and enter a date and time!]';
 		}
+		this.resultManager = new RngParamsSearchResultManager(this.date, this.http);
 
 		let is3DS = localStorage.getItem('consoleType') == '3DS';
 		let basicParams = new SearchParams({
@@ -121,6 +111,12 @@ export class Step4Component extends StepComponent {
 			this.knownPatterns.addParams(sp, 1);
 			this.knownSearchParams.push(sp);
 		}
+
+		this.generalInputs = {
+			mac: localStorage.getItem('mac')!,
+			consoleType: localStorage.getItem('consoleType')!,
+			date: new Date(this.date),
+		}
 	}
 
 	async submit() {
@@ -137,31 +133,23 @@ export class Step4Component extends StepComponent {
 		this.form.controls.row1Input.setValue('');
 		this.form.controls.row2Input.setValue('');
 
-		this.submitCount++;
 		const status = 'Finding RNG initialization parameters...';
 		this.addProgress(status);
-		let anyFound = this.totalMatchedPatterns > 0;
+		let anyFound = this.resultManager.totalMatchedPatterns > 0;
 		let result = await this.processTilePattern(pi);
 		if (!anyFound && result) {
 			// On the first success, go back to failed patterns to check +/-1 second
-			for (let i = 0; i < this.results.length - 1; i++) {
+			for (let i of this.resultManager.getInputsWithNoFoundRngParams()) {
 				await this.processTilePattern(this.getProcessingInputs(i), 0, false);
 			}
 		}
 		this.removeProgress(status);
 
-		// These numbers are kinda arbitrary. The intent is to detect when something is wrong so we/user don't waste time endlessly entering bad patterns.
-		const tooManyBadPatterns = () => {
-			return (this.submitCount >= 3 && this.totalMatchedPatterns == 0) ||
-			       // Don't show this message if the user has only found one pattern so far and it might be good.
-			       (this.results.length > 1 && this.submitCount >= 5 && this.totalMatchedPatterns == 1) ||
-			       (this.submitCount >= 8 && this.totalMatchedPatterns == 2);
-		};
-		if (tooManyBadPatterns()) {
+		if (this.resultManager.suspectUserErrorOrStrangeConsole()) {
 			const statusBadTime = 'Checking +1/-1 second for all patterns... (this may take a long time)';
 			this.addProgress(statusBadTime);
 			let promise: Promise<boolean> = (async () => { return true })();
-			for (let i = 0; i < this.results.length; i++) {
+			for (let i of this.resultManager.getInputsWithNoFoundRngParams()) {
 				promise = promise.then((v) => {
 					return this.processTilePattern(this.getProcessingInputs(i), -1);
 				})
@@ -182,7 +170,7 @@ export class Step4Component extends StepComponent {
 			await promise;
 			this.removeProgress(statusBadTime);
 
-			if (tooManyBadPatterns()) {
+			if (this.resultManager.suspectUserErrorOrStrangeConsole()) {
 				this.dialog.open(PopupDialogComponent, {
 					data: {
 						message: ['Unfortunately, we didn\'t find anything useful.',
@@ -203,31 +191,10 @@ export class Step4Component extends StepComponent {
 			}
 		}
 
-		// If two results are positive and identical, use it if another result is off by one.
-		const anyOffByOne = (params: RngParams) => {
-			for (let r of this.getAllRngParams()) {
-				let dt = params.timer0 - r.timer0;
-				let dv = params.vCount - r.vCount;
-				if (dt * dv == 0 && Math.abs(dt + dv) == 1)
-					return true;
-			}
-			return false;
-		};
-		let paramsToUse: RngParams | undefined;
-		for (let r of this.results) {
-			if (r.count > 1) {
-				for (let p of r.foundParams) {
-					if (anyOffByOne(p)) {
-						paramsToUse = p;
-						break;
-					}
-				}
-				if (paramsToUse) break;
-			}
-		}
-		if (!paramsToUse && this.submitCount === 4 && this.results.length == 1 && this.totalMatchedPatterns == 1) {
+		let paramsToUse = this.resultManager.getMostLikelyResult();
+		if (paramsToUse) {
 			// If the user keeps getting the same pattern over and over, and it looks good.
-			if (this.requiredFullSearch) {
+			if (this.resultManager.getDistinctPatternCount() == 1 && this.requiredFullSearch && this.resultManager.submitCount === 4) {
 				// We'll only show this message about RNG params maybe being wrong if the one found RNG params don't match any known good ones.
 				this.dialog.open(PopupDialogComponent, {
 					data: {
@@ -238,13 +205,10 @@ export class Step4Component extends StepComponent {
 					}
 				});
 			}
-			paramsToUse = this.results[0].foundParams[0];
-		}
 
-		if (paramsToUse) {
 			this.errorStatus = undefined;
 			localStorage.setItem('rngParams', JSON.stringify(paramsToUse));
-			if (this.totalMatchedPatterns > 1 || !this.requiredFullSearch) { // If not, we arleady displayed a message.
+			if (this.resultManager.totalMatchedPatterns > 1 || !this.requiredFullSearch) { // If not, we arleady displayed a message.
 				this.dialog.open(PopupDialogComponent, {
 					data: {
 						message: ['We have found everything we need! Go to the next step.'],
@@ -254,21 +218,18 @@ export class Step4Component extends StepComponent {
 		}
 	}
 
-	private getProcessingInputs(resultId: number = -1): ProcessingInputs {
+	private getProcessingInputs(result?: SearchInputs): ProcessingInputs {
 		let processingInputs: ProcessingInputs = {
-			mac: localStorage.getItem('mac')!,
-			consoleType: localStorage.getItem('consoleType')!,
-			row1: this.lastFirstRow,
-			row2: this.lastSecondRow,
-			seeds: this.seeds,
-			date: new Date(this.date),
-			priorResultId: resultId
+			...this.generalInputs,
+			row1: result?.row1 ?? this.lastFirstRow,
+			row2: result?.row2 ?? this.lastSecondRow,
+			seeds: result?.seeds ?? this.seeds,
 		};
-		if (resultId != -1) {
-			processingInputs.row1 = this.results[resultId].row1;
-			processingInputs.row2 = this.results[resultId].row2;
-			processingInputs.seeds = this.results[resultId].seeds;
-		}
+		if (result)
+			processingInputs.isRedo = true;
+
+		// clone Date object
+		processingInputs.date = new Date(processingInputs.date);
 		return processingInputs;
 	}
 
@@ -283,29 +244,27 @@ export class Step4Component extends StepComponent {
 		processingInptus.date.setSeconds(processingInptus.date.getSeconds() + secondsOffset);
 
 		// Did we already look for rng params for this tile pattern?
-		if (processingInptus.priorResultId == -1) {
-			for (let r of this.results) {
-				if (r.row1 == processingInptus.row1 && r.row2 == processingInptus.row2) {
-					r.count++;
-					this.postResults(r, r.foundParams.length == 0 ? 0 : r.foundParams[0].datetime.getSeconds() - this.date.getSeconds());
-					return r.foundParams.length > 0;
-				}
+		if (!processingInptus.isRedo) {
+			let existing = this.resultManager.getFor(processingInptus.row1, processingInptus.row2);
+			if (existing !== null) {
+				this.resultManager.submitResult(existing);
+				return existing.result.length > 0;
 			}
 		}
+
 		// If not, search for rng params
 		this.inProgressCount++;
 		let rngParams: RngParams[] = [];
 		if (secondsOffset == 0) {
 			// If we have previous results, base search on that.
 			// If not, use known params from other consoles.
-			let searchParams = this.searchParams ? [this.searchParams] : this.knownSearchParams;
-			for (let sp of searchParams) {
+			let searchParams = this.resultManager.getSearchParams();
+			for (let sp of searchParams ? [searchParams] : this.knownSearchParams) {
 				[rngParams, secondsOffset] = await this.searchPlusMinusOneSecond(processingInptus.seeds, sp);
 				if (rngParams.length != 0)
 					break;
-
 			}
-			if (secondsOffset != 0 && processingInptus.priorResultId == -1) {
+			if (secondsOffset != 0 && !processingInptus.isRedo) {
 				this.dialog.open(PopupDialogComponent, {
 					data: {
 						message: [
@@ -318,9 +277,8 @@ export class Step4Component extends StepComponent {
 		}
 
 		// We should do a full search if no results were found by prior searches.
-		let didFullSearch = false;
 		if (rngParams.length == 0 && allowFull) {
-			didFullSearch = true;
+			this.requiredFullSearch = true;
 			rngParams = await this.worker.searchForSeeds(processingInptus.seeds, new SearchParams({
 				mac: processingInptus.mac,
 				minTimer0: 0x300,
@@ -330,51 +288,16 @@ export class Step4Component extends StepComponent {
 			}));
 		}
 
-		let id = processingInptus.priorResultId;
-		let result = {
-			foundParams: rngParams,
+		this.resultManager.submitResult({
+			result: rngParams,
 			seeds: processingInptus.seeds,
 			row1: processingInptus.row1,
 			row2: processingInptus.row2,
-			count: 1,
-		};
-		if (result.foundParams.length != 0 && (id == -1 || this.results[id].foundParams.length == 0))
-			this.totalMatchedPatterns++;
-		if (id == -1) {
-			this.results.push(result);
-		} else if (result.foundParams.length != 0) {
-			// Update, but only if we found something.
-			result.count = this.results[id].count;
-			this.results[id] = result;
-		}
-
-		// Set up narrower search params
-		if (rngParams.length != 0) {
-			// It's a list, but we don't loop through it. If there are two, one is a false positive and we can't know which.
-			if (didFullSearch) {
-				this.requiredFullSearch = true;
-				this.searchParams = new SearchParams({
-					mac: processingInptus.mac,
-					is3DS: processingInptus.consoleType == '3DS',
-					datetime: processingInptus.date,
-					minTimer0: rngParams[0].timer0 - 10,
-					maxTimer0: rngParams[0].timer0 + 10,
-					minVCount: rngParams[0].vCount - 3,
-					maxVCount: rngParams[0].vCount + 3,
-					minVFrame: rngParams[0].vFrame,
-					maxVFrame: rngParams[0].vFrame,
-				});
-			} else if (this.searchParams) { // is never undefined, but code analysis doesn't know that
-				this.searchParams.minTimer0 = Math.min(this.searchParams.minTimer0, rngParams[0].timer0 - 10);
-				this.searchParams.maxTimer0 = Math.max(this.searchParams.minTimer0, rngParams[0].timer0 + 10);
-				this.searchParams.minVCount = Math.min(this.searchParams.minVCount!, rngParams[0].vCount - 3);
-				this.searchParams.maxVCount = Math.max(this.searchParams.maxVCount!, rngParams[0].vCount + 3);
-			}
-		}
+			offsetUsed: secondsOffset,
+		});
 
 		this.inProgressCount--;
-		this.postResults(result, secondsOffset);
-		return result.foundParams.length > 0;
+		return rngParams.length > 0;
 	}
 	private async searchPlusMinusOneSecond(seeds: number[], searchParams: SearchParams): Promise<[RngParams[], number]> {
 		let offsets = [0, -1, +1];
@@ -392,22 +315,6 @@ export class Step4Component extends StepComponent {
 		return [[], 0];
 	}
 
-	private postResults(results: result, offsetSeconds: number) {
-		// The default behaviour for Date values is to convert them to UTC. We do not want that, we want to ignore timezones entirely.
-		let convertedDate = new Date(this.date);
-		convertedDate.setMinutes(convertedDate.getMinutes() - convertedDate.getTimezoneOffset());
-		let dtStr = convertedDate.toISOString().slice(0, -1);
-
-		let postData: any = {
-			...results,
-			datetime: dtStr,
-			gameVersion: localStorage.getItem('gameVersion'),
-			mac: localStorage.getItem('mac'),
-			is3DS: localStorage.getItem('consoleType') == '3DS',
-			offsetUsed: offsetSeconds,
-		};
-		this.http.post<string>('asp/submitResults', postData).subscribe(); // need to subscribe or it won't actually send the request?
-	}
 
 	private _changedByUser = true;
 	private _row2SetByAutocomplete = false;
