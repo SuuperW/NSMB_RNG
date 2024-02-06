@@ -170,12 +170,19 @@ export class RngParamsSearchResultManager {
 		if (this.results.length == 0)
 			return null;
 		else {
-			// TODO?
 			let sp = new SearchParams(this.range);
-			sp.minTimer0 -= 10;
-			sp.maxTimer0 += 10;
-			sp.minVCount -= 3;
-			sp.maxVCount += 3;
+			// The largest known timer0 range is 21. That console might be able to have a wider range, it wasn't extensively tested.
+			// We don't know if found params are on the low or high side, so we'll spread out both ways.
+			// Also extend beyond current even if we're at max, just in case.
+			let timer0RangeExtension = Math.max(2, 25 - (sp.maxTimer0 - sp.minTimer0));
+			sp.minTimer0 -= timer0RangeExtension;
+			sp.maxTimer0 += timer0RangeExtension;
+			// The largest observed vCount range is 3, on one single console. Most have 2, a few have 1.
+			// But the number of consoles tested isn't very big, so we'll assume 4 is possible.
+			let vCountRangeExtension = Math.max(1, 3 - (sp.maxVCount - sp.minVCount));
+			sp.minVCount -= vCountRangeExtension;
+			sp.maxVCount += vCountRangeExtension;
+			// Everything else should be consistent.
 			return sp;
 		}
 	}
