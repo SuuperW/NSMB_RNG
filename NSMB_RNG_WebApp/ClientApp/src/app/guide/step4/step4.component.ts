@@ -193,28 +193,22 @@ export class Step4Component extends StepComponent {
 
 		let paramsToUse = this.resultManager.getMostLikelyResult();
 		if (paramsToUse) {
-			// If the user keeps getting the same pattern over and over, and it looks good.
+			let message: string[]
+			// If the user keeps getting the same pattern over and over, and it looks good, and it isn't from previously known RNG params.
 			if (this.resultManager.getDistinctPatternCount() == 1 && this.requiredFullSearch && this.resultManager.submitCount === 4) {
-				// We'll only show this message about RNG params maybe being wrong if the one found RNG params don't match any known good ones.
-				this.dialog.open(PopupDialogComponent, {
-					data: {
-						message: ['You got the same tiles four times in a row. This is unusual: normally RNG is not this consistent.',
-							'We did find RNG params, and you may proceed to the next step. However, the results have a slight chance of being wrong.',
-							'You may want to try to get another pattern. Going back and using a different date or time might help. Getting two patterns would allow cross-referencing the results to verify they are correct. If you choose to continue and try to get another pattern, you will be alerted if the RNG params already found can be verified correct.',
-						],
-					}
-				});
+				message = ['You got the same tiles four times in a row. This is unusual: normally RNG is not this consistent.',
+					'We did find RNG params, and you may proceed to the next step. However, the results have a slight chance of being wrong.',
+					'You may want to try to get another pattern. Going back and using a different date or time might help. Getting two patterns would allow cross-referencing the results to verify they are correct. If you choose to continue and try to get another pattern, you will be alerted if the RNG params already found can be verified correct.',
+				];
+			} else {
+				message = ['We have found everything we need! Go to the next step.'];
 			}
 
+			this.dialog.open(PopupDialogComponent, {
+				data: { message: message }
+			});
 			this.errorStatus = undefined;
 			localStorage.setItem('rngParams', JSON.stringify(paramsToUse));
-			if (this.resultManager.totalMatchedPatterns > 1 || !this.requiredFullSearch) { // If not, we arleady displayed a message.
-				this.dialog.open(PopupDialogComponent, {
-					data: {
-						message: ['We have found everything we need! Go to the next step.'],
-					}
-				});
-			}
 		}
 	}
 
