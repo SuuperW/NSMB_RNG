@@ -4,7 +4,9 @@ import { RngParamsSearchResultManager } from './rng-params-search-result-manager
 
 let mac = '40:f4:07:f7:d4:21';
 let dt = new Date(2023, 10, 24, 1, 0, 15);
+let fakeResultId = 0;
 let makeFakeResult = (timer0: number, vCount: number, vFrame: number) => {
+	fakeResultId++;
 	return {
 		result: [{
 			timer0: timer0,
@@ -16,7 +18,7 @@ let makeFakeResult = (timer0: number, vCount: number, vFrame: number) => {
 			buttons: 0,
 		}],
 		seeds: [0],
-		row1: '',
+		row1: fakeResultId.toString(), // result manager doesn't validate this, but does rely on rows to detect repeat submissions
 		row2: '',
 		offsetUsed: 0,
 	};
@@ -124,6 +126,7 @@ describe('RngParamsSearchResultManager', () => {
 		manager.submitResult(result2);
 		manager.submitResult(result1);
 
+		assert(manager.isFalsePositiveSuspected());
 		assert(manager.getMostLikelyResult() !== undefined);
 	});
 
@@ -137,6 +140,7 @@ describe('RngParamsSearchResultManager', () => {
 		manager.submitResult(resultFalse);
 		manager.submitResult(result1);
 
+		assert(manager.isFalsePositiveSuspected());
 		assert(manager.getMostLikelyResult() !== undefined);
 	});	
 });
