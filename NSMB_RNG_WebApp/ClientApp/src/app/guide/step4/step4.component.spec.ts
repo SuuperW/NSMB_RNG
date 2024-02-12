@@ -14,7 +14,9 @@ describe('Step4Component', () => {
 	beforeEach(async () => {
 		// We must set some localstorage for step4 to access.
 		let mac = '40f407f7d421';
+		let dtStr = '2023-11-24 01:00:15';
 		localStorage.setItem('mac', mac);
+		localStorage.setItem('datetime', dtStr);
 
 		await TestBed.configureTestingModule({ imports: [Step4Component] }).compileComponents();
 		// Using the providers property in configureTestingModule does not work for some reason I don't understand.
@@ -41,7 +43,7 @@ describe('Step4Component', () => {
 		// This is also where we set the date, system, and MAC address for the tests.
 		(component.resultManager as any).range = {
 			buttons: 0,
-			datetime: new Date(2023, 10, 24, 1, 0, 15),
+			datetime: new Date(dtStr),
 			is3DS: false,
 			mac: mac,
 			minTimer0: 1375,
@@ -51,8 +53,6 @@ describe('Step4Component', () => {
 			minVFrame: 5,
 			maxVFrame: 5,
 		};
-		// We also must put a something here
-		(component.resultManager as any).results.push({ result: [0] });
 	});
 
 	it('should create', () => {
@@ -62,7 +62,15 @@ describe('Step4Component', () => {
 	it('can compute seeds', async () => {
 		await component.row1Changed('ebeseee');
 		await component.row2Changed('isbepebibbs'.toUpperCase());
-		assert(component.seeds.length == 10);
+		// The above pattern comes from known, hard-coded RNG params.
+		// So, it will know the one specific seed that generated it.
+		assert(component.seeds.length === 1, `Found ${component.seeds.length} seeds for pattern from known RNG params.`);
+
+		// This pattern doesn't. So it'll have multiple possible seeds.
+		await component.row1Changed('pbpiecb');
+		await component.row2Changed('cbciesceibc'.toUpperCase());
+		assert(component.seeds.length === 5, `Found ${component.seeds.length} seeds for valid pattern from unknown RNG params.`);
+
 	});
 
 	it('can progress with good patterns', async () => {
