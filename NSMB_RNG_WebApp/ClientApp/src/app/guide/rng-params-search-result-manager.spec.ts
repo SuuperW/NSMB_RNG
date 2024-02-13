@@ -142,5 +142,21 @@ describe('RngParamsSearchResultManager', () => {
 
 		assert(manager.isFalsePositiveSuspected());
 		assert(manager.getMostLikelyResult() !== undefined);
-	});	
+	});
+
+	it('does not suggest any params after 2 distinct false positives', () => {
+		let result1 = makeFakeResult(0x566, 0x26, 5);
+		let result2 = makeFakeResult(0x567, 0x26, 5);
+		let resultFalse = makeFakeResult(0x333, 0xff, 5);
+		let resultFalse2 = makeFakeResult(0x999, 0x01, 6);
+
+		manager.submitResult(result1);
+		manager.submitResult(resultFalse);
+		manager.submitResult(result2);
+		manager.submitResult(resultFalse2);
+		manager.submitResult(result1);
+
+		assert(manager.getMostLikelyResult() === undefined);
+		assert(manager.isFalsePositiveSuspected());
+	});
 });
