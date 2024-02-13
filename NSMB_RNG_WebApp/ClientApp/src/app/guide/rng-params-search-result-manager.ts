@@ -90,8 +90,8 @@ export class RngParamsSearchResultManager {
 		return null;
 	}
 
-	getDistinctPatternCount(): number {
-		return this.results.length;
+	getDistinctParamsCount(): number {
+		return this.distinctParams.length + (!!this.otherRngParams ? 1 : 0);
 	}
 
 	private incrementCount(params: RngParams) {
@@ -186,7 +186,7 @@ export class RngParamsSearchResultManager {
 		// To reduce chances of returning a false positive, we verify that we also have another nearby result,
 		// unless we have only a single result 4+ times (because some consoles are highly consistent).
 		if (this.totalMatchedPatterns === 1) {
-			if (this.results.length === 1 && this.submitCount > 3)
+			if (this.results.length === 1 && this.submitCount > 3 && !this.isFalsePositiveSuspected())
 				return this.results[0].result[0];
 			else
 				return undefined;

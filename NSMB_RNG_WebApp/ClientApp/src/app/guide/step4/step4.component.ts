@@ -75,6 +75,7 @@ export class Step4Component extends StepComponent {
 	knownPatterns: PrecomputedPatterns;
 	knownSearchParams: SearchParams[];
 	requiredFullSearch: boolean = false;
+	showed4InARowMessage: boolean = false;
 
 	resultManager: RngParamsSearchResultManager;
 
@@ -145,6 +146,7 @@ export class Step4Component extends StepComponent {
 		}
 		this.removeProgress(status);
 
+		let message: string[] | undefined = undefined;
 		if (this.resultManager.suspectUserErrorOrStrangeConsole()) {
 			const statusBadTime = 'Checking +1/-1 second for all patterns... (this may take a long time)';
 			this.addProgress(statusBadTime);
@@ -183,32 +185,42 @@ export class Step4Component extends StepComponent {
 					}
 				});
 			} else {
-				this.dialog.open(PopupDialogComponent, {
-					data: {
-						message: ['Good news! We found something potentially useful. Keep going.']
-					}
-				});
+				message = ['Good news! We found something potentially useful. Keep going.'];
 			}
+		}
+
+		if (this.resultManager.givenUp) {
+			message = [
+				'We found too many possible RNG params. Some of them are almost certainly wrong, and this app isn\'t designed to try to determine which is right.',
+				'Go back to the previous step, choose another date/time, and try again.',
+				'If you also get this message with a different date/time, let me know (@suuper on Discord) because that would mean the app is borken.',
+			];
 		}
 
 		let paramsToUse = this.resultManager.getMostLikelyResult();
 		if (paramsToUse) {
-			let message: string[]
 			// If the user keeps getting the same pattern over and over, and it looks good, and it isn't from previously known RNG params.
-			if (this.resultManager.getDistinctPatternCount() == 1 && this.requiredFullSearch && this.resultManager.submitCount === 4) {
-				message = ['You got the same tiles four times in a row. This is unusual: normally RNG is not this consistent.',
-					'We did find RNG params, and you may proceed to the next step. However, the results have a slight chance of being wrong.',
-					'You may want to try to get another pattern. Going back and using a different date or time might help. Getting two patterns would allow cross-referencing the results to verify they are correct. If you choose to continue and try to get another pattern, you will be alerted if the RNG params already found can be verified correct.',
-				];
+			if (this.resultManager.getDistinctParamsCount() == 1 && this.requiredFullSearch) {
+				if (this.resultManager.submitCount === 4) {
+					message = ['You got the same RNG params four times in a row. This is unusual: normally RNG is not this consistent.',
+						'We did find RNG params, and you may proceed to the next step. However, the results have a slight chance of being wrong.',
+						'I recommend you proceed to the next step, but keep in mind it might not work. If you end up being unable to get it working, then go back to the previous step, choose a different date/time, and try again.',
+					];
+				}
 			} else {
 				message = ['We have found everything we need! Go to the next step.'];
 			}
 
+			this.errorStatus = undefined;
+			localStorage.setItem('rngParams', JSON.stringify(paramsToUse));
+		} else if (this.showed4InARowMessage && this.resultManager.isFalsePositiveSuspected()) {
+			message = ['There are two possible RNG params, but we can\'t tell which one is correct. Go back to the previous step, choose another date/time, and try again.'];
+		}
+
+		if (message) {
 			this.dialog.open(PopupDialogComponent, {
 				data: { message: message }
 			});
-			this.errorStatus = undefined;
-			localStorage.setItem('rngParams', JSON.stringify(paramsToUse));
 		}
 	}
 
