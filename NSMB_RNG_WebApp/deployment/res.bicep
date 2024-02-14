@@ -56,11 +56,31 @@ resource nrCosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2023-11-15' = {
 			resource: { id: 'defaultDB' } // required redundancy
 		}
 
-		resource container 'containers' = {
-			name: 'defaultContainer'
+		resource containerSubmissions 'containers' = {
+			name: 'submissions'
 			properties: {
 				resource: {
-					id: 'defaultContainer' // required redundancy
+					id: 'submissions' // required redundancy
+					partitionKey: {
+						paths: [ '/session' ]
+					}
+					indexingPolicy: {
+						automatic: true
+						excludedPaths: [{ path: '/*' }]
+						includedPaths: [
+							{ path: '/session/?' }
+							// _ts is indexed automatically. Manually specifying it does nothing.
+							// (It wouldn't even show up in the indexing policy.)
+						]
+					}
+				}
+			}
+		}
+		resource containerSessions 'containers' = {
+			name: 'sessions'
+			properties: {
+				resource: {
+					id: 'sessions' // required redundancy
 					partitionKey: {
 						paths: [ '/mac' ]
 					}
@@ -68,9 +88,8 @@ resource nrCosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2023-11-15' = {
 						automatic: true
 						excludedPaths: [{ path: '/*' }]
 						includedPaths: [
+							{ path: '/session/?' }
 							{ path: '/mac/?' }
-							// _ts is indexed automatically. Manually specifying it does nothing.
-							// (It wouldn't even show up in the indexing policy.)
 						]
 					}
 				}
@@ -82,12 +101,12 @@ resource nrCosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2023-11-15' = {
 	// and does nto assign a normal role. This is CosmosDB-specific RBAC. There are no normal
 	// roles which grant access to the data inside containers.
 	resource sqlRoleAssignment 'sqlRoleAssignments' = {
-		name: guid('00000000-0000-0000-0000-000000000002', nrWebApp.id, db::container.id)
+		name: guid('00000000-0000-0000-0000-000000000002', nrWebApp.id, db.id)
 		properties:{
 			principalId: nrWebApp.identity.principalId
 			roleDefinitionId: '${nrCosmosAccount.id}/sqlRoleDefinitions/00000000-0000-0000-0000-000000000002'
 			// Weird that it requires a special format, instead of just container.id.
-			scope: '${nrCosmosAccount.id}/dbs/${db.name}/colls/${db::container.name}'
+			scope: '${nrCosmosAccount.id}/dbs/${db.name}'
 		}
 	}
 }
@@ -101,7 +120,6 @@ module appSettings 'appsettings.bicep' = {
 		appSettings: {
 			CosmosEndpointUri: nrCosmosAccount.properties.documentEndpoint
 			CosmosDbName: 'defaultDB'
-			CosmosContainerName: 'defaultContainer'
 		}
 	}
 }

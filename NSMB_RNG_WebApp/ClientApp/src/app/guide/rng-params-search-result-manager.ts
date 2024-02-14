@@ -17,6 +17,7 @@ export type SearchInputs = {
 
 export class RngParamsSearchResultManager {
 	private http: HttpClient | undefined;
+	private sessionId: string | undefined;
 
 	private _totalMatchedPatterns: number = 0;
 	private set totalMatchedPatterns(value: number) { this._totalMatchedPatterns = value; }
@@ -27,9 +28,7 @@ export class RngParamsSearchResultManager {
 	public get submitCount(): number { return this._submitCount; }
 
 
-	private results: (RngParamsSearch & { count: number })[] = [];
-
-	private generalPostData: { mac: string, is3DS: boolean, dtStr: string, gameVersion: string };
+	private results: RngParamsSearch[] = [];
 
 	private range: SearchParams;
 	private otherRngParams: RngParams | undefined;
@@ -44,25 +43,15 @@ export class RngParamsSearchResultManager {
 
 
 	constructor(date: Date, http: HttpClient | undefined = undefined) {
-		// The default behaviour for POSTing Date values is to convert them to UTC. We do not want that, we want to ignore timezones entirely.
-		let convertedDate = new Date(date);
-		convertedDate.setMinutes(convertedDate.getMinutes() - convertedDate.getTimezoneOffset());
-		this.generalPostData = {
-			dtStr: convertedDate.toISOString().slice(0, -1),
-			gameVersion: localStorage.getItem('gameVersion') ?? 'null',
-			mac: localStorage.getItem('mac') ?? '',
-			is3DS: localStorage.getItem('consoleType') == '3DS',
-		}
-
 		this.range = new SearchParams({
-			mac: this.generalPostData.mac,
+			mac: localStorage.getItem('mac') ?? '',
 			datetime: new Date(date),
-			is3DS: this.generalPostData.is3DS,
+			is3DS: localStorage.getItem('consoleType') == '3DS',
 			minTimer0: -1,
 			maxTimer0: -1,
 		})
 
-		if (this.generalPostData.mac == '')
+		if (this.range.mac == '')
 			throw 'No MAC in local storage for RngParamsSearchResultManager';
 
 		if (http)
@@ -122,9 +111,9 @@ export class RngParamsSearchResultManager {
 			this.totalMatchedPatterns++;
 
 		if (existing) {
-			existing.count++;
 			result.result.forEach((r) => this.incrementCount(r));
 			existing.result = result.result;
+			this.postResults(result);
 			return;
 		}
 
@@ -157,9 +146,8 @@ export class RngParamsSearchResultManager {
 			}
 		}
 
-		let r = { ...result, count: 1 };
-		this.results.push(r);
-		this.postResults(r);
+		this.results.push(result);
+		this.postResults(result);
 	}
 
 	isFalsePositiveSuspected(): boolean {
@@ -238,15 +226,62 @@ export class RngParamsSearchResultManager {
 		);
 	};
 
+	private async createSession(retryOnError: boolean = true) {
+		if (!this.http) return '';
 
-	private postResults(results: (RngParamsSearch & { count: number })) {
+		// The default behaviour for POSTing Date values is to convert them to UTC. We do not want that, we want to ignore timezones entirely.
+		let convertedDate = new Date(this.range.datetime);
+		convertedDate.setMinutes(convertedDate.getMinutes() - convertedDate.getTimezoneOffset());
+		let postData = {
+			datetime: convertedDate.toISOString().slice(0, -1),
+			gameVersion: localStorage.getItem('gameVersion') ?? 'null',
+			mac: this.range.mac,
+			is3DS: this.range.is3DS,
+		}
+
+		let resolver: (value: string | PromiseLike<string>) => void = null!; // null! just tells code analysis to assume it has a value (it's set in next line but analyzer doesn't know that)
+		let p = new Promise<string>((r) => { resolver = r });
+
+		let somethingIsBrokenHere = { responseType: 'text' as 'json' }; // Wtf?
+		this.http.post<string>('asp/submit/session', postData, somethingIsBrokenHere).subscribe({
+			next: (v) => {
+				if (v.length === 36)
+					resolver(v);
+				else
+					resolver('');
+			},
+			error: async (_) => { // try again once on error
+				if (retryOnError) resolver(await this.createSession(false));
+				else resolver('');
+			}
+		});
+
+		return await p;
+	}
+	private _sessionPromise: Promise<string> | undefined;
+	private async postResults(results: RngParamsSearch) {
 		if (!this.http) return;
 
-		let postData: any = {
-			...this.generalPostData,
-			...results,
-		};
-		this.http.post<string>('asp/submitResults', postData).subscribe(); // need to subscribe or it won't actually send the request?
-	}
+		let submitCount = this.submitCount;
+		if (submitCount == 1) {
+			this._sessionPromise = this.createSession();
+			this.sessionId = await this._sessionPromise;
+			this._sessionPromise = undefined;
+		} else if (this._sessionPromise) {
+			await this._sessionPromise;
+		}
 
+		if (this.sessionId === undefined || this.sessionId.length !== 36)
+			return;
+
+		let postData: any = {
+			...results,
+			submissionId: submitCount,
+			session: this.sessionId,
+		};
+		// Rename parameter to match expected name server-side
+		postData.foundParams = results.result;
+		delete postData.result;
+		this.http.post<string>('asp/submit/result', postData).subscribe(); // need to subscribe or it won't actually send the request?
+	}
 }

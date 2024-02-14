@@ -26,9 +26,6 @@ namespace NSMB_RNG_WebApp.Models
 		[JsonProperty(Required = Required.Always, NamingStrategyType = typeof(CamelCaseNamingStrategy))]
 		public RngParams[] FoundParams { get; set; }
 
-		[JsonProperty(Required = Required.Always, NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-		public DateTime Datetime { get; set; }
-
 		private string _row1;
 		[JsonProperty(Required = Required.Always, NamingStrategyType = typeof(CamelCaseNamingStrategy))]
 		public string Row1
@@ -56,32 +53,13 @@ namespace NSMB_RNG_WebApp.Models
 		}
 
 		[JsonProperty(Required = Required.Always, NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-		public string GameVersion { get; set; }
-
-		[JsonProperty(Required = Required.Always, NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-		public int Count { get; set; }
-
-		[JsonProperty(Required = Required.Always, NamingStrategyType = typeof(CamelCaseNamingStrategy))]
 		public int OffsetUsed { get; set; }
 
-		private string _mac;
 		[JsonProperty(Required = Required.Always, NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-		public string Mac
-		{
-			get => _mac;
-			set
-			{
-				if (value.Length != 12 && value.Length != 17)
-					throw new Exception("Invalid MAC address received.");
-				_mac = value.Length == 12 ? value : value.Replace(value.Substring(2, 1), "");
-				if (!long.TryParse(_mac, System.Globalization.NumberStyles.AllowHexSpecifier, null, out long _))
-					throw new Exception("Invalid MAC address received.");
-				_mac = _mac.ToLower();
-			}
-		}
+		public string Session { get; set; }
 
 		[JsonProperty(Required = Required.Always, NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-		public bool Is3DS { get; set; }
+		public int SubmissionId { get; set; }
 
 		[JsonConstructor]
 		private RngParamsResult() { }
