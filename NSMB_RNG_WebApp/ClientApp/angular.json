@@ -73,10 +73,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "NSMB_RNG_WebApp:build:production"
+              "buildTarget": "NSMB_RNG_WebApp:build:production"
             },
             "development": {
-              "browserTarget": "NSMB_RNG_WebApp:build:development",
+              "buildTarget": "NSMB_RNG_WebApp:build:development",
               "proxyConfig": "proxy.conf.js"
             }
           },
@@ -85,7 +85,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "NSMB_RNG_WebApp:build"
+            "buildTarget": "NSMB_RNG_WebApp:build"
           }
         },
         "test": {
@@ -133,6 +133,5 @@
         }
       }
     }
-  },
-  "defaultProject": "NSMB_RNG_WebApp"
+  }
 }
