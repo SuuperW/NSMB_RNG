@@ -9,13 +9,17 @@
 	Then, load your saved file. This must be done BEFORE the intro cutscene begins playing.<br />
 	If you've left the game running on the title screen long enough for the cutscene to play, reset the system clock and reload the game.<br />
 	Go to world 1-2 and enter the level. Pause the game while the top row of tiles is still on-screen.<br />
-	Your tile pattern is the first 7 inner tiles in the topmost row plus all 11 visible inner tiles in the second row.<br />
-	Each tile will be represented as a letter. See below for an example and then each letter with its associated tile.<br />
+	Your tile pattern is the first 7 inner tiles in the topmost row plus all 11 visible inner tiles in the second row.
+</p>
+<p>
+	Each tile has been given a name, and they can be represented with the first letter of their name.<br />
+	The names are: Bean, Cloud, Empty, Islands, Porkchop, Submarine<br />
+	See below for an example and then each letter with its associated tile.
 </p>
 <p>Example: The following image shows the tile pattern "icbpbei" and "psbibcbpsbi", and the bottom row is "bieeceeeppc".</p>
 <img class="example" src="assets/exampleTilePattern.jpg" alt="An example picture of 1-2" />
 <br />
-<p>Here are the letters for each tile. You can type or click the tile images to input your pattern.</p>
+<p>Here are the letters for each tile. You can type or click the tile images below to input your pattern.</p>
 <div class="tileLetters">
 	<div class="tileWithLetter">B <img src="assets/tileB.png" class="tileImage" (click)="tileClick('b')" /></div>
 	<div class="tileWithLetter">C <img src="assets/tileC.png" class="tileImage" (click)="tileClick('c')" /></div>
@@ -27,15 +31,18 @@
 <br />
 
 <ng-container [formGroup]="form">
-	<label for="row1Input">First row</label>
-	<input id="row1Input" placeholder="first row tiles (7)" formControlName="row1Input" />
-
-	<label for="row2Input">Second row</label>
-	<input id="row2Input" placeholder="second row tiles (11)" formControlName="row2Input" />
+	<div class="inline">
+		<label for="row1Input">First row</label>
+		<input id="row1Input" placeholder="first row tiles (7)" formControlName="row1Input" />
+	</div>
+	<div class="inline">
+		<label for="row2Input">Second row</label>
+		<input id="row2Input" placeholder="second row tiles (11)" formControlName="row2Input" />
+	</div>
 
 	<app-tile-display [tileCount]="7" [tiles]="this.form.value.row1Input" (tilesOut)="row1Changed($event)"></app-tile-display>
 	<app-tile-display [tileCount]="11" [tiles]="this.form.value.row2Input" (tilesOut)="row2Changed($event)"></app-tile-display>
-	<p class="tileHeight">----- bottom row (Verify this matches your actual bottom row. If not, then above tiles are wrong.) -----</p>
+	<p class="reducedMargin">----- bottom row (Verify this matches your actual bottom row. If not, then above tiles are wrong.) -----</p>
 	<p class="warning tileHeight" [hidden]="!this.patternIsInvalid">The tile pattern you entered is not possible. Check for typos.</p>
 	<div class="spinner tileImage" [hidden]="!this.computingLastRow"></div>
 	<app-tile-display *ngFor="let row of this.bottomRows" [hidden]="this.patternIsInvalid || this.computingLastRow" [tileCount]="11" [tiles]="row"></app-tile-display>
@@ -44,7 +51,7 @@
 
 
 <button class="btn-primary" (click)="submit()">Submit</button>
-<p>Patterns submitted: {{ resultManager.submitCount }}<p>
+<p>Patterns submitted: {{ submitCount }}<p>
 <p>
 	After submitting your tile pattern, reboot the console and get another tile pattern using the same process.<br />
 	Submit every tile pattern you get, even if it is exactly the same as one you already submitted.<br />

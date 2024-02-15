@@ -30,6 +30,9 @@ label {
 p {
 	margin: 1em 0;
 }
+p.reducedMargin {
+	margin: 0.5em 0;
+}
 
 input.ng-invalid.ng-touched {
 	outline: 2px solid red;
@@ -40,8 +43,9 @@ input.ng-invalid.ng-touched {
 }
 
 .tileImage {
-	height: min(3rem, 5.6vw);
-	width: min(3rem, 5.6vw); /* 5.6vw is the largest vw that won't ever cause an 11-tile row to wrap to a second row inside the page's container element. */
+	aspect-ratio: 1 / 1;
+	height: auto; /* Either height or width must stay auto or aspect-ratio will not take effect. I chose height to be auto because tile-display-component sets max-width. */
+	width: 3rem;
 }
 .tileHeight {
 	height: min(3rem, 5.6vw);
@@ -71,4 +75,8 @@ app-tile-display {
 	100% {
 		transform: rotate(360deg);
 	}
+}
+
+.inline {
+	display: inline-block;
 }

@@ -1,0 +1,7 @@
+.noWrapShrink {
+	max-width: 100%;
+	display: flex; /* Makes it so there is no vertical gap between two tile rows */
+}
+.noWrapShrink img {
+	max-width: calc(100% / 12);
+}

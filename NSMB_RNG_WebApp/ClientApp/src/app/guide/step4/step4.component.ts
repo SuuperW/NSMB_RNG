@@ -70,6 +70,7 @@ export class Step4Component extends StepComponent {
 	patternIsInvalid: boolean = false;
 	computingLastRow: boolean = false;
 
+	submitCount: number = 0; // the result manager also tracks this, but we need the UI to update right away and not wait for that
 	inProgressCount: number = 0;
 
 	knownPatterns: PrecomputedPatterns;
@@ -134,6 +135,7 @@ export class Step4Component extends StepComponent {
 		this.form.controls.row1Input.setValue('');
 		this.form.controls.row2Input.setValue('');
 
+		this.submitCount++;
 		const status = 'Finding RNG initialization parameters...';
 		this.addProgress(status);
 		let anyFound = this.resultManager.totalMatchedPatterns > 0;
