@@ -7,6 +7,7 @@ import { getRow1, getRow2 } from '../../functions/tiles';
 import { SeedCalculator } from '../../seed-calculator';
 import { RouterModule } from '@angular/router';
 import { PrecomputedPatterns } from '../precomputed-patterns';
+import { GuideComponent } from '../guide.component';
 
 @Component({
 	selector: 'app-step6',
@@ -36,32 +37,26 @@ export class Step6Component extends StepComponent {
 	patterns: PrecomputedPatterns;
 	maxSubLength = 1;
 
-	constructor() {
-		super();
+	constructor(guide: GuideComponent) {
+		super(guide);
 
-		let params: RngParams = JSON.parse(localStorage.getItem('rngParams')!);
-		let date = new Date(localStorage.getItem('manipDatetime')!);
-		params.datetime = date;
-		this.manipDatetime = `${date.toDateString()} ${date.toLocaleTimeString()}`;
+		if (!this.guide.expectedParams || !this.guide.paramsRange)
+			throw "invalid state: expectedParams or paramsRange is not set for step6";
 
 		// Find all tile patterns that we should expect
 		this.patterns = new PrecomputedPatterns();
-		this.patterns.addParams(new SearchParams({
-			mac: localStorage.getItem('mac')!,
-			is3DS: localStorage.getItem('consoleType') == '3DS',
-			datetime: new Date(params.datetime),
-			minTimer0: params.timer0 - 10, // Few if any consoles actually have this wide a range
-			maxTimer0: params.timer0 + 10,
-			minVCount: params.vCount - 3, // I'm not sure if any consoles have a range of more than +/-1
-			maxVCount: params.vCount + 3,
-			minVFrame: params.vFrame,
-			maxVFrame: params.vFrame,
-		}));
+		this.patterns.addParams(this.guide.paramsRange);
+
+		// And the one we want
+		let params: RngParams = this.guide.expectedParams;
 		let sc = new SeedCalculator(params.mac, params.datetime, params.is3DS);
 		sc.timer0 = params.timer0; sc.vCount = params.vCount;
 		sc.vFrame = params.vFrame; sc.buttons = params.buttons;
 		this.desiredSeed = sc.getSeed();
 		this.desiredRow1 = getRow1(this.desiredSeed);
+
+		// UI
+		this.manipDatetime = `${params.datetime.toDateString()} ${params.datetime.toLocaleTimeString()}`;
 	}
 
 	private _feedbacks = [

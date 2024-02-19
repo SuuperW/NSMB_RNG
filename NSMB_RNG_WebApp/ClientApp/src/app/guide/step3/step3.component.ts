@@ -33,6 +33,7 @@ export class Step3Component extends StepComponent {
 					return { 'err': `Invalid date. You should not be able to set year ${year} on your DS.` };
 				else {
 					localStorage.setItem('datetime', c.value);
+					this.guide.targetDate = dt;
 					return null;
 				}
 			} else {

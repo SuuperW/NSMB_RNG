@@ -62,12 +62,14 @@ export class Step5Component extends StepComponent {
 		this.errorStatus = 'Please wait';
 		const status = 'Finding date and time for RNG manip...'
 		this.addProgress(status);
-		let params: RngParams = JSON.parse(localStorage.getItem('rngParams')!);
+		let params: RngParams = this.guide.expectedParams!;
 		params.datetime = new Date(params.datetime);
 		let result = await this.worker.searchForTime(this.form.value.route == 'normal' ? normalSeeds : miniSeeds, params);
 
 		if (result) {
-			localStorage.setItem('manipDatetime', result?.toString() ?? '');
+			this.guide.expectedParams!.datetime = result;
+			this.guide.paramsRange!.datetime = result;
+
 			localStorage.setItem('route', this.form.value.route!);
 			this.errorStatus = undefined;
 			this.done = true;

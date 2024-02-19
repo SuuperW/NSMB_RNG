@@ -1,6 +1,9 @@
+import { Directive } from "@angular/core";
 import { FormGroup } from "@angular/forms";
 import { SimpleEvent } from "../event";
+import { GuideComponent } from "./guide.component";
 
+@Directive()
 export abstract class StepComponent {
 	abstract form: FormGroup;
 	public errorStatus?: string;
@@ -10,6 +13,8 @@ export abstract class StepComponent {
 	public get progress() {
 		return this._progress.expose();
 	}
+
+	public constructor(protected guide: GuideComponent) { }
 
 	protected addProgress(display: string) {
 		this.inProgress.push(display);

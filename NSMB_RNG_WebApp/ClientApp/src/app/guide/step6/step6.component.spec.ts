@@ -1,8 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { Step6Component } from './step6.component';
-import { RngParams } from '../../functions/rng-params-search';
+import { RngParams, SearchParams } from '../../functions/rng-params-search';
 import { RouterTestingModule } from '@angular/router/testing';
+import { GuideComponent } from '../guide.component';
 
 describe('Step6Component', () => {
 	let component: Step6Component;
@@ -10,12 +11,14 @@ describe('Step6Component', () => {
 
 	beforeEach(async () => {
 		await TestBed.configureTestingModule({
-			imports: [ Step6Component, RouterTestingModule ]
+			imports: [ Step6Component, RouterTestingModule ],
+			providers: [{ provide: GuideComponent, useFactory: () => { return g; } }]
 		})
 			.compileComponents();
 
-		// This component shouldn't ever attempt to load without certain items in localStorage.
-		let rngParams: RngParams = {
+
+		let g = TestBed.createComponent(GuideComponent).componentInstance;
+		g.expectedParams = {
 			timer0: 1383,
 			vCount: 39,
 			vFrame: 5,
@@ -24,9 +27,12 @@ describe('Step6Component', () => {
 			datetime: new Date('2023-11-23T07:00:15'),
 			buttons: 0,
 		};
-		localStorage.setItem('rngParams', JSON.stringify(rngParams));
-		localStorage.setItem('mac', rngParams.mac);
-		localStorage.setItem('consoleType', rngParams.is3DS ? '3DS' : 'DS');
+		g.paramsRange = new SearchParams({
+			...g.expectedParams,
+			// The actual values here do not matter for the existing tests.
+			minTimer0: 0,
+			maxTimer0: 0,
+		})
 
 		fixture = TestBed.createComponent(Step6Component);
 		component = fixture.componentInstance;

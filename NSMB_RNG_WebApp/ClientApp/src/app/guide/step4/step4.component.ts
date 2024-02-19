@@ -12,6 +12,7 @@ import { PopupDialogComponent } from '../../popup-dialog/popup-dialog.component'
 import { PrecomputedPatterns } from '../precomputed-patterns';
 import { getRow1, getRow2 } from '../../functions/tiles';
 import { RngParamsSearch, RngParamsSearchResultManager, SearchInputs } from '../rng-params-search-result-manager';
+import { GuideComponent } from '../guide.component';
 
 type ProcessingInputs = {
 	row1: string,
@@ -80,11 +81,11 @@ export class Step4Component extends StepComponent {
 
 	resultManager: RngParamsSearchResultManager;
 
-	constructor() {
-		super();
-		let dtStr = localStorage.getItem('datetime');
-		if (dtStr) {
-			this.date = new Date(dtStr);
+	constructor(guide: GuideComponent) {
+		super(guide);
+
+		if (this.guide.targetDate) {
+			this.date = this.guide.targetDate;
 			this.targetDateTime = this.date.toLocaleString();
 		} else {
 			this.date = new Date();
@@ -214,7 +215,8 @@ export class Step4Component extends StepComponent {
 			}
 
 			this.errorStatus = undefined;
-			localStorage.setItem('rngParams', JSON.stringify(paramsToUse));
+			this.guide.paramsRange = this.resultManager.getSearchParams()!;
+			this.guide.expectedParams = paramsToUse;
 		} else if (this.showed4InARowMessage && this.resultManager.isFalsePositiveSuspected()) {
 			message = ['There are two possible RNG params, but we can\'t tell which one is correct. Go back to the previous step, choose another date/time, and try again.'];
 		}

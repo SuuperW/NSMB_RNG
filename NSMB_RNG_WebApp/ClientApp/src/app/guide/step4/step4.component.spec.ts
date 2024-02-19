@@ -5,6 +5,7 @@ import { Step4Component } from './step4.component';
 import { assert } from '../../../test/assert';
 import { MockHttpClient } from '../../../test/mockHttpClient';
 import { nextState, previousState } from '../../functions/rng';
+import { GuideComponent } from '../guide.component';
 
 describe('Step4Component', () => {
 	let component: Step4Component;
@@ -18,13 +19,18 @@ describe('Step4Component', () => {
 		localStorage.setItem('mac', mac);
 		localStorage.setItem('datetime', dtStr);
 
-		await TestBed.configureTestingModule({ imports: [Step4Component] }).compileComponents();
+		await TestBed.configureTestingModule({
+			imports: [Step4Component],
+			providers: [{ provide: GuideComponent, useFactory: () => { return g; } }]
+		})
+			.compileComponents();
 		// Using the providers property in configureTestingModule does not work for some reason I don't understand.
 		// It ends up providing the mock to the component's services, but not to the component itself.
 		// overrideProvider will provide the mock to the compoenent as well.
 		mockHttpClient = new MockHttpClient();
 		TestBed.overrideProvider(HttpClient, { useValue: mockHttpClient });
 
+		let g = TestBed.createComponent(GuideComponent).componentInstance;
 		fixture = TestBed.createComponent(Step4Component);
 		component = fixture.componentInstance;
 		fixture.detectChanges();

@@ -13,9 +13,10 @@ import { Step6Component } from './step6/step6.component';
 import { CommonModule } from '@angular/common';
 import { Step0Component } from './step0/step0.component';
 import { PopupDialogComponent } from '../popup-dialog/popup-dialog.component';
+import { RngParams, SearchParams } from '../functions/rng-params-search';
 
 interface TI {
-	new(): StepComponent
+	new(g: GuideComponent): StepComponent
 }
 
 @Component({
@@ -47,6 +48,10 @@ export class GuideComponent implements AfterViewInit {
 
 	isInProgress: boolean = false;
 	progressStatus: string[] = [];
+
+	targetDate?: Date;
+	paramsRange?: SearchParams;
+	expectedParams?: RngParams;
 
 	constructor(private cdr: ChangeDetectorRef) { }
 

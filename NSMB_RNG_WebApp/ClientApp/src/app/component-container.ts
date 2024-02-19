@@ -1,4 +1,4 @@
-import { Directive, EventEmitter, Input, OnInit, Output, Type, ViewContainerRef } from '@angular/core';
+import { Directive, Input, OnInit, Output, Type, ViewContainerRef } from '@angular/core';
 import { SimpleEvent } from './event';
 
 @Directive({
