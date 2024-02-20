@@ -17,7 +17,6 @@ describe('Step4Component', () => {
 		let mac = '40f407f7d421';
 		let dtStr = '2023-11-24 01:00:15';
 		localStorage.setItem('mac', mac);
-		localStorage.setItem('datetime', dtStr);
 
 		await TestBed.configureTestingModule({
 			imports: [Step4Component],
@@ -31,6 +30,7 @@ describe('Step4Component', () => {
 		TestBed.overrideProvider(HttpClient, { useValue: mockHttpClient });
 
 		let g = TestBed.createComponent(GuideComponent).componentInstance;
+		g.targetDate = new Date(dtStr);
 		fixture = TestBed.createComponent(Step4Component);
 		component = fixture.componentInstance;
 		fixture.detectChanges();
