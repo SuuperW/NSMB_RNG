@@ -1,13 +1,15 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { StepComponent } from '../step';
 import { TileDisplayComponent } from '../../tile-display/tile-display.component';
-import { RngParams, SearchParams, SeedRow, getAllPossibleRow1 } from '../../functions/rng-params-search';
+import { RngParams, searchForSeeds } from '../../functions/rng-params-search';
 import { getRow1, getRow2 } from '../../functions/tiles';
 import { SeedCalculator } from '../../seed-calculator';
 import { RouterModule } from '@angular/router';
 import { PrecomputedPatterns } from '../precomputed-patterns';
 import { GuideComponent } from '../guide.component';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { PopupDialogComponent } from '../../popup-dialog/popup-dialog.component';
 
 @Component({
 	selector: 'app-step6',
@@ -18,9 +20,12 @@ import { GuideComponent } from '../guide.component';
 		ReactiveFormsModule,
 		TileDisplayComponent,
 		RouterModule,
+		MatDialogModule,
 	],
 })
 export class Step6Component extends StepComponent {
+	dialog: MatDialog = inject(MatDialog);
+
 	manipDatetime: string;
 
 	form = new FormGroup({
@@ -36,6 +41,9 @@ export class Step6Component extends StepComponent {
 
 	patterns: PrecomputedPatterns;
 	maxSubLength = 1;
+
+	retrySeed: number = -1;
+	offerRetry: boolean = false;
 
 	constructor(guide: GuideComponent) {
 		super(guide);
@@ -65,6 +73,9 @@ export class Step6Component extends StepComponent {
 		'This tile pattern came from RNG initializing 1 second later than expected. Try again.',
 	];
 	async row1Changed(tiles: string) {
+		this.retrySeed = -1;
+		this.offerRetry = false;
+
 		let pi = this.patterns.getPatternInfo(tiles);
 		// It is possible, though unlikely, that two pre-computed patterns share the same first row.
 		// In most cases, we'll just tell the user we don't know when RNG was initialized.
@@ -96,8 +107,32 @@ export class Step6Component extends StepComponent {
 			this.isGood = this.desiredRow1.startsWith(tiles);
 			if (this.isGood)
 				this.feedback = 'This is the correct tile pattern.';
-			else
+			else {
 				this.feedback = this._feedbacks[pi.match.seconds + 1];
+
+				// Originally I was going to only suggest getting a new date/time after getting the same
+				// wrong seed 3+ times. But I think that is likely to not work since users may decide
+				// not to re-enter the same incorrect tile pattern when they've seen it before.
+				// Because why would they? They already know it's wrong.
+				if (pi.match.seconds === 0)
+					this.retrySeed = pi.match.seed;
+			}
 		}
+	}
+
+	calculateNewTime() {
+		// get RNG params for new seed
+		let rngParams = searchForSeeds([this.retrySeed], this.guide.paramsRange!);
+		if (rngParams.length !== 1) {
+			this.dialog.open(PopupDialogComponent, {
+				data: {
+					message: ['Something went wrong and we couldn\'t determine RNG params. (this should never happen)'],
+				}
+			});
+		}
+
+		// use them and go back
+		this.guide.expectedParams = rngParams[0];
+		this.guide.previous();
 	}
 }

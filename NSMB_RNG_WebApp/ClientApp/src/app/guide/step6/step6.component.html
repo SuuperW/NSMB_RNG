@@ -22,3 +22,16 @@
 		Review instructions for how to manipulate RNG during attempts <a [routerLink]="['/in-run']">here</a>.
 	</p>
 </div>
+
+<div [hidden]="this.retrySeed == -1">
+	<p>Did you get this pattern 3+ times?</p>
+	<button class="btn-primary" (click)="this.offerRetry = true">Yes</button>
+	<div [hidden]="!this.offerRetry">
+		<p>
+			Each pattern is associated with some RNG params. The RNG params used to calculate RNG initialization time came from the patterns you entered in a previous step.<br />
+			Since this pattern is apparently more common, it may be helpful to calculate a new RNG initialization time using these RNG params instead.<br />
+			This may help you get the right pattern if you're having trouble getting it with the current time.
+		</p>
+		<button id="newtime" class="btn-primary" (click)="calculateNewTime()">Get new time</button>
+	</div>
+</div>

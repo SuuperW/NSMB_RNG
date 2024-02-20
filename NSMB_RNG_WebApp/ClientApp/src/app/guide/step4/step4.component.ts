@@ -11,7 +11,7 @@ import { WorkerService } from '../../worker.service';
 import { PopupDialogComponent } from '../../popup-dialog/popup-dialog.component';
 import { PrecomputedPatterns } from '../precomputed-patterns';
 import { getRow1, getRow2 } from '../../functions/tiles';
-import { RngParamsSearch, RngParamsSearchResultManager, SearchInputs } from '../rng-params-search-result-manager';
+import { RngParamsSearchResultManager, SearchInputs } from '../rng-params-search-result-manager';
 import { GuideComponent } from '../guide.component';
 
 type ProcessingInputs = {

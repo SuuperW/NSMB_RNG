@@ -3,7 +3,6 @@ import { StepComponent } from '../step';
 import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { WorkerService } from '../../worker.service';
 import { RngParams } from '../../functions/rng-params-search';
-import { SeedCalculator } from '../../seed-calculator';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { PopupDialogComponent } from '../../popup-dialog/popup-dialog.component';
 
@@ -63,7 +62,6 @@ export class Step5Component extends StepComponent {
 		const status = 'Finding date and time for RNG manip...'
 		this.addProgress(status);
 		let params: RngParams = this.guide.expectedParams!;
-		params.datetime = new Date(params.datetime);
 		let result = await this.worker.searchForTime(this.form.value.route == 'normal' ? normalSeeds : miniSeeds, params);
 
 		if (result) {
