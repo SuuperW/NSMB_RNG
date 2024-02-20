@@ -59,7 +59,7 @@ export class Step5Component extends StepComponent {
 
 		this.disableForm();
 		this.errorStatus = 'Please wait';
-		const status = 'Finding date and time for RNG manip...'
+		const status = 'Finding date and time for RNG manip... this may take a while'
 		this.addProgress(status);
 		let params: RngParams = this.guide.expectedParams!;
 		let result = await this.worker.searchForTime(this.form.value.route == 'normal' ? normalSeeds : miniSeeds, params);
