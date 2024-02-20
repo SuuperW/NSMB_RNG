@@ -67,6 +67,7 @@ export class Step5Component extends StepComponent {
 		if (result) {
 			this.guide.expectedParams!.datetime = result;
 			this.guide.paramsRange!.datetime = result;
+			localStorage.setItem('manipDatetime', `${result.toDateString()} ${result.toLocaleTimeString()}`);
 
 			localStorage.setItem('route', this.form.value.route!);
 			this.errorStatus = undefined;
