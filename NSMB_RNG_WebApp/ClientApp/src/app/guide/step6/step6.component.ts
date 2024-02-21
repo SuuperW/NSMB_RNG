@@ -120,6 +120,18 @@ export class Step6Component extends StepComponent {
 		}
 	}
 
+	tileClick(letter: string) {
+		let control = this.form.controls.row1Input;
+		control.setValue((control.value ?? '') + letter);
+	}
+	backspace() {
+		let control = this.form.controls.row1Input;
+		control.setValue(control.value?.substring(0, control.value.length - 1) ?? '');
+	}
+	clearTiles() {
+		this.form.controls.row1Input.setValue('');
+	}
+
 	calculateNewTime() {
 		// get RNG params for new seed
 		let rngParams = searchForSeeds([this.retrySeed], this.guide.paramsRange!);
