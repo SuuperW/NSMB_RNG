@@ -102,6 +102,8 @@ export class Step4Component extends StepComponent {
 			minTimer0: 0,
 			maxTimer0: 0,
 		});
+
+		// Until we find RNG params for this user, auto-complete will be based on RNG params for all consoles.
 		this.knownPatterns = new PrecomputedPatterns();
 		this.knownSearchParams = [];
 		for (let kp of knownParams) {
@@ -131,11 +133,15 @@ export class Step4Component extends StepComponent {
 			});
 			return;
 		}
+		let hadAnyMatches = this.resultManager.totalMatchedPatterns !== 0;
+		let oldRange = hadAnyMatches ? this.resultManager.getSearchParams() : undefined;
 
+		// We clear the tile pattern input, but first record them so they aren't lost before processing.
 		let pi = this.getProcessingInputs();
 		this.form.controls.row1Input.setValue('');
 		this.form.controls.row2Input.setValue('');
 
+		// Process this tile pattern submission
 		this.submitCount++;
 		const status = 'Finding RNG initialization parameters...';
 		this.addProgress(status);
@@ -200,6 +206,7 @@ export class Step4Component extends StepComponent {
 			];
 		}
 
+		// See if we know which RNG params to use, and potentially tell the user something.
 		let paramsToUse = this.resultManager.getMostLikelyResult();
 		if (paramsToUse) {
 			// If the user keeps getting the same pattern over and over, and it looks good, and it isn't from previously known RNG params.
@@ -220,11 +227,25 @@ export class Step4Component extends StepComponent {
 		} else if (this.showed4InARowMessage && this.resultManager.isFalsePositiveSuspected()) {
 			message = ['There are two possible RNG params, but we can\'t tell which one is correct. Go back to the previous step, choose another date/time, and try again.'];
 		}
-
 		if (message) {
 			this.dialog.open(PopupDialogComponent, {
 				data: { message: message }
 			});
+		}
+
+		// Potentially update auto-complete list
+		let update = !hadAnyMatches && this.resultManager.totalMatchedPatterns === 1;
+		if (!update && oldRange) {
+			let middleOld = (oldRange.minTimer0 + oldRange.maxTimer0) / 2;
+			let newRange = this.resultManager.getSearchParams()!;
+			update = middleOld >= newRange.minTimer0 && middleOld <= newRange.maxTimer0;
+		}
+		if (update) {
+			this.knownPatterns = new PrecomputedPatterns();
+			let sp = this.resultManager.getSearchParams()!;
+			this.knownPatterns.addParams(sp, 1);
+			// this.knownSearchParams = []; Don't update. Used to search with known consoles' RNG params when submitted tile pattern has no matches.
+			// We keep them because there's a chance our current SearchParams comes from a false positive match.
 		}
 	}
 
