@@ -9,6 +9,7 @@ type dict = { [key: string]: any };
 export class WorkerWrapper {
 	private worker: Worker | undefined;
 	private resolvers: { [i: number]: ((value: any | PromiseLike<any>) => void) } = {};
+	private errorCatchers: { [i: number]: (reason?: any) => void } = {};
 	private lastId = 0;
 
 	constructor() {
@@ -18,8 +19,13 @@ export class WorkerWrapper {
 			// We inspect the ID and resolve the corresponding Promise.
 			this.worker.onmessage = ({ data }) => {
 				if (this.resolvers[data.id]) {
-					this.resolvers[data.id](data.data);
+					if (data.error)
+						this.errorCatchers[data.id](data.error);
+					else
+						this.resolvers[data.id](data.data);
+
 					delete this.resolvers[data.id];
+					delete this.errorCatchers[data.id];
 				} else {
 					throw 'Invalid id received from worker.';
 				}
@@ -33,8 +39,9 @@ export class WorkerWrapper {
 		// Create a Promise that we can resolve in the worker's onmessage handler.
 		let id = this.lastId;
 		let this2 = this;
-		let promise = new Promise<any>(function (resolve, _) {
+		let promise = new Promise<any>(function (resolve, err) {
 			this2.resolvers[id] = resolve;
+			this2.errorCatchers[id] = err;
 		});
 
 		// Send the message and await the response via our Promise.
@@ -126,8 +133,10 @@ export class WorkerWrapper {
 
 				// Set up promise that we'll resolve once work is complete
 				let resolvePromise: (value: Date | null) => void;
-				let promise = new Promise<Date | null>(function (resolve, _) {
+				let errorPromise: (reason?: any) => void;
+				let promise = new Promise<Date | null>(function (resolve, err) {
 					resolvePromise = resolve;
+					errorPromise = err;
 				});
 
 				// Function to start checking next year after searching current year finishes
@@ -151,7 +160,7 @@ export class WorkerWrapper {
 							}
 						}
 						attachThen(workers[workerId].searchForTime(seeds, params, cYear, ++cYear), workerId);
-					});
+					}).catch((r) => { foundTime = new Date(); errorPromise(r); });
 				}
 
 				// Start all workers

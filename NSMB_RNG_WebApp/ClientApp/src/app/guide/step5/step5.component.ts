@@ -62,24 +62,33 @@ export class Step5Component extends StepComponent {
 		const status = 'Finding date and time for RNG manip... this may take a while'
 		this.addProgress(status);
 		let params: RngParams = this.guide.expectedParams!;
-		let result = await this.worker.searchForTime(this.form.value.route == 'normal' ? normalSeeds : miniSeeds, params);
+		try {
+			let result = await this.worker.searchForTime(this.form.value.route == 'normal' ? normalSeeds : miniSeeds, params);
 
-		if (result) {
-			this.guide.expectedParams!.datetime = result;
-			this.guide.paramsRange!.datetime = result;
-			localStorage.setItem('manipDatetime', `${result.toDateString()} ${result.toLocaleTimeString()}`);
+			if (result) {
+				this.guide.expectedParams!.datetime = result;
+				this.guide.paramsRange!.datetime = result;
+				localStorage.setItem('manipDatetime', `${result.toDateString()} ${result.toLocaleTimeString()}`);
 
-			localStorage.setItem('route', this.form.value.route!);
-			this.errorStatus = undefined;
-			this.done = true;
-		} else {
+				localStorage.setItem('route', this.form.value.route!);
+				this.errorStatus = undefined;
+				this.done = true;
+			} else {
+				this.dialog.open(PopupDialogComponent, {
+					data: {
+						message: ['It seems there aren\'t any datetimes that work.',
+							'It\'s very unlikely anyone will see this message unless something is broken.',
+						],
+					}
+				});
+			}
+		} catch (ex) {
 			this.dialog.open(PopupDialogComponent, {
 				data: {
-					message: ['It seems there aren\'t any datetimes that work.',
-						'It\'s very unlikely anyone will see this message unless something is broken.',
-					],
+					message: [`Error: ${ex}`, 'Please try again.'],
 				}
 			});
+			this.form.controls.route.setValue(null);
 		}
 
 		this.enableForm();
