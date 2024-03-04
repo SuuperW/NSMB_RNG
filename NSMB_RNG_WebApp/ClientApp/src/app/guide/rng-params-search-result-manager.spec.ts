@@ -159,4 +159,19 @@ describe('RngParamsSearchResultManager', () => {
 		assert(manager.getMostLikelyResult() === undefined);
 		assert(manager.isFalsePositiveSuspected());
 	});
+
+	it('does not give search params after a result that has no matches', () => {
+		assert(manager.getSearchParams() === null, 'Not having recommended search params should be indicated by a null value, but a non-null value was returned before any results were submitted.');
+
+		let result = {
+			result: [],
+			seeds: [0],
+			row1: '',
+			row2: '',
+			offsetUsed: 0,
+		};
+		manager.submitResult(result);
+
+		assert(manager.getSearchParams() === null, 'Search params were returned after only a bad (matchless) result was submitted. There is no information to base a range on, so no range should be returned.');
+	});
 });

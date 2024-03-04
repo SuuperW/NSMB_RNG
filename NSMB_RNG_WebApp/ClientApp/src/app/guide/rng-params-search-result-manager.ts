@@ -197,7 +197,7 @@ export class RngParamsSearchResultManager {
 	}
 
 	getSearchParams() {
-		if (this.results.length == 0)
+		if (this.range.maxTimer0 === -1)
 			return null;
 		else {
 			let sp = new SearchParams(this.range);
