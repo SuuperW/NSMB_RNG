@@ -299,7 +299,7 @@ export class Step4Component extends StepComponent {
 				this.dialog.open(PopupDialogComponent, {
 					data: {
 						message: [
-							`RNG was initialized 1 second too ${secondsOffset == 1 ? 'late' : 'early'}.`,
+							`RNG was initialized at ${rngParams[0].datetime.toLocaleTimeString()}, 1 second too ${secondsOffset == 1 ? 'late' : 'early'}.`,
 							`It\'s OK this time, but for best results try to get RNG to intialize at ${this.targetDateTime} in the future.`,
 						]
 					}

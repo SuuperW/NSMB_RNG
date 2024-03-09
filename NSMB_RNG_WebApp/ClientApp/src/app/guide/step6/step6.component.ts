@@ -68,9 +68,9 @@ export class Step6Component extends StepComponent {
 	}
 
 	private _feedbacks = [
-		'This tile pattern came from RNG initializing 1 second earlier than expected. Try again.',
+		'RNG initialized at {t}, 1 second too early. Try again.',
 		'This tile pattern isn\'t what you want, but is expected and RNG was initialized at the right time. Try again.',
-		'This tile pattern came from RNG initializing 1 second later than expected. Try again.',
+		'RNG initialized at {t}, 1 second too late. Try again.',
 	];
 	async row1Changed(tiles: string) {
 		this.retrySeed = -1;
@@ -108,7 +108,9 @@ export class Step6Component extends StepComponent {
 			if (this.isGood)
 				this.feedback = 'This is the correct tile pattern.';
 			else {
-				this.feedback = this._feedbacks[pi.match.seconds + 1];
+				let newTime = new Date(this.guide.expectedParams!.datetime);
+				newTime.setSeconds(newTime.getSeconds() + pi.match.seconds);
+				this.feedback = this._feedbacks[pi.match.seconds + 1].replace('{t}', newTime.toLocaleTimeString());
 
 				// Originally I was going to only suggest getting a new date/time after getting the same
 				// wrong seed 3+ times. But I think that is likely to not work since users may decide
