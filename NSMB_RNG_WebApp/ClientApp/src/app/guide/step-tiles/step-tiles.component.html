@@ -20,23 +20,23 @@
 <br />
 <p>Here are the letters for each tile. You can type or click the tile images below to input your pattern.</p>
 <div class="tileLetters">
-	<div class="tileWithLetter">B <img src="assets/tileB.png" class="tileImage" (click)="tileClick('b')" /></div>
-	<div class="tileWithLetter">C <img src="assets/tileC.png" class="tileImage" (click)="tileClick('c')" /></div>
-	<div class="tileWithLetter">E <img src="assets/tileE.png" class="tileImage" (click)="tileClick('e')" /></div>
-	<div class="tileWithLetter">I <img src="assets/tileI.png" class="tileImage" (click)="tileClick('i')" /></div>
-	<div class="tileWithLetter">P <img src="assets/tileP.png" class="tileImage" (click)="tileClick('p')" /></div>
-	<div class="tileWithLetter">S <img src="assets/tileS.png" class="tileImage" (click)="tileClick('s')" /></div>
+	<div class="tileWithLetter">B <img src="assets/tileB.png" alt="Bean tile" class="tileImage" (click)="tileClick('b')" /></div>
+	<div class="tileWithLetter">C <img src="assets/tileC.png" alt="Cloud tile" class="tileImage" (click)="tileClick('c')" /></div>
+	<div class="tileWithLetter">E <img src="assets/tileE.png" alt="Empty tile" class="tileImage" (click)="tileClick('e')" /></div>
+	<div class="tileWithLetter">I <img src="assets/tileI.png" alt="Islands tile" class="tileImage" (click)="tileClick('i')" /></div>
+	<div class="tileWithLetter">P <img src="assets/tileP.png" alt="Porkchop tile" class="tileImage" (click)="tileClick('p')" /></div>
+	<div class="tileWithLetter">S <img src="assets/tileS.png" alt="Submarine tile" class="tileImage" (click)="tileClick('s')" /></div>
 </div>
 <br />
 
 <ng-container [formGroup]="form">
 	<div class="inline">
 		<label for="row1Input">First row</label>
-		<input id="row1Input" placeholder="first row tiles (7)" formControlName="row1Input" />
+		<input id="row1Input" type="text" placeholder="first row tiles (7)" formControlName="row1Input" />
 	</div>
 	<div class="inline">
 		<label for="row2Input">Second row</label>
-		<input id="row2Input" placeholder="second row tiles (11)" formControlName="row2Input" />
+		<input id="row2Input" type="text" placeholder="second row tiles (11)" formControlName="row2Input" />
 	</div>
 
 	<app-tile-display [tileCount]="7" [tiles]="this.form.value.row1Input" (tilesOut)="row1Changed($event)"></app-tile-display>
@@ -49,8 +49,8 @@
 <br />
 
 
-<button class="btn-primary" (click)="submit()">Submit</button>
-<p>Patterns submitted: {{ submitCount }}<p>
+<button class="btn-primary" type="button" (click)="submit()">Submit</button>
+<p>Patterns submitted: {{ submitCount }}</p>
 <p>
 	After submitting your tile pattern, reboot the console and get another tile pattern using the same process.<br />
 	Submit every tile pattern you get, even if it is exactly the same as one you already submitted.<br />

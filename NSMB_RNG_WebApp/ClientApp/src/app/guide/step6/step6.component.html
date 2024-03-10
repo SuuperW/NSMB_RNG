@@ -6,19 +6,19 @@
 </p>
 
 <div class="tileLetters">
-	<div class="tileWithLetter">B <img src="assets/tileB.png" class="tileImage" (click)="tileClick('b')" /></div>
-	<div class="tileWithLetter">C <img src="assets/tileC.png" class="tileImage" (click)="tileClick('c')" /></div>
-	<div class="tileWithLetter">E <img src="assets/tileE.png" class="tileImage" (click)="tileClick('e')" /></div>
-	<div class="tileWithLetter">I <img src="assets/tileI.png" class="tileImage" (click)="tileClick('i')" /></div>
-	<div class="tileWithLetter">P <img src="assets/tileP.png" class="tileImage" (click)="tileClick('p')" /></div>
-	<div class="tileWithLetter">S <img src="assets/tileS.png" class="tileImage" (click)="tileClick('s')" /></div>
+	<div class="tileWithLetter">B <img src="assets/tileB.png" alt="Bean tile" class="tileImage" (click)="tileClick('b')" /></div>
+	<div class="tileWithLetter">C <img src="assets/tileC.png" alt="Cloud tile" class="tileImage" (click)="tileClick('c')" /></div>
+	<div class="tileWithLetter">E <img src="assets/tileE.png" alt="Empty tile" class="tileImage" (click)="tileClick('e')" /></div>
+	<div class="tileWithLetter">I <img src="assets/tileI.png" alt="Islands tile" class="tileImage" (click)="tileClick('i')" /></div>
+	<div class="tileWithLetter">P <img src="assets/tileP.png" alt="Porkchop tile" class="tileImage" (click)="tileClick('p')" /></div>
+	<div class="tileWithLetter">S <img src="assets/tileS.png" alt="Submarinetile" class="tileImage" (click)="tileClick('s')" /></div>
 </div>
 
 <ng-container [formGroup]="form">
 	<label for="row1Input">First row</label>
-	<input id="row1Input" placeholder="first row tiles (7)" formControlName="row1Input" />
-	<button class="btn-primary" (click)="backspace()"><</button>
-	<button class="btn-primary" (click)="clearTiles()">Clear</button>
+	<input id="row1Input" type="text" placeholder="first row tiles (7)" formControlName="row1Input" />
+	<button class="btn-primary" type="button" (click)="backspace()">&lt;</button>
+	<button class="btn-primary" type="button" (click)="clearTiles()">Clear</button>
 
 	<app-tile-display [tileCount]="7" [tiles]="this.form.value.row1Input" (tilesOut)="row1Changed($event)"></app-tile-display>
 	<app-tile-display [tileCount]="11" [tiles]="this.row2"></app-tile-display>
@@ -37,13 +37,13 @@
 
 <div [hidden]="this.retrySeed == -1">
 	<p>Did you get this pattern 3+ times?</p>
-	<button class="btn-primary" [hidden]="this.offerRetry" (click)="this.offerRetry = true">Yes</button>
+	<button class="btn-primary" type="button" [hidden]="this.offerRetry" (click)="this.offerRetry = true">Yes</button>
 	<div [hidden]="!this.offerRetry">
 		<p>
 			Each pattern is associated with some RNG params. The RNG params used to calculate RNG initialization time came from the patterns you entered in a previous step.<br />
 			Since this pattern is apparently more common, it may be helpful to calculate a new RNG initialization time using these RNG params instead.<br />
 			This may help you get the right pattern if you're having trouble getting it with the current time.
 		</p>
-		<button id="newtime" class="btn-primary" (click)="calculateNewTime()">Get new time</button>
+		<button id="newtime" class="btn-primary" type="button" (click)="calculateNewTime()">Get new time</button>
 	</div>
 </div>

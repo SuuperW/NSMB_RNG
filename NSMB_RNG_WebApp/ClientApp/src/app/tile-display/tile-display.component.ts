@@ -26,11 +26,10 @@ export class TileDisplayComponent {
 		return this._tileCount;
 	}
 
-	private _tiles: string = '';
+	_tiles: string = '';
 	@Input() set tiles(value: string | null | undefined) {
 		if (!value)
 			value = '';
-		this._tiles = value;
 
 		const validChars: string[] = ['B', 'C', 'E', 'I', 'P', 'S'];
 		let strIndex: number = 0;
@@ -63,8 +62,10 @@ export class TileDisplayComponent {
 			}
 		}
 
-		if (valid)
+		if (valid) {
 			this.tilesOut.emit(outTiles);
+			this._tiles = outTiles;
+		}
 		else
 			this.tilesOut.emit('');
 	}
