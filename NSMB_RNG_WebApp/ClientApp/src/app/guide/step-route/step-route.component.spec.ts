@@ -1,21 +1,21 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { Step5Component } from './step5.component';
+import { StepRouteComponent } from './step-route.component';
 import { GuideComponent } from '../guide.component';
 
 describe('Step5Component', () => {
-	let component: Step5Component;
-	let fixture: ComponentFixture<Step5Component>;
+	let component: StepRouteComponent;
+	let fixture: ComponentFixture<StepRouteComponent>;
 
 	beforeEach(async () => {
 		await TestBed.configureTestingModule({
-			imports: [ Step5Component ],
+			imports: [ StepRouteComponent ],
 			providers: [{ provide: GuideComponent, useFactory: () => { return g; } }]
 		})
 			.compileComponents();
 
 		let g = TestBed.createComponent(GuideComponent).componentInstance;
-		fixture = TestBed.createComponent(Step5Component);
+		fixture = TestBed.createComponent(StepRouteComponent);
 		component = fixture.componentInstance;
 		fixture.detectChanges();
 	});

@@ -38,8 +38,8 @@ let knownParams = [
 @Component({
 	selector: 'app-step4',
 	standalone: true,
-	templateUrl: './step4.component.html',
-	styleUrls: ['./step4.component.css'],
+	templateUrl: './step-tiles.component.html',
+	styleUrls: ['./step-tiles.component.css'],
 	imports: [
 		ReactiveFormsModule,
 		TileDisplayComponent,
@@ -48,7 +48,7 @@ let knownParams = [
 		MatDialogModule,
 	],
 })
-export class Step4Component extends StepComponent {
+export class StepTilesComponent extends StepComponent {
 	seedService: SeedTileCalculatorService = inject(SeedTileCalculatorService);
 	worker: WorkerService = inject(WorkerService);
 	http: HttpClient = inject(HttpClient);

@@ -1,21 +1,21 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { Step2Component } from './step2.component';
+import { StepMacComponent } from './step-mac.component';
 import { GuideComponent } from '../guide.component';
 
 describe('Step2Component', () => {
-	let component: Step2Component;
-	let fixture: ComponentFixture<Step2Component>;
+	let component: StepMacComponent;
+	let fixture: ComponentFixture<StepMacComponent>;
 
 	beforeEach(async () => {
 		await TestBed.configureTestingModule({
-			imports: [ Step2Component ],
+			imports: [ StepMacComponent ],
 			providers: [{ provide: GuideComponent, useFactory: () => { return g; } }]
 		})
 		.compileComponents();
 
 		let g = TestBed.createComponent(GuideComponent).componentInstance;
-		fixture = TestBed.createComponent(Step2Component);
+		fixture = TestBed.createComponent(StepMacComponent);
 		component = fixture.componentInstance;
 		fixture.detectChanges();
 	});

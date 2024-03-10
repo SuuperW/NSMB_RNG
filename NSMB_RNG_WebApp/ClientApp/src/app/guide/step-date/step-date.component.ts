@@ -5,13 +5,13 @@ import { StepComponent } from '../step';
 @Component({
 	selector: 'app-step3',
 	standalone: true,
-	templateUrl: './step3.component.html',
-	styleUrls: ['./step3.component.css'],
+	templateUrl: './step-date.component.html',
+	styleUrls: ['./step-date.component.css'],
 	imports: [
 		ReactiveFormsModule,
 	],
 })
-export class Step3Component extends StepComponent {
+export class StepDateComponent extends StepComponent {
 	form = new FormGroup({
 		dtInput: new FormControl(localStorage.getItem('datetime') ?? this.dateTimeToString(null), (c: AbstractControl) => {
 			if (this.form === undefined) return { err: 'not initialized' }; // this gets called once before component initialization finishes

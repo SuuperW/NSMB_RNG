@@ -9,14 +9,14 @@ import { PopupDialogComponent } from '../../popup-dialog/popup-dialog.component'
 @Component({
 	selector: 'app-step5',
 	standalone: true,
-	templateUrl: './step5.component.html',
-	styleUrls: ['./step5.component.css'],
+	templateUrl: './step-route.component.html',
+	styleUrls: ['./step-route.component.css'],
 	imports: [
 		ReactiveFormsModule,
 		MatDialogModule,
 	],
 })
-export class Step5Component extends StepComponent {
+export class StepRouteComponent extends StepComponent {
 	worker: WorkerService = inject(WorkerService);
 	dialog: MatDialog = inject(MatDialog);
 

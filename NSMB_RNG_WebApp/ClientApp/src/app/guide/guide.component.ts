@@ -4,11 +4,11 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 
 import { ComponentContainer } from '../component-container';
 import { StepComponent } from './step';
-import { Step1Component } from './step1/step1.component';
-import { Step2Component } from './step2/step2.component';
-import { Step3Component } from './step3/step3.component';
-import { Step4Component } from './step4/step4.component';
-import { Step5Component } from './step5/step5.component';
+import { StepConsoleComponent } from './step-console/step-console.component';
+import { StepMacComponent } from './step-mac/step-mac.component';
+import { StepDateComponent } from './step-date/step-date.component';
+import { StepTilesComponent } from './step-tiles/step-tiles.component';
+import { StepRouteComponent } from './step-route/step-route.component';
 import { Step6Component } from './step6/step6.component';
 import { CommonModule } from '@angular/common';
 import { Step0Component } from './step0/step0.component';
@@ -25,7 +25,7 @@ interface TI {
 	templateUrl: './guide.component.html',
 	styleUrls: ['./guide.component.css'],
 	imports: [		
-		Step1Component,
+		StepConsoleComponent,
 		ComponentContainer,
 		CommonModule,
 		MatDialogModule,
@@ -33,8 +33,8 @@ interface TI {
 })
 export class GuideComponent implements AfterViewInit {
 	stepComponentList: TI[] = [
-		Step0Component, Step1Component, Step2Component, Step3Component, Step4Component,
-		Step5Component, Step6Component,
+		Step0Component, StepConsoleComponent, StepMacComponent, StepDateComponent, StepTilesComponent,
+		StepRouteComponent, Step6Component,
 	];
 
 	dialog: MatDialog = inject(MatDialog);

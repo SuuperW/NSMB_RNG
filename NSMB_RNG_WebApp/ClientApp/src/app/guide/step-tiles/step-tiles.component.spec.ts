@@ -1,15 +1,15 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpClient } from '@angular/common/http';
 
-import { Step4Component } from './step4.component';
+import { StepTilesComponent } from './step-tiles.component';
 import { assert } from '../../../test/assert';
 import { MockHttpClient } from '../../../test/mockHttpClient';
 import { nextState, previousState } from '../../functions/rng';
 import { GuideComponent } from '../guide.component';
 
 describe('Step4Component', () => {
-	let component: Step4Component;
-	let fixture: ComponentFixture<Step4Component>;
+	let component: StepTilesComponent;
+	let fixture: ComponentFixture<StepTilesComponent>;
 	let mockHttpClient: MockHttpClient;
 
 	beforeEach(async () => {
@@ -19,7 +19,7 @@ describe('Step4Component', () => {
 		localStorage.setItem('mac', mac);
 
 		await TestBed.configureTestingModule({
-			imports: [Step4Component],
+			imports: [StepTilesComponent],
 			providers: [{ provide: GuideComponent, useFactory: () => { return g; } }]
 		})
 			.compileComponents();
@@ -31,7 +31,7 @@ describe('Step4Component', () => {
 
 		let g = TestBed.createComponent(GuideComponent).componentInstance;
 		g.targetDate = new Date(dtStr);
-		fixture = TestBed.createComponent(Step4Component);
+		fixture = TestBed.createComponent(StepTilesComponent);
 		component = fixture.componentInstance;
 		fixture.detectChanges();
 

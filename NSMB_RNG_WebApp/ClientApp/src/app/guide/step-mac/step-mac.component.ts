@@ -22,14 +22,14 @@ let NintendoMacPrefixes = new Set([
 @Component({
 	selector: 'app-step2',
 	standalone: true,
-	templateUrl: './step2.component.html',
-	styleUrls: ['./step2.component.css'],
+	templateUrl: './step-mac.component.html',
+	styleUrls: ['./step-mac.component.css'],
 	imports: [
 		ReactiveFormsModule,
 		MatDialogModule,
 	],
 })
-export class Step2Component extends StepComponent {
+export class StepMacComponent extends StepComponent {
 	dialog: MatDialog = inject(MatDialog);
 
 	lastValidation: string = '';
