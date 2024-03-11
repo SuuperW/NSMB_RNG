@@ -3,7 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { StepRouteComponent } from './step-route.component';
 import { GuideComponent } from '../guide.component';
 
-describe('Step5Component', () => {
+describe('StepRouteComponent', () => {
 	let component: StepRouteComponent;
 	let fixture: ComponentFixture<StepRouteComponent>;
 

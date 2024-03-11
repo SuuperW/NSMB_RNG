@@ -1,21 +1,21 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { StepConsoleComponent } from './step-console.component';
+import { StepTimeComponent } from './step-time.component';
 import { GuideComponent } from '../guide.component';
 
-describe('StepConsoleComponent', () => {
-	let component: StepConsoleComponent;
-	let fixture: ComponentFixture<StepConsoleComponent>;
+describe('StepTimeComponent', () => {
+	let component: StepTimeComponent;
+	let fixture: ComponentFixture<StepTimeComponent>;
 
 	beforeEach(async () => {
 		await TestBed.configureTestingModule({
-			imports: [StepConsoleComponent],
+			imports: [StepTimeComponent],
 			providers: [{ provide: GuideComponent, useFactory: () => { return g; } }]
 		})
-			.compileComponents();
+		.compileComponents();
+		
 		let g = TestBed.createComponent(GuideComponent).componentInstance;
-
-		fixture = TestBed.createComponent(StepConsoleComponent);
+		fixture = TestBed.createComponent(StepTimeComponent);
 		component = fixture.componentInstance;
 		fixture.detectChanges();
 	});

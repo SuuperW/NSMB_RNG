@@ -14,6 +14,7 @@ import { CommonModule } from '@angular/common';
 import { Step0Component } from './step0/step0.component';
 import { PopupDialogComponent } from '../popup-dialog/popup-dialog.component';
 import { RngParams, SearchParams } from '../functions/rng-params-search';
+import { StepTimeComponent } from './step-time/step-time.component';
 
 interface TI {
 	new(g: GuideComponent): StepComponent
@@ -33,7 +34,8 @@ interface TI {
 })
 export class GuideComponent implements AfterViewInit {
 	stepComponentList: TI[] = [
-		Step0Component, StepConsoleComponent, StepMacComponent, StepDateComponent, StepTilesComponent,
+		Step0Component, StepConsoleComponent, StepMacComponent,
+		StepDateComponent, StepTimeComponent, StepTilesComponent,
 		StepRouteComponent, Step6Component,
 	];
 
@@ -49,7 +51,6 @@ export class GuideComponent implements AfterViewInit {
 	isInProgress: boolean = false;
 	progressStatus: string[] = [];
 
-	targetDate?: Date;
 	paramsRange?: SearchParams;
 	expectedParams?: RngParams;
 

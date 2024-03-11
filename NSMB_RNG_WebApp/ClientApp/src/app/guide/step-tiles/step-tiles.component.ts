@@ -21,7 +21,6 @@ type ProcessingInputs = {
 	mac: string,
 	consoleType: string,
 	date: Date,
-	isRedo?: boolean,
 }
 
 let knownParams = [
@@ -62,7 +61,7 @@ export class StepTilesComponent extends StepComponent {
 
 	targetDateTime: string;
 	date: Date;
-	generalInputs: { mac: string, consoleType: string, date: Date }
+	generalInputs: { mac: string, consoleType: string }
 
 	seeds: number[] = [];
 	lastFirstRow: string = '';
@@ -77,15 +76,18 @@ export class StepTilesComponent extends StepComponent {
 	knownPatterns: PrecomputedPatterns;
 	knownSearchParams: SearchParams[];
 	requiredFullSearch: boolean = false;
-	showed4InARowMessage: boolean = false;
+	displayedBadPatternsMessage: boolean = false;
 
 	resultManager: RngParamsSearchResultManager;
 
 	constructor(guide: GuideComponent) {
 		super(guide);
 
-		if (this.guide.targetDate) {
-			this.date = this.guide.targetDate;
+		let dateStr = localStorage.getItem('date');
+		let secStr = localStorage.getItem('seconds');
+		if (dateStr && secStr) {
+			this.date = new Date(`${dateStr} 01:45:00`);
+			this.date.setSeconds(parseInt(secStr));
 			this.targetDateTime = this.date.toLocaleString();
 		} else {
 			this.date = new Date();
@@ -93,9 +95,29 @@ export class StepTilesComponent extends StepComponent {
 		}
 		this.resultManager = new RngParamsSearchResultManager(this.date, this.http);
 
-		let is3DS = localStorage.getItem('consoleType') == '3DS';
-		let basicParams = new SearchParams({
+		this.generalInputs = {
 			mac: localStorage.getItem('mac')!,
+			consoleType: localStorage.getItem('consoleType')!,
+		}
+
+		// These properties are set in updateAutocomplete, but code analyzer is dumb.
+		this.knownPatterns = null!;
+		this.knownSearchParams = null!;
+		this.updateAutocomplete();
+	}
+
+	private updateAutocomplete() {
+		let sp = this.resultManager.getSearchParams(this.date);
+		if (sp) {
+			this.knownPatterns = new PrecomputedPatterns();
+			this.knownPatterns.addParams(sp, 1);
+			return;
+		}
+
+		// Until we find RNG params for this user, auto-complete will be based on RNG params for all consoles.
+		let is3DS = this.generalInputs.consoleType == '3DS';
+		let basicParams = new SearchParams({
+			mac: this.generalInputs.mac,
 			is3DS: is3DS,
 			datetime: this.date,
 			buttons: 0,
@@ -103,7 +125,6 @@ export class StepTilesComponent extends StepComponent {
 			maxTimer0: 0,
 		});
 
-		// Until we find RNG params for this user, auto-complete will be based on RNG params for all consoles.
 		this.knownPatterns = new PrecomputedPatterns();
 		this.knownSearchParams = [];
 		for (let kp of knownParams) {
@@ -116,12 +137,10 @@ export class StepTilesComponent extends StepComponent {
 			this.knownPatterns.addParams(sp, 1);
 			this.knownSearchParams.push(sp);
 		}
+	}
 
-		this.generalInputs = {
-			mac: localStorage.getItem('mac')!,
-			consoleType: localStorage.getItem('consoleType')!,
-			date: new Date(this.date),
-		}
+	dateToTime(date: Date): string {
+		return `${date.getHours()}:${date.getMinutes().toString().padStart(2, '0')}`;
 	}
 
 	async submit() {
@@ -133,34 +152,52 @@ export class StepTilesComponent extends StepComponent {
 			});
 			return;
 		}
-		let hadAnyMatches = this.resultManager.totalMatchedPatterns !== 0;
-		let oldRange = hadAnyMatches ? this.resultManager.getSearchParams() : undefined;
+		this.submitCount++;
 
 		// We clear the tile pattern input, but first record them so they aren't lost before processing.
 		let pi = this.getProcessingInputs();
 		this.form.controls.row1Input.setValue('');
 		this.form.controls.row2Input.setValue('');
 
+		// Update time and auto-complete list for next tile pattern
+		this.date.setMinutes(this.date.getMinutes() - 1);
+		this.targetDateTime = this.date.toLocaleString();
+		this.updateAutocomplete();
+
+		// This is important. User must not miss this fact.
+		if (this.resultManager.submitCount === 0) {
+			this.dialog.open(PopupDialogComponent, {
+				data: {
+					message: [
+						`The time you need to set is now ${this.dateToTime(this.date)}. It will change every time you submit a tile pattern!`,
+					],
+				}
+			});
+		}
+
+		let oldRange = this.resultManager.getSearchParams(new Date());
+
 		// Process this tile pattern submission
-		this.submitCount++;
 		const status = 'Finding RNG initialization parameters...';
 		this.addProgress(status);
-		let anyFound = this.resultManager.totalMatchedPatterns > 0;
+		let anyFound = this.resultManager.distinctParamsCount > 0;
 		let result = await this.processTilePattern(pi);
 		if (!anyFound && result) {
 			// On the first success, go back to failed patterns to check +/-1 second
-			for (let i of this.resultManager.getInputsWithNoFoundRngParams()) {
+			for (let i of this.resultManager.emptySearches) {
 				await this.processTilePattern(this.getProcessingInputs(i), 0, false);
 			}
 		}
 		this.removeProgress(status);
 
 		let message: string[] | undefined = undefined;
-		if (this.resultManager.suspectUserErrorOrStrangeConsole()) {
+		if (this.resultManager.suspectUserErrorOrStrangeConsole() && !this.displayedBadPatternsMessage) {
+			this.displayedBadPatternsMessage = true;
+
 			const statusBadTime = 'Checking +1/-1 second for all patterns... (this may take a long time)';
 			this.addProgress(statusBadTime);
 			let promise: Promise<boolean> = (async () => { return true })();
-			for (let i of this.resultManager.getInputsWithNoFoundRngParams()) {
+			for (let i of this.resultManager.emptySearches) {
 				promise = promise.then((v) => {
 					return this.processTilePattern(this.getProcessingInputs(i), -1);
 				})
@@ -182,50 +219,26 @@ export class StepTilesComponent extends StepComponent {
 			this.removeProgress(statusBadTime);
 
 			if (this.resultManager.suspectUserErrorOrStrangeConsole()) {
-				this.dialog.open(PopupDialogComponent, {
-					data: {
-						message: ['Unfortunately, we didn\'t find anything useful.',
-							'This might mean you incorrectly entered something. For example, you might have a typo in your mac address.',
-							'Or it might mean you\'re not following the correct process to collect tile patterns.', // TODO: Make and refer to detailed instructions + video.
-							'Or, there might be something that is affecting RNG that I don\'t know about. ' +
-							'If you need help, record a video of you viewing your MAC address, setting date and time, and getting a tile ' +
-							'pattern on your console. Send the video to @suuper on Discord and I\'ll see if I can figure out what the problem is.'
-						],
-					}
-				});
+				message = ['Unfortunately, we didn\'t find anything useful.',
+					'This might mean you incorrectly entered something. For example, you might have a typo in your mac address.',
+					'Or it might mean you\'re not following the correct process to collect tile patterns.', // TODO: Make and refer to detailed instructions + video.
+					'Or, there might be something that is affecting RNG that I don\'t know about. ' +
+					'If you need help, record a video of you viewing your MAC address, setting date and time, and getting a tile ' +
+					'pattern on your console. Send the video to @suuper on Discord and I\'ll see if I can figure out what the problem is.'
+				];
 			} else {
 				message = ['Good news! We found something potentially useful. Keep going.'];
 			}
 		}
 
-		if (this.resultManager.givenUp) {
-			message = [
-				'We found too many possible RNG params. Some of them are almost certainly wrong, and this app isn\'t designed to try to determine which is right.',
-				'Go back to the previous step, choose another date/time, and try again.',
-				'If you also get this message with a different date/time, let me know (@suuper on Discord) because that would mean the app is borken.',
-			];
-		}
-
 		// See if we know which RNG params to use, and potentially tell the user something.
 		let paramsToUse = this.resultManager.getMostLikelyResult();
 		if (paramsToUse) {
-			// If the user keeps getting the same pattern over and over, and it looks good, and it isn't from previously known RNG params.
-			if (this.resultManager.getDistinctParamsCount() == 1 && this.requiredFullSearch) {
-				if (this.resultManager.submitCount === 4) {
-					message = ['You got the same RNG params four times in a row. This is unusual: normally RNG is not this consistent.',
-						'We did find RNG params, and you may proceed to the next step. However, the results have a slight chance of being wrong.',
-						'I recommend you proceed to the next step, but keep in mind it might not work. If you end up being unable to get it working, then go back to the previous step, choose a different date/time, and try again.',
-					];
-				}
-			} else {
-				message = ['We have found everything we need! Go to the next step.'];
-			}
+			message = ['We have found everything we need! Go to the next step.'];
 
 			this.errorStatus = undefined;
-			this.guide.paramsRange = this.resultManager.getSearchParams()!;
+			this.guide.paramsRange = this.resultManager.getSearchParams(new Date())!;
 			this.guide.expectedParams = paramsToUse;
-		} else if (this.showed4InARowMessage && this.resultManager.isFalsePositiveSuspected()) {
-			message = ['There are two possible RNG params, but we can\'t tell which one is correct. Go back to the previous step, choose another date/time, and try again.'];
 		}
 		if (message) {
 			this.dialog.open(PopupDialogComponent, {
@@ -233,31 +246,20 @@ export class StepTilesComponent extends StepComponent {
 			});
 		}
 
-		// Potentially update auto-complete list
-		let update = !hadAnyMatches && this.resultManager.totalMatchedPatterns === 1;
-		if (!update && oldRange) {
-			let middleOld = (oldRange.minTimer0 + oldRange.maxTimer0) / 2;
-			let newRange = this.resultManager.getSearchParams()!;
-			update = middleOld >= newRange.minTimer0 && middleOld <= newRange.maxTimer0;
-		}
-		if (update) {
-			this.knownPatterns = new PrecomputedPatterns();
-			let sp = this.resultManager.getSearchParams()!;
-			this.knownPatterns.addParams(sp, 1);
-			// this.knownSearchParams = []; Don't update. Used to search with known consoles' RNG params when submitted tile pattern has no matches.
-			// We keep them because there's a chance our current SearchParams comes from a false positive match.
-		}
+		// Update auto-complete list (again) if search range has changed
+		let newRange = this.resultManager.getSearchParams(new Date());
+		if (oldRange && newRange && (oldRange.minTimer0 != newRange.minTimer0 || oldRange.minVCount != newRange.minVCount))
+		this.updateAutocomplete();
 	}
 
 	private getProcessingInputs(result?: SearchInputs): ProcessingInputs {
 		let processingInputs: ProcessingInputs = {
 			...this.generalInputs,
+			date: result?.time ?? this.date,
 			row1: result?.row1 ?? this.lastFirstRow,
 			row2: result?.row2 ?? this.lastSecondRow,
 			seeds: result?.seeds ?? this.seeds,
 		};
-		if (result)
-			processingInputs.isRedo = true;
 
 		// clone Date object
 		processingInputs.date = new Date(processingInputs.date);
@@ -274,33 +276,24 @@ export class StepTilesComponent extends StepComponent {
 	) {
 		processingInptus.date.setSeconds(processingInptus.date.getSeconds() + secondsOffset);
 
-		// Did we already look for rng params for this tile pattern?
-		if (!processingInptus.isRedo) {
-			let existing = this.resultManager.getFor(processingInptus.row1, processingInptus.row2);
-			if (existing !== null) {
-				this.resultManager.submitResult(existing);
-				return existing.result.length > 0;
-			}
-		}
-
 		// If not, search for rng params
 		this.inProgressCount++;
 		let rngParams: RngParams[] = [];
 		if (secondsOffset == 0) {
+			let searchParams = this.resultManager.getSearchParams(processingInptus.date);
 			// If we have previous results, base search on that.
 			// If not, use known params from other consoles.
-			let searchParams = this.resultManager.getSearchParams();
 			for (let sp of searchParams ? [searchParams] : this.knownSearchParams) {
 				[rngParams, secondsOffset] = await this.searchPlusMinusOneSecond(processingInptus.seeds, sp);
 				if (rngParams.length != 0)
 					break;
 			}
-			if (secondsOffset != 0 && !processingInptus.isRedo) {
+			if (secondsOffset != 0) {
 				this.dialog.open(PopupDialogComponent, {
 					data: {
 						message: [
 							`RNG was initialized at ${rngParams[0].datetime.toLocaleTimeString()}, 1 second too ${secondsOffset == 1 ? 'late' : 'early'}.`,
-							`It\'s OK this time, but for best results try to get RNG to intialize at ${this.targetDateTime} in the future.`,
+							`It\'s OK this time (because the app detected it), but for best results try to get RNG to intialize at the correct time in the future.`,
 						]
 					}
 				});
@@ -325,7 +318,7 @@ export class StepTilesComponent extends StepComponent {
 			row1: processingInptus.row1,
 			row2: processingInptus.row2,
 			offsetUsed: secondsOffset,
-		});
+		}, processingInptus.date);
 
 		this.inProgressCount--;
 		return rngParams.length > 0;
@@ -355,7 +348,7 @@ export class StepTilesComponent extends StepComponent {
 
 		// Auto-complete
 		let precomputedResult = this.knownPatterns.getPatternInfo(tiles);
-		let enoughTilesEntered = precomputedResult.extraTiles! > 0 || this.resultManager.getSearchParams();
+		let enoughTilesEntered = precomputedResult.extraTiles! > 0 || this.resultManager.distinctParamsCount > 0;
 		// We only do the auto-completion if the user has entered 1 more tile than we need for a match.
 		// This is to reduce the confusion of having lots of bad autocompletes when the users rng params aren't known.
 		// However this 1-more-than-needed does not take effect if we do have rng params based on user's tile pattern(s).

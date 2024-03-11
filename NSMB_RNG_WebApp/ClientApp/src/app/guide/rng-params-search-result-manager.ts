@@ -13,33 +13,37 @@ export type SearchInputs = {
 	seeds: number[],
 	row1: string,
 	row2: string,
+	time: Date,
+}
+
+type ParamsWithCount = {
+	timer0: number,
+	vCount: number,
+	vFrame: number,
+	count: number
 }
 
 export class RngParamsSearchResultManager {
 	private http: HttpClient | undefined;
 	private sessionId: string | undefined;
 
-	private _totalMatchedPatterns: number = 0;
-	private set totalMatchedPatterns(value: number) { this._totalMatchedPatterns = value; }
-	public get totalMatchedPatterns(): number { return this._totalMatchedPatterns; }
+	private _distinctParamsCount: number = 0;
+	private set distinctParamsCount(value: number) { this._distinctParamsCount = value; }
+	public get distinctParamsCount(): number { return this._distinctParamsCount; }
 
 	private _submitCount: number = 0;
 	private set submitCount(value: number) { this._submitCount = value; }
 	public get submitCount(): number { return this._submitCount; }
 
-
-	private results: RngParamsSearch[] = [];
+	public emptySearches: SearchInputs[] = [];
+	private submittedTimes: Set<number> = new Set<number>();
 
 	private range: SearchParams;
-	private otherRngParams: RngParams | undefined;
 
-	// the RNG params within the expected range; excludes false positives
-	private distinctParams: { timer0: number, vCount: number, count: number }[] = [];
+	private distinctParams: ParamsWithCount[] = [];
 
-	private gotTwoRngParamsInOneResult = false;
-	private _giveUp = false;
-	private set givenUp(value: boolean) { this._giveUp = value; }
-	public get givenUp(): boolean { return this._giveUp; }
+	private maxExpectedTimer0Diff = 25;
+	private maxExpectedVCountDiff = 2;
 
 
 	constructor(date: Date, http: HttpClient | undefined = undefined) {
@@ -58,107 +62,112 @@ export class RngParamsSearchResultManager {
 			this.http = http;
 	}
 
-	getInputsWithNoFoundRngParams(): SearchInputs[] {
-		return this.results.filter((r) => {
-			return r.result.length === 0;
-		}).map((r) => {
-			return {
-				seeds: r.seeds,
-				row1: r.row1,
-				row2: r.row2,
-			};
-		});
-	}
-
-	getFor(row1: string, row2: string) {
-		for (let r of this.results) {
-			if (r.row1 == row1 && r.row2 == row2) {
-				return r;
-			}
-		}
-		return null;
-	}
-
 	getDistinctParamsCount(): number {
-		return this.distinctParams.length + (!!this.otherRngParams ? 1 : 0);
+		return this.distinctParams.length;
 	}
 
-	private incrementCount(params: RngParams) {
-		let existing = this.distinctParams.find((v) => v.timer0 === params.timer0 && v.vCount === params.vCount);
+	getPriorResult(params: RngParams | ParamsWithCount): ParamsWithCount | undefined {
+		let priorResult = this.distinctParams.find((p) => 
+			p.timer0 === params.timer0 && 
+			p.vCount === params.vCount && 
+			p.vFrame === params.vFrame
+		);
+		return priorResult;
+
+	}
+
+	isNearRange(params: RngParams | ParamsWithCount, range: SearchParams) {
+		if (
+			params.timer0 >= range.minTimer0 - this.maxExpectedTimer0Diff && params.timer0 <= range.maxTimer0 + this.maxExpectedTimer0Diff &&
+			params.vCount >= range.minVCount - this.maxExpectedVCountDiff && params.vCount <= range.maxVCount + this.maxExpectedVCountDiff &&
+			params.vFrame === range.minVFrame
+		) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	private incrementCount(params: RngParams | ParamsWithCount) {
+		let existing = this.getPriorResult(params);
 		if (existing)
 			existing.count++;
 		else
-			this.distinctParams.push({ timer0: params.timer0, vCount: params.vCount, count: 1 });
+			this.distinctParams.push({ timer0: params.timer0, vCount: params.vCount, vFrame: params.vFrame, count: 1 });
 	}
 	private useForRange(params: RngParams) {
-		this.distinctParams = [{ timer0: params.timer0, vCount: params.vCount, count: 1 }];
 		this.range.minTimer0 = this.range.maxTimer0 = params.timer0;
 		this.range.minVCount = this.range.maxVCount = params.vCount;
 		this.range.minVFrame = this.range.maxVFrame = params.vFrame;
 	}
-	private expandRange(params: RngParams) {
-		this.incrementCount(params);
+	private expandRange(params: RngParams | ParamsWithCount) {
 		this.range.minTimer0 = Math.min(this.range.minTimer0, params.timer0);
 		this.range.maxTimer0 = Math.max(this.range.minTimer0, params.timer0);
 		this.range.minVCount = Math.min(this.range.minVCount, params.vCount);
 		this.range.maxVCount = Math.max(this.range.maxVCount, params.vCount);
 	}
-	submitResult(result: RngParamsSearch) {
-		this.submitCount++;
-
-		let existing = this.getFor(result.row1, result.row2);
-		if ((!existing || existing.result.length == 0) && result.result.length > 0)
-			this.totalMatchedPatterns++;
-
-		if (existing) {
-			result.result.forEach((r) => this.incrementCount(r));
-			existing.result = result.result;
-			this.postResults(result);
+	/**
+	 * This method should not ever be called twice with the same time.
+	 * @param result The result of the RNG parameter search.
+	 * @param time The time of expected RNG initialization.
+	 */
+	submitResult(result: RngParamsSearch, time: Date) {
+		if (this.submittedTimes.has(time.valueOf())) {
+			// this should never happen; caller should ensure no two calls have the same time
+			alert('something went wrong; submission discarded');
 			return;
 		}
 
-		if (result.result.length > 1)
-			this.gotTwoRngParamsInOneResult = true;
-		for (let params of result.result) {
-			if (this.range.minTimer0 === -1) {
-				// This is our first RNG params
+		this.submitCount++;
+
+		if (result.result.length === 0) {
+			this.emptySearches.push({
+				row1: result.row1,
+				row2: result.row2,
+				seeds: result.seeds,
+				time: time,
+			});
+		}
+		for (let params of result.result) {	
+			let prior = this.getPriorResult(params);
+			this.incrementCount(params); // this adds the result, so getPriorResult is called before this
+			if (prior)
+				continue;
+			this.distinctParamsCount++;
+
+			// The rest of the loop is concerned with updating this.range.
+			if (this.distinctParamsCount === 1) {
 				this.useForRange(params);
-			} else if /* this params is within the expected range */ (
-				params.vFrame === this.range.minVFrame &&
-				params.vCount >= this.range.minVCount - 2 && params.vCount <= this.range.maxVCount + 2 &&
-				params.timer0 >= this.range.minTimer0 - 25 && params.timer0 <= this.range.maxTimer0 + 25
-			) {
+			} else if (this.isNearRange(params, this.range)) {
 				this.expandRange(params);
-			} else if (!this.otherRngParams) {
-				// This is our first result that doesn't fit the expected range.
-				this.otherRngParams = params;
-			} else if ( // Should we make this result be the expected range?
-				this.range.minTimer0 === this.range.maxTimer0 && this.range.minVCount === this.range.maxVCount &&
-				params.vFrame === this.otherRngParams.vFrame &&
-				params.vCount >= this.otherRngParams.vCount - 2 && params.vCount <= this.otherRngParams.vCount + 2 &&
-				params.timer0 >= this.otherRngParams.timer0 - 25 && params.timer0 <= this.otherRngParams.timer0 + 25
-			) {
-				this.useForRange(this.otherRngParams);
-				this.expandRange(params);
-				// At this point it doesn't matter what's in otherRngParams; we'll never use it again.
 			} else {
-				this.givenUp = true; // we're going to just give up at this point, it should be extremely rare
+				// This params, or the one which this.range is based on, is a false positive.
+				// Check which possible range has the most values
+				let nearRangeCount = this.distinctParams.filter(p => this.isNearRange(p, this.range)).length;
+				let newRange = new SearchParams(this.range);
+				newRange.minTimer0 = newRange.maxTimer0 = params.timer0;
+				newRange.minVCount = newRange.maxVCount = params.vCount;
+				newRange.minVFrame = newRange.maxVFrame = params.vFrame;
+				let nearNewRange = this.distinctParams.filter(p => this.isNearRange(p, newRange));
+				// If the new range based on this params fits more total params, we will use this new range.
+				// The only time this should ever happen is if the first submitted result has a false positive.
+				// Otherwise, we expect true positives to greatly outnumber false positives.
+				if (nearNewRange.length > nearRangeCount) {
+					this.range = newRange;
+					for (let p of nearNewRange)
+						this.expandRange(p);
+				}
 			}
 		}
 
-		this.results.push(result);
 		this.postResults(result);
 	}
 
-	isFalsePositiveSuspected(): boolean {
-		return this.gotTwoRngParamsInOneResult || !!this.otherRngParams;
-	}
-
-	private toParams(p: { timer0: number, vCount: number }): RngParams {
+	private toParams(p: ParamsWithCount): RngParams {
 		return {
 			timer0: p.timer0,
 			vCount: p.vCount,
-			vFrame: this.range.minVFrame,
+			vFrame: p.vFrame,
 			datetime: this.range.datetime,
 			is3DS: this.range.is3DS,
 			mac: this.range.mac,
@@ -166,50 +175,35 @@ export class RngParamsSearchResultManager {
 		}
 	}
 	getMostLikelyResult(): RngParams | undefined {
-		if (this.totalMatchedPatterns === 0) return undefined;
-		if (this.givenUp) return undefined;
-
 		// A result can be considered "likely" if we've seen identical RNG params at lesat twice.
-		// Of these the most frequently occuring (highest count) should be preferred.
-		// To reduce chances of returning a false positive, we verify that we also have another nearby result,
-		// unless we have only a single result 4+ times (because some consoles are highly consistent).
-		if (this.totalMatchedPatterns === 1) {
-			if (this.results.length === 1 && this.submitCount > 3 && !this.isFalsePositiveSuspected())
-				return this.results[0].result[0];
-			else
-				return undefined;
-		}
-		let candidates = this.distinctParams.sort((a, b) => b.count - a.count);
-		if (candidates[0].count === 1) // guaranteed length >= 1 by totalMatchedPatterns
+		// Previously we would also verify that it wasn't a false positive by checking for nearby results.
+		// However, we now ensure each submitted result has a distinct time. This means any RNG
+		// params that were found twice are 99.99999% real since collisions are incredibly rare.
+		if (this.distinctParams.length === 0)
 			return undefined;
-		// One other result that is off by just 1 in timer0 and/or vCount is sufficient. Most console should be like this.
-		// Otherwise, we should have at least two other distinct params.
-		if (this.distinctParams.length > 2) {
-			return this.toParams(candidates[0]);
-		} else {
-			let dt = candidates[0].timer0 - candidates[1].timer0;
-			let dv = candidates[0].vCount - candidates[1].vCount;
-			if (Math.abs(dt) < 2 && Math.abs(dv) < 2)
-				return this.toParams(candidates[0]);
-			else
-				return undefined;
-		}
+		let highestCount = this.distinctParams.sort((a, b) => b.count - a.count)[0];
+		if (highestCount.count === 1)
+			return undefined;
+		else
+			return this.toParams(highestCount);
 	}
 
-	getSearchParams() {
-		if (this.range.maxTimer0 === -1)
+	getSearchParams(dt: Date) {
+		if (this.distinctParamsCount === 0)
 			return null;
 		else {
 			let sp = new SearchParams(this.range);
+			sp.datetime = dt; // The manager doesn't know the time that's going to be searched.
+
 			// The largest known timer0 range is 21. That console might be able to have a wider range, it wasn't extensively tested.
 			// We don't know if found params are on the low or high side, so we'll spread out both ways.
 			// Also extend beyond current even if we're at max, just in case.
-			let timer0RangeExtension = Math.max(2, 25 - (sp.maxTimer0 - sp.minTimer0));
+			let timer0RangeExtension = Math.max(2, this.maxExpectedTimer0Diff - (sp.maxTimer0 - sp.minTimer0));
 			sp.minTimer0 -= timer0RangeExtension;
 			sp.maxTimer0 += timer0RangeExtension;
 			// The largest observed vCount range is 3, on one single console. Most have 2, a few have 1.
 			// But the number of consoles tested isn't very big, so we'll assume 4 is possible.
-			let vCountRangeExtension = Math.max(1, 3 - (sp.maxVCount - sp.minVCount));
+			let vCountRangeExtension = Math.max(1, this.maxExpectedVCountDiff - (sp.maxVCount - sp.minVCount));
 			sp.minVCount -= vCountRangeExtension;
 			sp.maxVCount += vCountRangeExtension;
 			// Everything else should be consistent.
@@ -219,10 +213,10 @@ export class RngParamsSearchResultManager {
 
 	suspectUserErrorOrStrangeConsole() {
 		// These numbers are kinda arbitrary. The intent is to detect when something is wrong so we/user don't waste time endlessly entering bad patterns.
-		return this.totalMatchedPatterns < this.results.length && (
-			(this.submitCount >= 3 && this.totalMatchedPatterns == 0) ||
-			(this.submitCount >= 5 && this.totalMatchedPatterns == 1) ||
-			(this.submitCount >= 8 && this.totalMatchedPatterns == 2)
+		return this.getMostLikelyResult() === undefined && (
+			(this.submitCount >= 3 && this.distinctParamsCount == 0) ||
+			(this.submitCount >= 5 && this.distinctParamsCount == 1) ||
+			(this.submitCount >= 8 && this.distinctParamsCount == 2)
 		);
 	};
 

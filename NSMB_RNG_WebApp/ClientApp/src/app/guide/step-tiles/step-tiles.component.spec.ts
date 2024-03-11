@@ -7,16 +7,25 @@ import { MockHttpClient } from '../../../test/mockHttpClient';
 import { nextState, previousState } from '../../functions/rng';
 import { GuideComponent } from '../guide.component';
 
-describe('Step4Component', () => {
+describe('StepTilesComponent', () => {
 	let component: StepTilesComponent;
 	let fixture: ComponentFixture<StepTilesComponent>;
 	let mockHttpClient: MockHttpClient;
+	let firstSearchDate = new Date('2024-03-10 1:45:15');
+
+	let tiles014515 = ['sccpbep', 'beebpcsbbep'];
+	let tiles014514 = ['scbeipe', 'pbbiesiepee'];
+	let tiles014415 = ['ecepbbp', 'ibsebicebbb'];
+	let tilesOtherTime = ['pbpiecb', 'cbciesceibc']
 
 	beforeEach(async () => {
-		// We must set some localstorage for step4 to access.
+		// We must set some localstorage for StepTiles to access.
 		let mac = '40f407f7d421';
-		let dtStr = '2023-11-24 01:00:15';
+		let seconds = '15';
 		localStorage.setItem('mac', mac);
+		localStorage.setItem('consoleType', 'DS');
+		localStorage.setItem('date', firstSearchDate.toISOString().split('T')[0]);
+		localStorage.setItem('seconds', seconds);
 
 		await TestBed.configureTestingModule({
 			imports: [StepTilesComponent],
@@ -30,35 +39,16 @@ describe('Step4Component', () => {
 		TestBed.overrideProvider(HttpClient, { useValue: mockHttpClient });
 
 		let g = TestBed.createComponent(GuideComponent).componentInstance;
-		g.targetDate = new Date(dtStr);
 		fixture = TestBed.createComponent(StepTilesComponent);
 		component = fixture.componentInstance;
 		fixture.detectChanges();
 
 		// These are the seeds we should get after the second row, plus a few from just the first row.
-		mockHttpClient.respondWith('asp/seeds/ebeseee', [nextState(749423222), nextState(793632109), 204313, 298288, 358738, 578838, 618623, 645493, 788968, 1082073, 1126763, 1464388]);
-		mockHttpClient.respondWith('asp/seeds/bsbcsep', [nextState(16632510), 695113, 857873, 887558, 1984193, 2071198, 2373313, 3360278, 3983158, 4557908, 4889353]);
-		mockHttpClient.respondWith('asp/seeds/siebeib', [nextState(781790593), 1135733, 1220573, 2013633, 3205518, 3427573, 4142948, 4400183, 5319788, 5462678, 5565468]);
-		mockHttpClient.respondWith('asp/seeds/ebeepbi', [nextState(365998418), 486313, 714973, 2393298, 2542503, 3380138, 3415408, 4315598, 5080493, 5345848, 5983538]);
-		mockHttpClient.respondWith('asp/seeds/pbpiecb', [nextState(430237967), 489543, 706328, 1647918, 2235403, 4045058, 7342508, 8064998, 8230723, 8736488, 9636608]);
+		mockHttpClient.respondWith(`asp/seeds/${tiles014515[0]}`, [1243987243, 598903, 669698, 2866843, 5290143, 12298323, 12877138, 14800728, 22149413, 28947498, 28974698, 33585738]);
+		mockHttpClient.respondWith(`asp/seeds/${tiles014415[0]}`, [299666798, 182118, 804998, 1711193, 3554028, 3856533, 4681333, 6004258, 6748058, 6862918, 7293338, 8046558]);
+		mockHttpClient.respondWith(`asp/seeds/${tilesOtherTime[0]}`, [nextState(430237967), 489543, 706328, 1647918, 2235403, 4045058, 7342508, 8064998, 8230723, 8736488, 9636608]);
 
 		mockHttpClient.respondWith('asp/submitResults', undefined);
-
-		// Since we'll be submitting, the component will search for rng params.
-		// A full search would take a long time; let's not do that.
-		// This is also where we set the date, system, and MAC address for the tests.
-		(component.resultManager as any).range = {
-			buttons: 0,
-			datetime: new Date(dtStr),
-			is3DS: false,
-			mac: mac,
-			minTimer0: 1375,
-			maxTimer0: 1390,
-			minVCount: 35,
-			maxVCount: 45,
-			minVFrame: 5,
-			maxVFrame: 5,
-		};
 	});
 
 	it('should create', () => {
@@ -66,60 +56,55 @@ describe('Step4Component', () => {
 	});
 
 	it('can compute seeds', async () => {
-		await component.row1Changed('ebeseee');
-		await component.row2Changed('isbepebibbs'.toUpperCase());
+		await component.row1Changed(tiles014515[0]);
+		await component.row2Changed(tiles014515[1].toUpperCase());
 		// The above pattern comes from known, hard-coded RNG params.
 		// So, it will know the one specific seed that generated it.
 		assert(component.seeds.length === 1, `Found ${component.seeds.length} seeds for pattern from known RNG params.`);
 
 		// This pattern doesn't. So it'll have multiple possible seeds.
-		await component.row1Changed('pbpiecb');
-		await component.row2Changed('cbciesceibc'.toUpperCase());
+		await component.row1Changed(tilesOtherTime[0]);
+		await component.row2Changed(tilesOtherTime[1].toUpperCase());
 		assert(component.seeds.length === 5, `Found ${component.seeds.length} seeds for valid pattern from unknown RNG params.`);
 
 	});
 
 	it('can progress with good patterns', async () => {
-		await component.row1Changed('ebeseee');
-		await component.row2Changed('isbepebibbs');
+		await component.row1Changed(tiles014515[0]);
+		await component.row2Changed(tiles014515[1]);
 		await component.submit();
 
-		await component.row1Changed('bsbcsep');
-		await component.row2Changed('beebiicsspi');
-		await component.submit();
-
-		await component.row1Changed('ebeseee');
-		await component.row2Changed('isbepebibbs');
+		await component.row1Changed(tiles014415[0]);
+		await component.row2Changed(tiles014415[1]);
 		await component.submit();
 
 		assert(component.errorStatus === undefined); // no error indicates user can proceed to next step
 	});
 
 	it('recognizes bad pattern', async () => {
-		await component.row1Changed('pbpiecb');
-		await component.row2Changed('cbciesceibc');
+		await component.row1Changed(tilesOtherTime[0]);
+		await component.row2Changed(tilesOtherTime[1]);
 		await component.submit();
 
 		assert(component.resultManager.submitCount == 1);
-		assert(component.resultManager.totalMatchedPatterns == 0);
+		assert(component.resultManager.distinctParamsCount == 0);
 	}, 15000); // submit will do a full search, which may take longer than the default 5 second limit
 
 	it('recognizes +1/-1 second on past patterns after finding params', async () => {
 		// simulate submission of -1 second pattern:
-		(component.resultManager as any).results = [{
-			count: 1,
-			result: [],
-			row1: 'siebeib',
-			row2: 'piibseceipe',
-			seeds: [...previousState(nextState(781790593))],
+		component.resultManager.emptySearches = [{
+			row1: tiles014514[0],
+			row2: tiles014514[1],
+			seeds: [...previousState(nextState(1083732095))],
+			time: firstSearchDate
 		}];
 		(component.resultManager as any).submitCount = 1;
-		(component.resultManager as any).totalMatchedPatterns = 0;
+		(component.resultManager as any).distinctParamsCount = 0;
 
-		await component.row1Changed('ebeseee');
-		await component.row2Changed('isbepebibbs');
+		await component.row1Changed(tiles014515[0]);
+		await component.row2Changed(tiles014515[1]);
 		await component.submit();
 
-		assert(component.resultManager.totalMatchedPatterns == 2);
+		assert(component.resultManager.distinctParamsCount == 2, `Found ${component.resultManager.distinctParamsCount}, expected 2`);
 	});
 });

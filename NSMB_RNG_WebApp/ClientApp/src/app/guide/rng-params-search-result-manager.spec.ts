@@ -27,6 +27,13 @@ let makeFakeResult = (timer0: number, vCount: number, vFrame: number) => {
 describe('RngParamsSearchResultManager', () => {
 	let manager: RngParamsSearchResultManager;
 
+	// this won't be used for anything, but is a required parameter of submitResult
+	let _dummyDate = new Date();
+	let dummyDate = () => {
+		_dummyDate.setMinutes(_dummyDate.getMinutes() - 1);
+		return _dummyDate;
+	 }; 
+
 	beforeEach(() => {
 		localStorage.setItem('mac', mac);
 
@@ -44,14 +51,14 @@ describe('RngParamsSearchResultManager', () => {
 		let result3 = makeFakeResult(0x566, 0x27, 5);
 		let result4 = makeFakeResult(0x567, 0x27, 5);
 
-		manager.submitResult(result1);
-		manager.submitResult(result2);
-		manager.submitResult(result2);
-		manager.submitResult(result3);
-		manager.submitResult(result4);
-		manager.submitResult(result1);
-		manager.submitResult(result3);
-		manager.submitResult(result3);
+		manager.submitResult(result1, dummyDate());
+		manager.submitResult(result2, dummyDate());
+		manager.submitResult(result2, dummyDate());
+		manager.submitResult(result3, dummyDate());
+		manager.submitResult(result4, dummyDate());
+		manager.submitResult(result1, dummyDate());
+		manager.submitResult(result3, dummyDate());
+		manager.submitResult(result3, dummyDate());
 
 		let params = manager.getMostLikelyResult() as RngParams;
 		assert(params !== undefined);
@@ -65,27 +72,16 @@ describe('RngParamsSearchResultManager', () => {
 		let result2 = makeFakeResult(0x567, 0x26, 5);
 		let result3 = makeFakeResult(0x566, 0x27, 5);
 
-		manager.submitResult(result1);
-		manager.submitResult(result2);
-		manager.submitResult(result3);
+		manager.submitResult(result1, dummyDate());
+		manager.submitResult(result2, dummyDate());
+		manager.submitResult(result3, dummyDate());
 
 		let params = manager.getMostLikelyResult();
 		assert(params === undefined);
 
-		manager.submitResult(result2);
+		manager.submitResult(result2, dummyDate());
 		params = manager.getMostLikelyResult();
 		assert(params !== undefined);
-	});
-
-	it('flags obvious false positive', () => {
-		// We must have a true positive for it to compare to
-		let result = makeFakeResult(0x566, 0x26, 5);
-		let resultFalse = makeFakeResult(0x333, 0xff, 5);
-
-		manager.submitResult(result);
-		manager.submitResult(resultFalse);
-
-		assert(manager.isFalsePositiveSuspected());
 	});
 
 	it('suggests a result when result set has wide but realistic spread of timer0 values', () => {
@@ -94,25 +90,21 @@ describe('RngParamsSearchResultManager', () => {
 		let result3 = makeFakeResult(1374, 232, 6);
 		let result4 = makeFakeResult(1362, 232, 6);
 
-		manager.submitResult(result1);
-		manager.submitResult(result2);
-		manager.submitResult(result3);
-		manager.submitResult(result4);
+		manager.submitResult(result1, dummyDate());
+		manager.submitResult(result2, dummyDate());
+		manager.submitResult(result3, dummyDate());
+		manager.submitResult(result4, dummyDate());
 
-		manager.submitResult(result2);
+		manager.submitResult(result2, dummyDate());
 
-		assert(!manager.isFalsePositiveSuspected());
 		assert(manager.getMostLikelyResult() !== undefined);
 	});
 
-	it('does not suggest result that has been submitted twice until submitted four times, when it is only result', () => {
+	it('suggests result that has been submitted twice, when it is only result', () => {
 		let result = makeFakeResult(0x566, 0x26, 5);
-		manager.submitResult(result);
-		manager.submitResult(result);
-		manager.submitResult(result);
+		manager.submitResult(result, dummyDate());
+		manager.submitResult(result, dummyDate());
 
-		assert(manager.getMostLikelyResult() === undefined);
-		manager.submitResult(result);
 		assert(manager.getMostLikelyResult() !== undefined);
 	});
 
@@ -121,12 +113,11 @@ describe('RngParamsSearchResultManager', () => {
 		let result2 = makeFakeResult(0x567, 0x26, 5);
 		let resultFalse = makeFakeResult(0x333, 0xff, 5);
 
-		manager.submitResult(resultFalse);
-		manager.submitResult(result1);
-		manager.submitResult(result2);
-		manager.submitResult(result1);
+		manager.submitResult(resultFalse, dummyDate());
+		manager.submitResult(result1, dummyDate());
+		manager.submitResult(result2, dummyDate());
+		manager.submitResult(result1, dummyDate());
 
-		assert(manager.isFalsePositiveSuspected());
 		assert(manager.getMostLikelyResult() !== undefined);
 	});
 
@@ -135,33 +126,31 @@ describe('RngParamsSearchResultManager', () => {
 		let result2 = makeFakeResult(0x567, 0x26, 5);
 		let resultFalse = makeFakeResult(0x333, 0xff, 5);
 
-		manager.submitResult(result1);
-		manager.submitResult(result2);
-		manager.submitResult(resultFalse);
-		manager.submitResult(result1);
+		manager.submitResult(result1, dummyDate());
+		manager.submitResult(result2, dummyDate());
+		manager.submitResult(resultFalse, dummyDate());
+		manager.submitResult(result1, dummyDate());
 
-		assert(manager.isFalsePositiveSuspected());
 		assert(manager.getMostLikelyResult() !== undefined);
 	});
 
-	it('does not suggest any params after 2 distinct false positives', () => {
+	it('suggests likely rng params after 2 distinct false positives', () => {
 		let result1 = makeFakeResult(0x566, 0x26, 5);
 		let result2 = makeFakeResult(0x567, 0x26, 5);
 		let resultFalse = makeFakeResult(0x333, 0xff, 5);
 		let resultFalse2 = makeFakeResult(0x999, 0x01, 6);
 
-		manager.submitResult(result1);
-		manager.submitResult(resultFalse);
-		manager.submitResult(result2);
-		manager.submitResult(resultFalse2);
-		manager.submitResult(result1);
+		manager.submitResult(result1, dummyDate());
+		manager.submitResult(resultFalse, dummyDate());
+		manager.submitResult(result2, dummyDate());
+		manager.submitResult(resultFalse2, dummyDate());
+		manager.submitResult(result1, dummyDate());
 
-		assert(manager.getMostLikelyResult() === undefined);
-		assert(manager.isFalsePositiveSuspected());
+		assert(manager.getMostLikelyResult() !== undefined);
 	});
 
 	it('does not give search params after a result that has no matches', () => {
-		assert(manager.getSearchParams() === null, 'Not having recommended search params should be indicated by a null value, but a non-null value was returned before any results were submitted.');
+		assert(manager.getSearchParams(dummyDate()) === null, 'Not having recommended search params should be indicated by a null value, but a non-null value was returned before any results were submitted.');
 
 		let result = {
 			result: [],
@@ -170,8 +159,9 @@ describe('RngParamsSearchResultManager', () => {
 			row2: '',
 			offsetUsed: 0,
 		};
-		manager.submitResult(result);
+		manager.submitResult(result, dummyDate());
 
-		assert(manager.getSearchParams() === null, 'Search params were returned after only a bad (matchless) result was submitted. There is no information to base a range on, so no range should be returned.');
+		assert(manager.getSearchParams(dummyDate()) === null, 'Search params were returned after only a bad (matchless) result was submitted. There is no information to base a range on, so no range should be returned.');
 	});
 });
+

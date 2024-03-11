@@ -3,12 +3,12 @@
 	You will need a saved file in the game before doing this.
 </p>
 <p>
-	Load the game as in step 3, making sure RNG is initialized at the exact same time.*<br />
-	As a reminder, your target time for RNG initialization is {{ targetDateTime }}.<br />
-	Then, load your saved file. This must be done BEFORE the intro cutscene begins playing.<br />
-	If you've left the game running on the title screen long enough for the cutscene to play, reset the system clock and reload the game.<br />
+	Set your console's time to {{ dateToTime(date) }} and load the game as in step 3, making sure RNG is initialized at {{ targetDateTime }}.*<br />
+	Then, load your saved file. This must be done BEFORE the intro cutscene begins playing.**<br />
 	Go to world 1-2 and enter the level. Pause the game while the top row of tiles is still on-screen.<br />
-	Your tile pattern is the first 7 inner tiles in the topmost row plus all 11 visible inner tiles in the second row.
+	Your tile pattern is the first 7 inner tiles in the topmost row plus all 11 visible inner tiles in the second row.<br />
+	You'll need to do this several times, entering the tile pattern each time. We'll let you know once it's enough.<br />
+	Each time you do this, the time you need to set will decrease by 1 minute.
 </p>
 <p>
 	Each tile has been given a name, and they can be represented with the first letter of their name.<br />
@@ -29,6 +29,7 @@
 </div>
 <br />
 
+<p>Current time to set: {{ dateToTime(date) }}</p>
 <ng-container [formGroup]="form">
 	<div class="inline">
 		<label for="row1Input">First row</label>
@@ -51,12 +52,8 @@
 
 <button class="btn-primary" type="button" (click)="submit()">Submit</button>
 <p>Patterns submitted: {{ submitCount }}</p>
-<p>
-	After submitting your tile pattern, reboot the console and get another tile pattern using the same process.<br />
-	Submit every tile pattern you get, even if it is exactly the same as one you already submitted.<br />
-	You will be required to collect several tile patterns.<br />
-</p>
 
 <p class="fine-print">
-	*The app should be able to detect if you're off by one second, but it will be less reliable with more mistakes. If you load the game and are not confident RNG was initialized at the correct time, try again before getting a tile pattern.<br />
+	*The app should be able to detect if you're off by one second most of the time, but it will be less reliable with more mistakes. If you load the game and are not confident RNG was initialized at the correct time, try again before getting a tile pattern.<br />
+	**If you've left the game running on the title screen long enough for the cutscene to play, reset the system clock and reload the game.
 </p>

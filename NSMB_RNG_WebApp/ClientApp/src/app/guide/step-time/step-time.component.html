@@ -1,0 +1,36 @@
+<p>The next thing to do is figure out how many seconds between setting the time and initializing RNG.</p>
+<p>
+	RNG results depend on (among other things) the date and time to the second at which RNG was initialized.<br />
+	This occurs about half a second before the Nintendo logo begins to appear at startup.<br />
+	You'll need to go to the system settings and set the time (it does not matter what you set it to yet).<br />
+	Get a stopwatch with a precision of at least tenths of seconds. Start the stopwatch at the same time you set the system clock.<br />
+	DO NOT attempt to use the home screen's clock for timing anything. It is not precise enough and can display seconds incorrectly.<br />
+	After setting the time, start the game. Stop the stopwatch when the Nintendo logo beings to appear.<br />
+	To get the time at which RNG was initialized, subtract a little over half a second from the time on your stopwatch then round down to the nearest second.
+</p>
+<p>
+	For example, lets say you set the time to 05:00.<br />
+	If the Ninendo logo appears at 13.2 seconds, subracting half gives 12.7 and then rounding down gives 12.<br />
+	So you would enter 12 below in this case.
+</p>
+
+<ng-container [formGroup]="form">
+	<label for="seconds">Seconds: </label>
+	<input id="seconds" type="number" step="1" min="3" formControlName="seconds" />
+</ng-container>
+
+<p>
+	You're going to have to reset the time and reload the game multiple times in the next steps.<br />
+	There are a few other things you should be aware of before proceeding:
+</p>
+<ul>
+	<li>You should always ensure the console's clock shows a different hour or minute before you set the time.*</li>
+	<li>You should not hold any buttons during the game's start-up sequence.</li>
+	<li>You also should not have a game in the GBA slot. The blank cartridge that comes with the DS is okay.</li>
+	<li>If your game version supports multiple languages, changing the system language changes RNG. (You can use any language.)</li>
+</ul>
+
+<p class="fine-print">
+	*On some consoles, if it sees you've set the time to for example 3:45 but it was already 3:45, it will not actually do anything. This is bad since you need it to set to 3:45:00.
+</p>
+	

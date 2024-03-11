@@ -3,7 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { StepDateComponent } from './step-date.component';
 import { GuideComponent } from '../guide.component';
 
-describe('Step3Component', () => {
+describe('StepDateComponent', () => {
 	let component: StepDateComponent;
 	let fixture: ComponentFixture<StepDateComponent>;
 
