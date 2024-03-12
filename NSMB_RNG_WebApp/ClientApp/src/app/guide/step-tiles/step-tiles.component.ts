@@ -1,18 +1,20 @@
-import { Component, inject } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { StepComponent } from '../step';
-import { TileDisplayComponent } from '../../tile-display/tile-display.component';
-import { SeedTileCalculatorService } from '../../seeds-tile-calculator.service';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
-import { RngParams, SearchParams } from '../../functions/rng-params-search';
-import { WorkerService } from '../../worker.service';
-import { PopupDialogComponent } from '../../popup-dialog/popup-dialog.component';
-import { PrecomputedPatterns } from '../precomputed-patterns';
-import { getRow1, getRow2 } from '../../functions/tiles';
-import { RngParamsSearchResultManager, SearchInputs } from '../rng-params-search-result-manager';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { AfterViewInit, Component, ViewChild, inject } from '@angular/core';
+import { FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+
 import { GuideComponent } from '../guide.component';
+import { PrecomputedPatterns } from '../precomputed-patterns';
+import { RngParamsSearchResultManager, SearchInputs } from '../rng-params-search-result-manager';
+import { StepComponent } from '../step';
+import { RngParams, SearchParams } from 'src/app/functions/rng-params-search';
+import { PopupDialogComponent } from 'src/app/popup-dialog/popup-dialog.component';
+import { SeedTileCalculatorService } from 'src/app/seeds-tile-calculator.service';
+import { FullPatternInputComponent } from 'src/app/tile-display/full-pattern-input.component';
+import { ClickableTilesComponent } from 'src/app/tile-display/clickable-tiles.component';
+import { TimeFinderService } from 'src/app/time-finder.service';
+import { WorkerService } from 'src/app/worker.service';
 
 type ProcessingInputs = {
 	row1: string,
@@ -41,40 +43,42 @@ let knownParams = [
 	styleUrls: ['./step-tiles.component.css'],
 	imports: [
 		ReactiveFormsModule,
-		TileDisplayComponent,
+		ClickableTilesComponent,
+		FullPatternInputComponent,
 		HttpClientModule,
 		CommonModule,
 		MatDialogModule,
 	],
 })
-export class StepTilesComponent extends StepComponent {
+export class StepTilesComponent extends StepComponent implements AfterViewInit {
 	seedService: SeedTileCalculatorService = inject(SeedTileCalculatorService);
 	worker: WorkerService = inject(WorkerService);
+	timeFinder: TimeFinderService = inject(TimeFinderService);
 	http: HttpClient = inject(HttpClient);
 	dialog: MatDialog = inject(MatDialog);
 
-	form = new FormGroup({
-		row1Input: new FormControl(''),
-		row2Input: new FormControl(''),
-	});
+	form = new FormGroup({});
 	errorStatus?= 'We don\'t have enough information yet. Continue entering tile patterns.';
 
 	targetDateTime: string;
 	date: Date;
 	generalInputs: { mac: string, consoleType: string }
+	route: string;
 
-	seeds: number[] = [];
-	lastFirstRow: string = '';
-	lastSecondRow: string = '';
-	bottomRows: string[] = [''];
-	patternIsInvalid: boolean = false;
-	computingLastRow: boolean = false;
+	@ViewChild(FullPatternInputComponent) patternInput: FullPatternInputComponent = null!;
 
 	submitCount: number = 0; // the result manager also tracks this, but we need the UI to update right away and not wait for that
-	inProgressCount: number = 0;
+	private _inProgressCount: number = 0;
+	private get inProgressCount() { return this._inProgressCount; }
+	private set inProgressCount(v: number) {
+		this._inProgressCount = v;
+		if (v === 0)
+			this.timeFinder.resumeSearch();
+		else
+			this.timeFinder.pauseSearch();
+	}
 
-	knownPatterns: PrecomputedPatterns;
-	knownSearchParams: SearchParams[];
+	knownSearchParams: SearchParams[] = [];
 	requiredFullSearch: boolean = false;
 	displayedBadPatternsMessage: boolean = false;
 
@@ -83,12 +87,15 @@ export class StepTilesComponent extends StepComponent {
 	constructor(guide: GuideComponent) {
 		super(guide);
 
+		this.route = localStorage.getItem('route') ?? 'normal';
 		let dateStr = localStorage.getItem('date');
 		let secStr = localStorage.getItem('seconds');
 		if (dateStr && secStr) {
+			let sec = parseInt(secStr);
 			this.date = new Date(`${dateStr} 01:45:00`);
-			this.date.setSeconds(parseInt(secStr));
+			this.date.setSeconds(sec);
 			this.targetDateTime = this.date.toLocaleString();
+			this.timeFinder.setBaseSeconds(sec)
 		} else {
 			this.date = new Date();
 			this.targetDateTime = 'INVALID [go back and enter a date and time!]';
@@ -99,18 +106,24 @@ export class StepTilesComponent extends StepComponent {
 			mac: localStorage.getItem('mac')!,
 			consoleType: localStorage.getItem('consoleType')!,
 		}
+	}
 
-		// These properties are set in updateAutocomplete, but code analyzer is dumb.
-		this.knownPatterns = null!;
-		this.knownSearchParams = null!;
-		this.updateAutocomplete();
+	ngAfterViewInit(): void {
+		// We can autocomplete based on known parameters from other consoles.
+		// However this list is very incomplete. To avoid confusion of autocompleting incorrectly
+		// we require 1 extra tile. This decreases the chance of identifying an autocompletion
+		// that doesn't match the user's tiles.
+		this.patternInput.autocompleteRequireExtraTiles = 1;
+		this.updateAutocomplete();	
 	}
 
 	private updateAutocomplete() {
 		let sp = this.resultManager.getSearchParams(this.date);
 		if (sp) {
-			this.knownPatterns = new PrecomputedPatterns();
-			this.knownPatterns.addParams(sp, 1);
+			this.patternInput.autocomplete = new PrecomputedPatterns();
+			this.patternInput.autocomplete.addParams(sp, 1);
+			// We stop requiring 1 extra tile before autocompleting when we have params from user patterns.
+			this.patternInput.autocompleteRequireExtraTiles = 0;
 			return;
 		}
 
@@ -119,14 +132,14 @@ export class StepTilesComponent extends StepComponent {
 		let basicParams = new SearchParams({
 			mac: this.generalInputs.mac,
 			is3DS: is3DS,
-			datetime: this.date,
+			datetime: new Date(this.date),
 			buttons: 0,
 			minTimer0: 0,
 			maxTimer0: 0,
 		});
 
-		this.knownPatterns = new PrecomputedPatterns();
-		this.knownSearchParams = [];
+		this.patternInput.autocomplete = new PrecomputedPatterns();
+		let firstTime = this.knownSearchParams.length === 0;
 		for (let kp of knownParams) {
 			let sp = new SearchParams(basicParams);
 			sp.minTimer0 = kp[0];
@@ -134,8 +147,9 @@ export class StepTilesComponent extends StepComponent {
 			sp.minVCount = kp[2];
 			sp.maxVCount = kp[3];
 			sp.minVFrame = sp.maxVFrame = kp[4];
-			this.knownPatterns.addParams(sp, 1);
-			this.knownSearchParams.push(sp);
+			this.patternInput.autocomplete.addParams(sp, 1);
+			if (firstTime)
+				this.knownSearchParams.push(sp);
 		}
 	}
 
@@ -144,7 +158,7 @@ export class StepTilesComponent extends StepComponent {
 	}
 
 	async submit() {
-		if (this.seeds.length == 0) {
+		if (this.patternInput.seeds.length == 0) {
 			this.dialog.open(PopupDialogComponent, {
 				data: {
 					message: ['Finish entering your tile pattern before submitting.'],
@@ -156,8 +170,7 @@ export class StepTilesComponent extends StepComponent {
 
 		// We clear the tile pattern input, but first record them so they aren't lost before processing.
 		let pi = this.getProcessingInputs();
-		this.form.controls.row1Input.setValue('');
-		this.form.controls.row2Input.setValue('');
+		this.patternInput.clear();
 
 		// Update time and auto-complete list for next tile pattern
 		this.date.setMinutes(this.date.getMinutes() - 1);
@@ -253,12 +266,13 @@ export class StepTilesComponent extends StepComponent {
 	}
 
 	private getProcessingInputs(result?: SearchInputs): ProcessingInputs {
+		let rows = this.patternInput.getPattern();
 		let processingInputs: ProcessingInputs = {
 			...this.generalInputs,
 			date: result?.time ?? this.date,
-			row1: result?.row1 ?? this.lastFirstRow,
-			row2: result?.row2 ?? this.lastSecondRow,
-			seeds: result?.seeds ?? this.seeds,
+			row1: result?.row1 ?? rows[0],
+			row2: result?.row2 ?? rows[1],
+			seeds: result?.seeds ?? this.patternInput.seeds,
 		};
 
 		// clone Date object
@@ -284,11 +298,12 @@ export class StepTilesComponent extends StepComponent {
 			// If we have previous results, base search on that.
 			// If not, use known params from other consoles.
 			for (let sp of searchParams ? [searchParams] : this.knownSearchParams) {
+				sp.datetime = processingInptus.date; // knownSearchParams date will not be up-to-date (and cannot be, sinec it is possible to be processing two patterns concurrently)
 				[rngParams, secondsOffset] = await this.searchPlusMinusOneSecond(processingInptus.seeds, sp);
 				if (rngParams.length != 0)
 					break;
 			}
-			if (secondsOffset != 0) {
+			if (secondsOffset != 0 && allowFull) { // allowFull: This will be false if the pattern being processed is not the most recently entered pattern. (in which case showing this message would confuse the user)
 				this.dialog.open(PopupDialogComponent, {
 					data: {
 						message: [
@@ -321,6 +336,10 @@ export class StepTilesComponent extends StepComponent {
 		}, processingInptus.date);
 
 		this.inProgressCount--;
+
+		for (let params of rngParams)
+			this.timeFinder.addParams(params, this.route);
+
 		return rngParams.length > 0;
 	}
 	private async searchPlusMinusOneSecond(seeds: number[], searchParams: SearchParams): Promise<[RngParams[], number]> {
@@ -339,107 +358,7 @@ export class StepTilesComponent extends StepComponent {
 		return [[], 0];
 	}
 
-
-	private _changedByUser = true;
-	private _row2SetByAutocomplete = false;
-	async row1Changed(tiles: string) {
-		this.lastFirstRow = tiles;
-		this.seeds = [];
-
-		// Auto-complete
-		let precomputedResult = this.knownPatterns.getPatternInfo(tiles);
-		let enoughTilesEntered = precomputedResult.extraTiles! > 0 || this.resultManager.distinctParamsCount > 0;
-		// We only do the auto-completion if the user has entered 1 more tile than we need for a match.
-		// This is to reduce the confusion of having lots of bad autocompletes when the users rng params aren't known.
-		// However this 1-more-than-needed does not take effect if we do have rng params based on user's tile pattern(s).
-		if (!precomputedResult.ambiguous && precomputedResult.match && enoughTilesEntered) {
-			this._row2SetByAutocomplete = true;
-			let row2 = getRow2(precomputedResult.match.seed);
-			// _changedByUser being false will short-circuit the event handler.
-			// However, the event handler does not happen until later on so we cannot
-			// un-set _changedByUser afterwards. The handler must do that for us.
-			// Additionally, the event handler will only be triggered if the set value is different from the current value.
-			if (row2 != this.form.value.row2Input) this._changedByUser = false;
-			this.form.controls.row2Input.setValue(row2);
-			this.setSeeds([precomputedResult.match.seed]);
-			this.lastFirstRow = getRow1(precomputedResult.match.seed);
-		} else if (this._row2SetByAutocomplete) {
-			this.form.controls.row2Input.setValue('');
-			this._row2SetByAutocomplete = false;
-		}
-
-		if (tiles.length != 7) {
-			return;
-		}
-
-		const status = 'Getting seed candidates from server...';
-		this.addProgress(status);
-		let result = await this.seedService.getPossibleSeedsFor(tiles);
-		this.removeProgress(status);
-		if (result.length == 0) {
-			this.dialog.open(PopupDialogComponent, {
-				data: {
-					message: ['Failed to get seed candidates from server. Please try again (by backspacing one tile for first row and re-entering it).']
-				}
-			});
-			return;
-		}
-
-		if (this.lastSecondRow.length == 11 && !this._row2SetByAutocomplete)
-			this.row2Changed(this.lastSecondRow);
-	}
-
-	r2cc = 0;
-	async row2Changed(tiles: string) {
-		this.patternIsInvalid = false;
-		this.lastSecondRow = tiles;
-		let r2cc = ++this.r2cc;
-
-		if (!this._changedByUser) {
-			// Angular will not call this handler at the time the value is set. The handler will get called later.
-			// Thus, the caller cannot handle setting _changedByUser back to true. We must do it here.
-			this._changedByUser = true;
-			return;
-		}
-
-		this.seeds = [];
-		this.bottomRows = [''];
-		this._row2SetByAutocomplete = false;
-
-		if (tiles.length == 11 && this.lastFirstRow.length == 7) {
-			const status = "Finding seeds...";
-			this.computingLastRow = true;
-			this.addProgress(status);
-			let seeds = await this.seedService.getPossibleSeedsFor(this.lastFirstRow, tiles) as number[];
-			this.removeProgress(status);
-
-			if (r2cc != this.r2cc)
-				return; // User triggered this method again before getPossibleSeedsFor returned.
-
-			if (seeds.length == 0)
-				this.patternIsInvalid = true;
-			this.setSeeds(seeds);
-		}
-
-		this.computingLastRow = false;
-	}
-
-	setSeeds(seeds: number[]) {
-		this.seeds = seeds;
-
-		let rows: Set<string> = new Set();
-		this.bottomRows = [];
-		for (let seed of this.seeds)
-			rows.add(this.seedService.getBottomRow(seed));
-		for (let row of rows)
-			this.bottomRows.push(row);
-	}
-
 	tileClick(letter: string) {
-		let control = this.form.controls.row1Input;
-		if ((this.form.value.row1Input?.length ?? 0) >= 7) {
-			control = this.form.controls.row2Input;
-		}
-		control.setValue((control.value ?? '') + letter);
+		this.patternInput.appendTile(letter);
 	}
 }

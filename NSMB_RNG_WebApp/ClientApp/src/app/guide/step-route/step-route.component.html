@@ -7,10 +7,8 @@
 
 <ng-container [formGroup]="form" >
 	<label for="routeNormal">Normal route</label>
-	<input (change)="this.runSearch()" id="routeNormal" type="radio" name="route" value="normal" formControlName="route" />
+	<input id="routeNormal" type="radio" name="route" value="normal" formControlName="route" />
 
 	<label for="routeMini">Mini route</label>
-	<input (change)="this.runSearch()" id="routeMini" type="radio" name="route" value="mini" formControlName="route" />
+	<input id="routeMini" type="radio" name="route" value="mini" formControlName="route" />
 </ng-container>
-
-<p [hidden]="!this.done">Done! Go to next step.</p>

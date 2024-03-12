@@ -1,28 +1,19 @@
 <p>Your RNG initialization time is {{ manipDatetime }}.</p>
 <p>
-	Set your console's clock and load the game so that RNG is initialized at {{ manipDatetime }}.<br />
-	Then go to 1-2 and get the tile pattern. When you enter the first row, the second row will automatically be shown.
-	If you don't get the right pattern the first time, that's OK and normal. We'll tell you if you got it.
+	This step is similar to previous one, in that you will get tile patterns.<br />
+	However, you will no longer be changing the time for each pattern.<br />
+	Instead, you will use the date and time specified below. This time should be able to give you the correct RNG.<br />
+	We'll tell you if RNG is correct when you submit. If it takes multiple tries to get the right RNG, that is OK and normal.<br />
+	Once you have the right pattern, do not turn off the game. You will keep good RNG as long as the game stays on.
 </p>
 
-<div class="tileLetters">
-	<div class="tileWithLetter">B <img src="assets/tileB.png" alt="Bean tile" class="tileImage" (click)="tileClick('b')" /></div>
-	<div class="tileWithLetter">C <img src="assets/tileC.png" alt="Cloud tile" class="tileImage" (click)="tileClick('c')" /></div>
-	<div class="tileWithLetter">E <img src="assets/tileE.png" alt="Empty tile" class="tileImage" (click)="tileClick('e')" /></div>
-	<div class="tileWithLetter">I <img src="assets/tileI.png" alt="Islands tile" class="tileImage" (click)="tileClick('i')" /></div>
-	<div class="tileWithLetter">P <img src="assets/tileP.png" alt="Porkchop tile" class="tileImage" (click)="tileClick('p')" /></div>
-	<div class="tileWithLetter">S <img src="assets/tileS.png" alt="Submarinetile" class="tileImage" (click)="tileClick('s')" /></div>
-</div>
+<p>Set your console's clock and load the game so that RNG is initialized at {{ manipDatetime }}.</p>
 
-<ng-container [formGroup]="form">
-	<label for="row1Input">First row</label>
-	<input id="row1Input" type="text" placeholder="first row tiles (7)" formControlName="row1Input" />
-	<button class="btn-primary" type="button" (click)="backspace()">&lt;</button>
-	<button class="btn-primary" type="button" (click)="clearTiles()">Clear</button>
+<app-clickable-tiles [hidden]="!datetimeCalculated" (tileClicked)="tileClick($event)"></app-clickable-tiles>
+<br />
 
-	<app-tile-display [tileCount]="7" [tiles]="this.form.value.row1Input" (tilesOut)="row1Changed($event)"></app-tile-display>
-	<app-tile-display [tileCount]="11" [tiles]="this.row2"></app-tile-display>
-</ng-container>
+<app-full-pattern-input id="patternInput" [hidden]="!datetimeCalculated"></app-full-pattern-input>
+
 
 <p>{{ feedback }}</p>
 

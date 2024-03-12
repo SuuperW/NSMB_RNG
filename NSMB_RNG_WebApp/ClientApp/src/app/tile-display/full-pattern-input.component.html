@@ -1,0 +1,19 @@
+<ng-container [formGroup]="rowsForm">
+<div class="inline">
+	<label for="row1Input">First row</label>
+	<input id="row1Input" type="text" placeholder="first row tiles (7)" formControlName="row1Input" />
+</div>
+<div class="inline">
+	<label for="row2Input">Second row</label>
+	<input id="row2Input" type="text" placeholder="second row tiles (11)" formControlName="row2Input" />
+</div>
+</ng-container>
+
+
+<app-tile-display [tileCount]="7" [tiles]="this.row1Input" (tilesOut)="row1Changed($event)"></app-tile-display>
+<app-tile-display [tileCount]="11" [tiles]="this.row2Input" (tilesOut)="row2Changed($event)"></app-tile-display>
+<p class="reducedMargin">----- bottom row (Verify this matches your actual bottom row. If not, then above tiles are wrong.) -----</p>
+<p class="warning tileHeight" [hidden]="!this.patternIsInvalid">The tile pattern you entered is not possible. Check for typos.</p>
+<p class="warning tileHeight" [hidden]="!this.networkError">Failed to get seed candidates from server. Please try again (by backspacing one tile for first row and re-entering it).</p>
+<div class="spinner tileImage" [hidden]="!this.computingLastRow"></div>
+<app-tile-display *ngFor="let row of this.bottomRows" [hidden]="this.patternIsInvalid || this.computingLastRow" [tileCount]="11" [tiles]="row"></app-tile-display>

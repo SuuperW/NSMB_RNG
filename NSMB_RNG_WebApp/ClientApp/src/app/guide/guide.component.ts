@@ -33,10 +33,10 @@ interface TI {
 	],
 })
 export class GuideComponent implements AfterViewInit {
-	stepComponentList: TI[] = [
-		Step0Component, StepConsoleComponent, StepMacComponent,
+	stepComponentList: any[] = [
+		Step0Component, StepRouteComponent, StepConsoleComponent, StepMacComponent,
 		StepDateComponent, StepTimeComponent, StepTilesComponent,
-		StepRouteComponent, Step6Component,
+		Step6Component,
 	];
 
 	dialog: MatDialog = inject(MatDialog);

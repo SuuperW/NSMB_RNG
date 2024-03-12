@@ -1,62 +1,94 @@
-import { Component, inject } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, ViewChild, inject } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { StepComponent } from '../step';
-import { TileDisplayComponent } from '../../tile-display/tile-display.component';
 import { RngParams, searchForSeeds } from '../../functions/rng-params-search';
 import { getRow1, getRow2 } from '../../functions/tiles';
 import { SeedCalculator } from '../../seed-calculator';
 import { RouterModule } from '@angular/router';
-import { PrecomputedPatterns } from '../precomputed-patterns';
+import { PatternMatchInfo, PrecomputedPatterns } from '../precomputed-patterns';
 import { GuideComponent } from '../guide.component';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { PopupDialogComponent } from '../../popup-dialog/popup-dialog.component';
+import { FullPatternInputComponent } from 'src/app/tile-display/full-pattern-input.component';
+import { ClickableTilesComponent } from 'src/app/tile-display/clickable-tiles.component';
+import { TimeFinderService } from 'src/app/time-finder.service';
 
 @Component({
 	selector: 'app-step6',
 	standalone: true,
 	templateUrl: './step6.component.html',
-	styleUrls: ['./step6.component.css'],
 	imports: [
 		ReactiveFormsModule,
-		TileDisplayComponent,
 		RouterModule,
 		MatDialogModule,
+		FullPatternInputComponent,
+		ClickableTilesComponent,
 	],
 })
-export class Step6Component extends StepComponent {
+export class Step6Component extends StepComponent implements AfterViewInit {
 	dialog: MatDialog = inject(MatDialog);
+	timeFinder: TimeFinderService = inject(TimeFinderService);
 
-	manipDatetime: string;
+	manipDatetime: string = '[calculating date and time...]';
+	datetimeCalculated: boolean = false;
 
-	form = new FormGroup({
-		row1Input: new FormControl(''),
-	});
+	form = new FormGroup({});
 	errorStatus?= undefined;
+
+	@ViewChild(FullPatternInputComponent) patternInput: FullPatternInputComponent = null!;
 
 	feedback: string = '';
 	isGood: boolean = false;
-	desiredRow1: string;
-	desiredSeed: number;
+	desiredRow1: string = '';
+	desiredSeed: number = -1;
 	row2: string = '';
 
-	patterns: PrecomputedPatterns;
 	maxSubLength = 1;
 
 	retrySeed: number = -1;
 	offerRetry: boolean = false;
 
-	constructor(guide: GuideComponent) {
+	constructor(guide: GuideComponent, private cdr: ChangeDetectorRef) {
 		super(guide);
+	}
 
+	ngAfterViewInit(): void {
 		if (!this.guide.expectedParams || !this.guide.paramsRange)
 			throw "invalid state: expectedParams or paramsRange is not set for step6";
 
+		let dt = this.timeFinder.getTime(this.guide.expectedParams, localStorage.getItem('route')!);
+		if (dt === undefined)
+			throw 'error: no datetime'; // should never happen
+
+		this.patternInput.patternChanged.add(this.patternChanged.bind(this));
+
+		let status = 'Searching for a date and time... (may take a few minutes)';
+		this.addProgress(status);
+		dt.then((value) => {
+			this.removeProgress(status);
+
+			if (isNaN(value.valueOf())) {
+				// This shouldn't ever happen.
+				this.manipDatetime = '[ERROR]';
+				return;
+			}
+
+			this.setTargetDateTime(value);
+			this.datetimeCalculated = true;
+		});
+	}
+
+	setTargetDateTime(dt: Date) {
+		if (!this.guide.expectedParams || !this.guide.paramsRange) return; // won't ever happen
+		this.guide.expectedParams.datetime = dt;
+		this.guide.paramsRange.datetime = dt;
+
 		// Find all tile patterns that we should expect
-		this.patterns = new PrecomputedPatterns();
-		this.patterns.addParams(this.guide.paramsRange);
+		this.patternInput.autocomplete = new PrecomputedPatterns();
+		this.patternInput.autocomplete.addParams(this.guide.paramsRange!);
 
 		// And the one we want
-		let params: RngParams = this.guide.expectedParams;
+		let params: RngParams = this.guide.expectedParams!;
 		let sc = new SeedCalculator(params.mac, params.datetime, params.is3DS);
 		sc.timer0 = params.timer0; sc.vCount = params.vCount;
 		sc.vFrame = params.vFrame; sc.buttons = params.buttons;
@@ -72,15 +104,15 @@ export class Step6Component extends StepComponent {
 		'This tile pattern isn\'t what you want, but is expected and RNG was initialized at the right time. Try again.',
 		'RNG initialized at {t}, 1 second too late. Try again.',
 	];
-	async row1Changed(tiles: string) {
+	patternChanged(pi: PatternMatchInfo | null) {
 		this.retrySeed = -1;
 		this.offerRetry = false;
 
-		let pi = this.patterns.getPatternInfo(tiles);
 		// It is possible, though unlikely, that two pre-computed patterns share the same first row.
 		// In most cases, we'll just tell the user we don't know when RNG was initialized.
 		// Given the rarity of this happening, this is acceptable.
 		// Except, if this is the correct pattern we absolutely need to detect that.
+		let tiles = this.patternInput.getPattern()[0];
 		if (tiles == this.desiredRow1) {
 			pi = {
 				ambiguous: false,
@@ -89,9 +121,9 @@ export class Step6Component extends StepComponent {
 			}
 		}
 
-		if (pi.match === undefined) {
+		if (pi?.match === undefined) {
 			// no matching pre-calculated pattern
-			if (!pi.ambiguous)
+			if (!pi?.ambiguous)
 				this.feedback = 'This tile pattern doesn\'t match any expected pattern. Did you mis-type the pattern?';
 			else if (tiles.length == 7)
 				this.feedback = 'This tile pattern isn\'t what you want; try again. (could not determine RNG initialization time)';
@@ -120,21 +152,21 @@ export class Step6Component extends StepComponent {
 					this.retrySeed = pi.match.seed;
 			}
 		}
+
+		this.cdr.detectChanges();
 	}
 
 	tileClick(letter: string) {
-		let control = this.form.controls.row1Input;
-		control.setValue((control.value ?? '') + letter);
+		this.patternInput.appendTile(letter);	
 	}
 	backspace() {
-		let control = this.form.controls.row1Input;
-		control.setValue(control.value?.substring(0, control.value.length - 1) ?? '');
+		// TODO
 	}
 	clearTiles() {
-		this.form.controls.row1Input.setValue('');
+		this.patternInput.clear();
 	}
 
-	calculateNewTime() {
+	async calculateNewTime() {
 		// get RNG params for new seed
 		let rngParams = searchForSeeds([this.retrySeed], this.guide.paramsRange!);
 		if (rngParams.length !== 1) {
@@ -145,8 +177,17 @@ export class Step6Component extends StepComponent {
 			});
 		}
 
-		// use them and go back
+		// use them and get new time
 		this.guide.expectedParams = rngParams[0];
-		this.guide.previous();
+		let status = 'Searching for a date and time... (may take a few minutes)';
+		this.addProgress(status);
+		let dt = await this.timeFinder.getTime(this.guide.expectedParams, localStorage.getItem('route') ?? 'normal');
+		this.removeProgress(status);
+		if (!dt || isNaN(dt.valueOf())) {
+			// This shouldn't ever happen.
+			this.manipDatetime = '[ERROR]';
+			return;
+		}
+		this.setTargetDateTime(dt);
 	}
 }

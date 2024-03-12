@@ -15,6 +15,8 @@ let isMatch = (o: any) => {
 	return o.seed !== undefined;
 }
 
+export type PatternMatchInfo = { ambiguous: boolean, match?: match, extraTiles?: number };
+
 export class PrecomputedPatterns {
 	private tree: _tileTree = {};
 
@@ -57,7 +59,7 @@ export class PrecomputedPatterns {
 		}
 	}
 
-	getPatternInfo(row1: string): { ambiguous: boolean, match?: match, extraTiles?: number } {
+	getPatternInfo(row1: string): PatternMatchInfo {
 		if (row1.length > 7) return { ambiguous: false };
 		if (row1.length < 2) return { ambiguous: true };
 
