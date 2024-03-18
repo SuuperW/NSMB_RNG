@@ -1,6 +1,6 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { RngParams } from './functions/rng-params-search';
-import { WorkerService } from './worker.service';
+import { WorkerWrapper } from './worker-wrapper';
 
 type SearchState = {
 	seeds: number[],
@@ -13,8 +13,6 @@ type SearchState = {
 	providedIn: 'root'
 })
 export class TimeFinderService {
-	worker: WorkerService = inject(WorkerService);
-
 	private timePromiseResolvers: { [key: string]: ((value: Date) => void) | undefined } = {};
 	private timePromises: { [key: string]: Promise<Date> | undefined } = {};
 	private baseSeconds: number = -1;
@@ -84,6 +82,8 @@ export class TimeFinderService {
 	private nextState() {
 		const nextState = this.searchStates[0];
 		this.searchStates[0] = this.nextYear(nextState);
+		// TEST
+		if (nextState.year % 10 == 0) console.log(`${nextState.year}, ${nextState.key}`)
 		if (this.searchStates.length === 1 || nextState.highPriority)
 			return nextState;
 
@@ -95,13 +95,14 @@ export class TimeFinderService {
 
 	private promises: Promise<void>[] = [];
 	/** Begins searching on multiple worker threads, unless they are already running. */
-	private async executeSearch() {
+	private async executeSearch(highPriority: boolean = false) {
 		let executeOne = async () => {
+			let worker = new WorkerWrapper();
 			// Loop until pause requested, or there is no more searching to do.
 			while (!this.paused && this.searchStates.length !== 0) {
 				let nextState = this.nextState();
 				let result: Date | null = null;
-				result = await this.searchOneYear(nextState);
+				result = await this.searchOneYear(nextState, worker);
 				if (result) {
 					// Resolve promise and remove this state from list to process.
 					this.timePromiseResolvers[nextState.key]!(result);
@@ -110,7 +111,11 @@ export class TimeFinderService {
 			}
 		}
 
-		let maxWorkers = Math.max(1, navigator.hardwareConcurrency - 1);
+		let maxWorkers: number;
+		if (highPriority)
+			maxWorkers = Math.max(1, navigator.hardwareConcurrency - 1);
+		else
+			maxWorkers = Math.max(1, navigator.hardwareConcurrency / 2);
 		while (this.promises.length < maxWorkers) {
 			let promise = executeOne();
 			this.promises.push(promise);
@@ -129,8 +134,8 @@ export class TimeFinderService {
 		}
 	}
 
-	private async searchOneYear(ss: SearchState) {
-		return await this.worker.searchForTime(ss.seeds, ss.params, ss.year, ss.year + 1);
+	private async searchOneYear(ss: SearchState, worker: WorkerWrapper) {
+		return await worker.searchForTime(ss.seeds, ss.params, ss.year, ss.year + 1);
 	}
 
 	/** Return a promise for the requested time. If no search with params was started, returns undefined.
@@ -147,9 +152,14 @@ export class TimeFinderService {
 		const key = this.generateKey(params, seeds[0]);
 		// Mark high-priority
 		let searchState = this.searchStates.find((s) => s.key === key);
-		if (searchState)
+		if (searchState) {
 			searchState.highPriority = true;
+			this.paused = false;
+			this.executeSearch(true);
+		}
 
+		// Once we've retrieved a time, it is unlikely we'll want any of the others. Don't waste processing power.
+		this.timePromises[key]?.then((v) => this.pauseSearch());
 		return this.timePromises[key];
 		
 	}
