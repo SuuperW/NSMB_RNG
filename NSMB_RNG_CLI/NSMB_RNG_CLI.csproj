@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>disable</ImplicitUsings>
@@ -11,13 +10,4 @@
   <ItemGroup>
     <ProjectReference Include="..\NSMB_RNG\NSMB_RNG.csproj" />
   </ItemGroup>
-
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="xcopy $(ProjectDir)$(OutDir). ..\output\$(Configuration) /i /s /y" />
-  </Target>
-
-  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="xcopy ..\output\$(Configuration)\7za.exe $(ProjectDir)$(OutDir) /y&#xD;&#xA;xcopy ..\output\$(Configuration)\systems.json $(ProjectDir)$(OutDir) /y" />
-  </Target>
-
 </Project>

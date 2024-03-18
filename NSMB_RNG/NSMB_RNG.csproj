@@ -11,9 +11,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Update="7za.exe;7z_license.txt;systems.json;tiles.png;README.txt">
+    <Content Include="7za.exe;7z_license.txt;systems.json;$(ProjectDir)tiles.png;$(SolutionDir)README.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    </Content>
   </ItemGroup>
-
 </Project>

@@ -27,13 +27,4 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
-
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="xcopy $(ProjectDir)$(OutDir). ..\output\$(Configuration) /i /s /y" />
-  </Target>
-
-  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="xcopy ..\output\$(Configuration)\7za.exe $(ProjectDir)$(OutDir) /y&#xD;&#xA;xcopy ..\output\$(Configuration)\systems.json $(ProjectDir)$(OutDir) /y" />
-  </Target>
-
 </Project>
