@@ -1,4 +1,4 @@
-import { SearchParams, getAllPossibleRow1 } from "../functions/rng-params-search";
+import { SearchParams, getAllPossibleRow1and2 } from "../functions/rng-params-search";
 
 type match = {
 	seed: number,
@@ -48,7 +48,7 @@ export class PrecomputedPatterns {
 			let sp = new SearchParams(params);
 			sp.datetime.setSeconds(sp.datetime.getSeconds() + i);
 			// get seeds, row1s
-			let all = getAllPossibleRow1(sp);
+			let all = getAllPossibleRow1and2(sp);
 			for (let p of all) {
 				this.updateMatchMap(this.tree, {
 					seed: p.seed,
@@ -59,20 +59,26 @@ export class PrecomputedPatterns {
 		}
 	}
 
-	getPatternInfo(row1: string): PatternMatchInfo {
-		if (row1.length > 7) return { ambiguous: false };
+	getPatternInfo(row1: string, row2: string = ''): PatternMatchInfo {
+		if (row1.length > 7 || row2.length > 11) return { ambiguous: false };
 		if (row1.length < 2) return { ambiguous: true };
 
-		row1 = row1.toUpperCase();
+		let tiles = row1.toUpperCase();
+		if (row1.length == 7)
+			tiles += row2.toUpperCase();
+		else if (row2.length !== 0)
+			// If we do not have a full row 1 but do have something in row 2, let's not try autocompleting.
+			return { ambiguous: false };
+
 		let tree = this.tree;
-		for (let i = 0; i < row1.length; i++) {
-			let t = row1[i];
+		for (let i = 0; i < tiles.length; i++) {
+			let t = tiles[i];
 			let next = tree[t];
 			if (next === undefined)
 				return { ambiguous: false };
 			if (isMatch(next)) {
-				// Only one pre-computed pattern matches up to this point. Does it match the rest of the given row1?
-				let remainingTiles = row1.substring(i + 1);
+				// Only one pre-computed pattern matches up to this point. Does it match the rest of the given tiles?
+				let remainingTiles = tiles.substring(i + 1);
 				if (!(next as _match).remainingTiles.startsWith(remainingTiles))
 					return { ambiguous: false };
 				return {

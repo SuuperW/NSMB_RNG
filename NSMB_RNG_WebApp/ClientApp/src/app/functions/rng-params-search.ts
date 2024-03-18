@@ -1,5 +1,5 @@
 import { SeedCalculator } from '../seed-calculator';
-import { getRow1 } from './tiles';
+import { getRow1, getRow1and2, getRow2 } from './tiles';
 
 export type RngParams = {
 	timer0: number,
@@ -113,7 +113,11 @@ export const searchForTime = (seeds: Set<number>, params: RngParams, minYear: nu
 searchForTime.workerName = 'sft';
 
 export type SeedRow = { pattern: string, seed: number };
-export const getAllPossibleRow1 = (options: SearchParams) => {
+/**
+ * @param options The search params to use in generating tile patterns
+ * @returns A single string, 18 characters long, representing tiles for row 1 and row 2.
+ */
+export const getAllPossibleRow1and2 = (options: SearchParams) => {
 	let sc = new SeedCalculator(options.mac, options.datetime, options.is3DS);
 	sc.buttons = options.buttons;
 	let results: SeedRow[] = [];
@@ -125,7 +129,7 @@ export const getAllPossibleRow1 = (options: SearchParams) => {
 			for (let vFrame = options.minVFrame; vFrame <= options.maxVFrame; vFrame++) {
 				sc.vFrame = vFrame;
 				let seed = sc.getSeed();
-				results.push({ pattern: getRow1(seed), seed: seed });
+				results.push({ pattern: getRow1and2(seed), seed: seed });
 			}
 		}
 	}

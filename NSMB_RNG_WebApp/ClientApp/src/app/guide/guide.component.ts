@@ -16,10 +16,6 @@ import { PopupDialogComponent } from '../popup-dialog/popup-dialog.component';
 import { RngParams, SearchParams } from '../functions/rng-params-search';
 import { StepTimeComponent } from './step-time/step-time.component';
 
-interface TI {
-	new(g: GuideComponent): StepComponent
-}
-
 @Component({
 	selector: 'app-guide',
 	standalone: true,

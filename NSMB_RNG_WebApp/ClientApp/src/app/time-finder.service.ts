@@ -9,6 +9,14 @@ type SearchState = {
 	key: string,
 	highPriority: boolean,
 }
+/**
+ * The time finder manages multiple worker threads to search for times based on provided parameters.
+ * Use setBaseSeconds first. This sets the seconds count (seconds between system clock set and RNG initialization) that it will use first when searching for times.
+ * Then add one or more RNG params with addParams. The search will begin immediately.
+ * Retrieving a (promise for a) time with getTime will result in searches for other params being paused, and time finder will increase the number of worker threads to maximize speed.
+ * 
+ * By beginning the search before a particular RngParams is chosen for RNG manip, the time the user has to wait once reaching that point is reduced significantly.
+ */
 @Injectable({
 	providedIn: 'root'
 })
@@ -82,8 +90,6 @@ export class TimeFinderService {
 	private nextState() {
 		const nextState = this.searchStates[0];
 		this.searchStates[0] = this.nextYear(nextState);
-		// TEST
-		if (nextState.year % 10 == 0) console.log(`${nextState.year}, ${nextState.key}`)
 		if (this.searchStates.length === 1 || nextState.highPriority)
 			return nextState;
 

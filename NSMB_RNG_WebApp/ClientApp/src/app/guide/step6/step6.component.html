@@ -11,11 +11,10 @@
 
 <app-clickable-tiles [hidden]="!datetimeCalculated" (tileClicked)="tileClick($event)"></app-clickable-tiles>
 <br />
-
 <app-full-pattern-input id="patternInput" [hidden]="!datetimeCalculated"></app-full-pattern-input>
-
-
 <p>{{ feedback }}</p>
+
+<button class="btn-primary" type="button" (click)="submit()">Submit</button>
 
 <div [hidden]="!this.isGood">
 	<p>

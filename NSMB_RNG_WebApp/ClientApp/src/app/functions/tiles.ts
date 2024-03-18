@@ -63,3 +63,25 @@ export const getRow2 = (seed: number) => {
 
 	return tiles;
 }
+
+export const getRow1and2 = (seed: number) => {
+	let r = seed;
+	for (let i = 0; i < STEPS_BEFORE_ROW1; i++)
+		r = nextState(r);
+
+	let tiles = '';
+	// row 1
+	for (let i = 0; i < 7; i++) {
+		r = nextState(r);
+		tiles += letters[tileIDFromState(r)];
+	}
+	for (let i = 7; i < TILES_PER_ROW; i++)
+		r = nextState(r);
+	// row 2
+	for (let i = 0; i < 11; i++) {
+		r = nextState(r);
+		tiles += letters[tileIDFromState(r)];
+	}
+
+	return tiles;
+}

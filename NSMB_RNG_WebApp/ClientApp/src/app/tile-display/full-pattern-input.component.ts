@@ -67,14 +67,9 @@ export class FullPatternInputComponent {
 		control.setValue((control.value ?? '') + tile);
 	}
 
-	protected async row1Changed(tiles: string) {
-		this.row1 = tiles;
-		this.seeds = [];
-		this.networkError = false;
-
-		// Auto-complete
+	private doAutocomplete() {
 		if (this.autocomplete) {
-			let precomputedResult = this.autocomplete.getPatternInfo(tiles);
+			let precomputedResult = this.autocomplete.getPatternInfo(this.row1, this.row2);
 			let enoughTilesEntered = precomputedResult.extraTiles! >= this.autocompleteRequireExtraTiles;
 			if (!precomputedResult.ambiguous && precomputedResult.match && enoughTilesEntered) {
 				this._row2SetByAutocomplete = true;
@@ -95,6 +90,14 @@ export class FullPatternInputComponent {
 			this._patternChanged.trigger(precomputedResult);
 		} else
 			this._patternChanged.trigger(null);
+	}
+
+	protected async row1Changed(tiles: string) {
+		this.row1 = tiles;
+		this.seeds = [];
+		this.networkError = false;
+
+		this.doAutocomplete();
 
 		if (tiles.length != 7) {
 			return;
@@ -121,7 +124,6 @@ export class FullPatternInputComponent {
 	async row2Changed(tiles: string) {
 		this.patternIsInvalid = false;
 		this.row2 = tiles;
-		let r2cc = ++this.r2cc;
 
 		if (!this._changedByUser) {
 			// Angular will not call this handler at the time the value is set. The handler will get called later.
@@ -133,6 +135,11 @@ export class FullPatternInputComponent {
 		this.seeds = [];
 		this.bottomRows = [''];
 		this._row2SetByAutocomplete = false;
+		let r2cc = ++this.r2cc;
+
+		// If row2Input is invalid, row2 will be a blank string. So autocomplete might find something!
+		if (tiles !== '' || this.row2Input.length === 0)
+			this.doAutocomplete();
 
 		if (tiles.length == 11 && this.row1.length == 7) {
 			this.computingLastRow = true;

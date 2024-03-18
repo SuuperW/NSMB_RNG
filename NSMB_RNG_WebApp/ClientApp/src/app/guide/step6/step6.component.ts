@@ -1,8 +1,8 @@
 import { AfterViewInit, ChangeDetectorRef, Component, ViewChild, inject } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { StepComponent } from '../step';
 import { RngParams, searchForSeeds } from '../../functions/rng-params-search';
-import { getRow1, getRow2 } from '../../functions/tiles';
+import { getRow1 } from '../../functions/tiles';
 import { SeedCalculator } from '../../seed-calculator';
 import { RouterModule } from '@angular/router';
 import { PatternMatchInfo, PrecomputedPatterns } from '../precomputed-patterns';
@@ -39,9 +39,8 @@ export class Step6Component extends StepComponent implements AfterViewInit {
 
 	feedback: string = '';
 	isGood: boolean = false;
+	secondsDelta?: number;
 	desiredRow1: string = '';
-	desiredSeed: number = -1;
-	row2: string = '';
 
 	maxSubLength = 1;
 
@@ -92,8 +91,8 @@ export class Step6Component extends StepComponent implements AfterViewInit {
 		let sc = new SeedCalculator(params.mac, params.datetime, params.is3DS);
 		sc.timer0 = params.timer0; sc.vCount = params.vCount;
 		sc.vFrame = params.vFrame; sc.buttons = params.buttons;
-		this.desiredSeed = sc.getSeed();
-		this.desiredRow1 = getRow1(this.desiredSeed);
+		let desiredSeed = sc.getSeed();
+		this.desiredRow1 = getRow1(desiredSeed);
 
 		// UI
 		this.manipDatetime = `${params.datetime.toDateString()} ${params.datetime.toLocaleTimeString()}`;
@@ -107,53 +106,73 @@ export class Step6Component extends StepComponent implements AfterViewInit {
 	patternChanged(pi: PatternMatchInfo | null) {
 		this.retrySeed = -1;
 		this.offerRetry = false;
+		this.feedback = '';
+		this.secondsDelta = undefined;
 
-		// It is possible, though unlikely, that two pre-computed patterns share the same first row.
-		// In most cases, we'll just tell the user we don't know when RNG was initialized.
-		// Given the rarity of this happening, this is acceptable.
-		// Except, if this is the correct pattern we absolutely need to detect that.
-		let tiles = this.patternInput.getPattern()[0];
-		if (tiles == this.desiredRow1) {
-			pi = {
-				ambiguous: false,
-				match: { seed: this.desiredSeed, seconds: 0 }
-				// If we're wrong and user doesn't have the right seed, user should see that by row2 being wrong.
-			}
-		}
+		// It is possible, though exceedingly unlikely, that two pre-computed patterns share the same first two rows.
+		// We ignore this possibility. (It cannot happen for rows that look like the correct pattern.)
 
 		if (pi?.match === undefined) {
 			// no matching pre-calculated pattern
 			if (!pi?.ambiguous)
 				this.feedback = 'This tile pattern doesn\'t match any expected pattern. Did you mis-type the pattern?';
-			else if (tiles.length == 7)
-				this.feedback = 'This tile pattern isn\'t what you want; try again. (could not determine RNG initialization time)';
-			else
-				this.feedback = '';
 			this.isGood = false;
-			this.row2 = '';
 		} else {
-			// Display second row so user can verify
-			this.row2 = getRow2(pi.match.seed);
-
-			// Check if it's the good pattern, +1 sec, +0 sec, or -1 sec
-			this.isGood = this.desiredRow1.startsWith(tiles);
+			// Check if it's the good pattern
+			let row1 = this.patternInput.getPattern()[0];
+			this.isGood = this.desiredRow1.startsWith(row1);
 			if (this.isGood)
 				this.feedback = 'This is the correct tile pattern.';
-			else {
-				let newTime = new Date(this.guide.expectedParams!.datetime);
-				newTime.setSeconds(newTime.getSeconds() + pi.match.seconds);
-				this.feedback = this._feedbacks[pi.match.seconds + 1].replace('{t}', newTime.toLocaleTimeString());
 
-				// Originally I was going to only suggest getting a new date/time after getting the same
-				// wrong seed 3+ times. But I think that is likely to not work since users may decide
-				// not to re-enter the same incorrect tile pattern when they've seen it before.
-				// Because why would they? They already know it's wrong.
-				if (pi.match.seconds === 0)
-					this.retrySeed = pi.match.seed;
-			}
+			this.secondsDelta = pi.match.seconds;
 		}
 
-		this.cdr.detectChanges();
+		//this.cdr.detectChanges();
+	}
+
+	protected submit() {
+		if (this.secondsDelta) { // Autocomplete was triggered with a match
+			// Display message for the number of seconds
+			let message: string[];
+			if (this.isGood) {
+				message = [
+					this.feedback,
+					'You\'re all set to begin speedrun attempts!',
+					'Go to the game\'s main menu and start a new game. You won\'t need to set the clock again until you close the game.',
+					'Notice how most tiles are the same, and the pattern repeats; it should be easy to check for this pattern in the future without coming back here.',
+					'Review instructions for how to manipulate RNG during attempts <a [routerLink]="[\'/in-run\']">here</a>.'
+				];
+			} else {
+				let newTime = new Date(this.guide.expectedParams!.datetime);
+				newTime.setSeconds(newTime.getSeconds() + this.secondsDelta);
+				message = [this._feedbacks[this.secondsDelta + 1].replace('{t}', newTime.toLocaleTimeString())];
+			}
+			this.dialog.open(PopupDialogComponent, {
+				data: { message }
+			});
+			// Submit to the results manager, which will track most common RNG params.
+			let rngParams = searchForSeeds([this.retrySeed], this.guide.paramsRange!);
+			if (rngParams.length !== 1) {
+				throw 'Something went wrong and we couldn\'t determine RNG params. (this should never happen)';
+			}
+			// TODO: Get a reference to result manager, and modify it to accept same-time submissions (or have a mode to do so)
+			// Check if suggested RNG params has changed.
+		} else {
+			// tell user to finish entering tile pattern or re-affirm that it "doesn't match any expected pattern"
+			if (this.feedback === '') {
+				this.dialog.open(PopupDialogComponent, {
+					data: {
+						message: ['Finish entering your tile pattern before submitting.'],
+					}
+				});
+			} else {
+				this.dialog.open(PopupDialogComponent, {
+					data: {
+						message: ['This tile pattern doesn\'t match any expected pattern. Did you mis-type the pattern?'],
+					}
+				});
+			}
+		}
 	}
 
 	tileClick(letter: string) {
