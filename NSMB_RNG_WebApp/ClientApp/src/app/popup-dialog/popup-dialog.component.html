@@ -1,4 +1,4 @@
 <div class="popup">
 	<p *ngFor="let p of this.data.message">{{ p }}</p>
-	<button class="btn-primary" type="button" (click)="onOkClick()">OK</button>
+	<button *ngFor="let b of this.buttons" class="btn-primary" type="button" (click)="onButtonClick(b)">{{ b }}</button>
 </div>

@@ -14,9 +14,9 @@ import { ClickableTilesComponent } from 'src/app/tile-display/clickable-tiles.co
 import { TimeFinderService } from 'src/app/time-finder.service';
 
 @Component({
-	selector: 'app-step6',
+	selector: 'app-step-get-manip',
 	standalone: true,
-	templateUrl: './step6.component.html',
+	templateUrl: './step-get-manip.component.html',
 	imports: [
 		ReactiveFormsModule,
 		RouterModule,
@@ -25,7 +25,7 @@ import { TimeFinderService } from 'src/app/time-finder.service';
 		ClickableTilesComponent,
 	],
 })
-export class Step6Component extends StepComponent implements AfterViewInit {
+export class StepGetManipComponent extends StepComponent implements AfterViewInit {
 	dialog: MatDialog = inject(MatDialog);
 	timeFinder: TimeFinderService = inject(TimeFinderService);
 

@@ -1,17 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { Step6Component } from './step6.component';
-import { RngParams, SearchParams } from '../../functions/rng-params-search';
+import { StepGetManipComponent } from './step-get-manip.component';
+import { SearchParams } from '../../functions/rng-params-search';
 import { RouterTestingModule } from '@angular/router/testing';
 import { GuideComponent } from '../guide.component';
 
 describe('Step6Component', () => {
-	let component: Step6Component;
-	let fixture: ComponentFixture<Step6Component>;
+	let component: StepGetManipComponent;
+	let fixture: ComponentFixture<StepGetManipComponent>;
 
 	beforeEach(async () => {
 		await TestBed.configureTestingModule({
-			imports: [ Step6Component, RouterTestingModule ],
+			imports: [ StepGetManipComponent, RouterTestingModule ],
 			providers: [{ provide: GuideComponent, useFactory: () => { return g; } }]
 		})
 			.compileComponents();
@@ -34,7 +34,7 @@ describe('Step6Component', () => {
 			maxTimer0: 0,
 		})
 
-		fixture = TestBed.createComponent(Step6Component);
+		fixture = TestBed.createComponent(StepGetManipComponent);
 		component = fixture.componentInstance;
 		fixture.detectChanges();
 	});

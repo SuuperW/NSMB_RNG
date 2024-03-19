@@ -9,10 +9,10 @@ import { StepMacComponent } from './step-mac/step-mac.component';
 import { StepDateComponent } from './step-date/step-date.component';
 import { StepTilesComponent } from './step-tiles/step-tiles.component';
 import { StepRouteComponent } from './step-route/step-route.component';
-import { Step6Component } from './step6/step6.component';
+import { StepGetManipComponent } from './step-get-manip/step-get-manip.component';
 import { CommonModule } from '@angular/common';
 import { Step0Component } from './step0/step0.component';
-import { PopupDialogComponent } from '../popup-dialog/popup-dialog.component';
+import { PopupDialogComponent, PopupDialogData } from '../popup-dialog/popup-dialog.component';
 import { RngParams, SearchParams } from '../functions/rng-params-search';
 import { StepTimeComponent } from './step-time/step-time.component';
 import { RngParamsSearchResultManager } from './rng-params-search-result-manager';
@@ -33,7 +33,7 @@ export class GuideComponent implements AfterViewInit {
 	stepComponentList: any[] = [
 		Step0Component, StepRouteComponent, StepConsoleComponent, StepMacComponent,
 		StepDateComponent, StepTimeComponent, StepTilesComponent,
-		Step6Component,
+		StepGetManipComponent,
 	];
 
 	dialog: MatDialog = inject(MatDialog);
@@ -75,7 +75,7 @@ export class GuideComponent implements AfterViewInit {
 		if (this.stepComponent?.form.invalid || this.stepComponent?.errorStatus) {
 			this.dialog.open(PopupDialogComponent, {
 				data: {
-					message: [this.getErrorsForForm(this.stepComponent?.form, this.stepComponent?.errorStatus)]
+					message: [this.getErrorsForForm(this.stepComponent?.form, this.stepComponent?.errorStatus)],
 				}
 			});
 			return;
@@ -86,6 +86,20 @@ export class GuideComponent implements AfterViewInit {
 	}
 
 	previous() {
+		if (this.currentStep >= this.stepComponentList.indexOf(StepTilesComponent)) {
+			this.dialog.open<PopupDialogComponent, PopupDialogData>(PopupDialogComponent, {
+				data: {
+					message: ['Are you sure you want to go back? You will lose all previously entered tile patterns.'],
+					buttons: ['Yes', 'No'],
+					buttonHandler: (t: string) => {
+						if (t === 'Yes')
+							this.currentStep--;
+					},
+				}
+			});
+			return;
+		}
+
 		if (this.currentStep != 0)
 			this.currentStep--;
 	}
