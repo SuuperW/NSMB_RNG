@@ -101,6 +101,11 @@ export class Step6Component extends StepComponent implements AfterViewInit {
 		'RNG initialized at {t}, 1 second too late. Try again.',
 	];
 	patternChanged(pi: PatternMatchInfo | null) {
+		// When the page is translated by Chrome, text is replaced by the translation.
+		// This destroys the Angular {{ data binding }}. In the case of this.feedback this is OK since it only has one value that is ever displayed.
+		// However if this is changed and feedback can take one of multiple values, we will need to address this issue.
+		// A solution might be to use an array and *ngFor, since that seems to work for guide component's status messages.
+
 		this.feedback = '';
 		this.lastMatchInfo = pi;
 

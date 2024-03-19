@@ -3,7 +3,7 @@
 	You will need a saved file in the game before doing this.
 </p>
 <p>
-	Set your console's time to {{ dateToTime(date) }} and load the game as in step 3, making sure RNG is initialized at {{ targetDateTime }}.*<br />
+	Set your console's time to<span class="notranslate"> {{ dateToTime(date) }} </span>and load the game as in step 3, making sure RNG is initialized at<span class="notranslate"> {{ targetDateTime }}</span>.*<br />
 	Then, load your saved file. This must be done BEFORE the intro cutscene begins playing.**<br />
 	Go to world 1-2 and enter the level. Pause the game while the top row of tiles is still on-screen.<br />
 	Your tile pattern is the first 7 inner tiles in the topmost row plus all 11 visible inner tiles in the second row.<br />
@@ -22,13 +22,13 @@
 <app-clickable-tiles (tileClicked)="tileClick($event)"></app-clickable-tiles>
 <br />
 
-<p>Current time to set: {{ dateToTime(date) }}</p>
+<p>Current time to set:<span class="notranslate"> {{ dateToTime(date) }}</span></p>
 <app-full-pattern-input id="patternInput"></app-full-pattern-input>
 <br />
 
 
 <button class="btn-primary" type="button" (click)="submit()">Submit</button>
-<p>Patterns submitted: {{ submitCount }}</p>
+<p>Patterns submitted:<span class="notranslate"> {{ submitCount }}</span></p>
 
 <p class="fine-print">
 	*The app should be able to detect if you're off by one second most of the time, but it will be less reliable with more mistakes. If you load the game and are not confident RNG was initialized at the correct time, try again before getting a tile pattern.<br />

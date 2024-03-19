@@ -1,4 +1,4 @@
-<p>Your RNG initialization time is {{ manipDatetime }}.</p>
+<p>Your RNG initialization time is<span class="notranslate"> {{ manipDatetime }}</span>.</p>
 <p>
 	This step is similar to previous one, in that you will get tile patterns.<br />
 	However, you will no longer be changing the time for each pattern.<br />
@@ -7,12 +7,12 @@
 	Once you have the right pattern, do not turn off the game. You will keep good RNG as long as the game stays on.
 </p>
 
-<p>Set your console's clock and load the game so that RNG is initialized at {{ manipDatetime }}.</p>
+<p>Set your console's clock and load the game so that RNG is initialized at<span class="notranslate"> {{ manipDatetime }}</span>.</p>
 
 <app-clickable-tiles [hidden]="!datetimeCalculated" (tileClicked)="tileClick($event)"></app-clickable-tiles>
 <br />
 <app-full-pattern-input id="patternInput" [hidden]="!datetimeCalculated"></app-full-pattern-input>
-<p>{{ feedback }}</p>
+<p [hidden]="!feedback">{{ feedback }}</p>
 
 <button class="btn-primary" type="button" (click)="submit()">Submit</button>
 <br />
