@@ -15,6 +15,7 @@ import { Step0Component } from './step0/step0.component';
 import { PopupDialogComponent } from '../popup-dialog/popup-dialog.component';
 import { RngParams, SearchParams } from '../functions/rng-params-search';
 import { StepTimeComponent } from './step-time/step-time.component';
+import { RngParamsSearchResultManager } from './rng-params-search-result-manager';
 
 @Component({
 	selector: 'app-guide',
@@ -49,6 +50,7 @@ export class GuideComponent implements AfterViewInit {
 
 	paramsRange?: SearchParams;
 	expectedParams?: RngParams;
+	resultManager?: RngParamsSearchResultManager;
 
 	constructor(private cdr: ChangeDetectorRef) { }
 

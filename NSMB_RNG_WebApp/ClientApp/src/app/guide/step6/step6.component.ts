@@ -39,13 +39,10 @@ export class Step6Component extends StepComponent implements AfterViewInit {
 
 	feedback: string = '';
 	isGood: boolean = false;
-	secondsDelta?: number;
 	desiredRow1: string = '';
 
-	maxSubLength = 1;
-
-	retrySeed: number = -1;
-	offerRetry: boolean = false;
+	protected newParams?: RngParams;
+	private lastMatchInfo: PatternMatchInfo | null = null;
 
 	constructor(guide: GuideComponent, private cdr: ChangeDetectorRef) {
 		super(guide);
@@ -65,22 +62,22 @@ export class Step6Component extends StepComponent implements AfterViewInit {
 		this.addProgress(status);
 		dt.then((value) => {
 			this.removeProgress(status);
-
-			if (isNaN(value.valueOf())) {
-				// This shouldn't ever happen.
-				this.manipDatetime = '[ERROR]';
-				return;
-			}
-
 			this.setTargetDateTime(value);
 			this.datetimeCalculated = true;
 		});
 	}
 
 	setTargetDateTime(dt: Date) {
+		if (isNaN(dt.valueOf())) {
+			// This shouldn't ever happen.
+			this.manipDatetime = '[ERROR]';
+			return;
+		}
 		if (!this.guide.expectedParams || !this.guide.paramsRange) return; // won't ever happen
+
 		this.guide.expectedParams.datetime = dt;
 		this.guide.paramsRange.datetime = dt;
+		this.newParams = undefined;
 
 		// Find all tile patterns that we should expect
 		this.patternInput.autocomplete = new PrecomputedPatterns();
@@ -104,10 +101,8 @@ export class Step6Component extends StepComponent implements AfterViewInit {
 		'RNG initialized at {t}, 1 second too late. Try again.',
 	];
 	patternChanged(pi: PatternMatchInfo | null) {
-		this.retrySeed = -1;
-		this.offerRetry = false;
 		this.feedback = '';
-		this.secondsDelta = undefined;
+		this.lastMatchInfo = pi;
 
 		// It is possible, though exceedingly unlikely, that two pre-computed patterns share the same first two rows.
 		// We ignore this possibility. (It cannot happen for rows that look like the correct pattern.)
@@ -116,47 +111,69 @@ export class Step6Component extends StepComponent implements AfterViewInit {
 			// no matching pre-calculated pattern
 			if (!pi?.ambiguous)
 				this.feedback = 'This tile pattern doesn\'t match any expected pattern. Did you mis-type the pattern?';
-			this.isGood = false;
-		} else {
+		}
+
+		this.cdr.detectChanges();
+	}
+
+	/**
+	 * Checks how the user's tile pattern compares to expected RNG and provides appropriate feedback to the user.
+	 * Tracks submissions with resultManager to determine if a new datetime should be used.
+	 */
+	protected async submit() {
+		if (this.lastMatchInfo?.match) {
 			// Check if it's the good pattern
 			let row1 = this.patternInput.getPattern()[0];
 			this.isGood = this.desiredRow1.startsWith(row1);
-			if (this.isGood)
-				this.feedback = 'This is the correct tile pattern.';
-
-			this.secondsDelta = pi.match.seconds;
-		}
-
-		//this.cdr.detectChanges();
-	}
-
-	protected submit() {
-		if (this.secondsDelta) { // Autocomplete was triggered with a match
 			// Display message for the number of seconds
 			let message: string[];
 			if (this.isGood) {
 				message = [
-					this.feedback,
-					'You\'re all set to begin speedrun attempts!',
-					'Go to the game\'s main menu and start a new game. You won\'t need to set the clock again until you close the game.',
-					'Notice how most tiles are the same, and the pattern repeats; it should be easy to check for this pattern in the future without coming back here.',
-					'Review instructions for how to manipulate RNG during attempts <a [routerLink]="[\'/in-run\']">here</a>.'
+					'This is the correct tile pattern. Yay!',
+					'Don\'t turn off the game now. For further instructions, see text below the submit button.',
 				];
 			} else {
 				let newTime = new Date(this.guide.expectedParams!.datetime);
-				newTime.setSeconds(newTime.getSeconds() + this.secondsDelta);
-				message = [this._feedbacks[this.secondsDelta + 1].replace('{t}', newTime.toLocaleTimeString())];
+				newTime.setSeconds(newTime.getSeconds() + this.lastMatchInfo.match.seconds);
+				message = [this._feedbacks[this.lastMatchInfo.match.seconds + 1].replace('{t}', newTime.toLocaleTimeString())];
 			}
 			this.dialog.open(PopupDialogComponent, {
 				data: { message }
 			});
-			// Submit to the results manager, which will track most common RNG params.
-			let rngParams = searchForSeeds([this.retrySeed], this.guide.paramsRange!);
+			// Submit the result and check if suggested RNG params has changed.
+			const rngParams = searchForSeeds([this.lastMatchInfo.match.seed], this.guide.paramsRange!);
 			if (rngParams.length !== 1) {
 				throw 'Something went wrong and we couldn\'t determine RNG params. (this should never happen)';
 			}
-			// TODO: Get a reference to result manager, and modify it to accept same-time submissions (or have a mode to do so)
-			// Check if suggested RNG params has changed.
+			this.guide.resultManager = this.guide.resultManager!; // We know it is defined here.
+			const oldParams = this.guide.resultManager.getMostLikelyResult()!;
+			this.guide.resultManager.submitResult({
+				result: rngParams,
+				seeds: [this.lastMatchInfo.match.seed],
+				row1: this.patternInput.getPattern()[0],
+				row2: this.patternInput.getPattern()[1],
+				offsetUsed: 0,
+			});
+			this.patternInput.clear();
+			const newParams = this.guide.resultManager.getMostLikelyResult()!;
+			const paramsEqual = (p1: RngParams, p2: RngParams) => { return p1.timer0 === p2.timer0 && p1.vCount === p2.vCount; };
+			if (!paramsEqual(oldParams, newParams)) {
+				// Since the most likely / recommended params have changed, find the corresponding datetime.
+				const status = 'Searching for new date and time...';
+				this.addProgress(status);
+
+				const route = localStorage.getItem('route') ?? 'normal';
+				this.timeFinder.addParams(newParams, route);
+				const dt = await this.timeFinder.getTime(newParams, route)!;
+
+				// Ensure this is still the most likely params; finding the new time could have taken a long time.
+				if (paramsEqual(this.guide.resultManager.getMostLikelyResult()!, newParams)) {
+					this.newParams = newParams;
+					this.newParams.datetime = dt;
+				}
+
+				this.removeProgress(status);
+			}
 		} else {
 			// tell user to finish entering tile pattern or re-affirm that it "doesn't match any expected pattern"
 			if (this.feedback === '') {
@@ -178,35 +195,13 @@ export class Step6Component extends StepComponent implements AfterViewInit {
 	tileClick(letter: string) {
 		this.patternInput.appendTile(letter);	
 	}
-	backspace() {
-		// TODO
-	}
-	clearTiles() {
-		this.patternInput.clear();
-	}
 
-	async calculateNewTime() {
-		// get RNG params for new seed
-		let rngParams = searchForSeeds([this.retrySeed], this.guide.paramsRange!);
-		if (rngParams.length !== 1) {
-			this.dialog.open(PopupDialogComponent, {
-				data: {
-					message: ['Something went wrong and we couldn\'t determine RNG params. (this should never happen)'],
-				}
-			});
-		}
+	protected async useNewParams() {
+		this.guide.expectedParams = this.newParams;
+		this.setTargetDateTime(this.newParams!.datetime);
 
-		// use them and get new time
-		this.guide.expectedParams = rngParams[0];
-		let status = 'Searching for a date and time... (may take a few minutes)';
-		this.addProgress(status);
-		let dt = await this.timeFinder.getTime(this.guide.expectedParams, localStorage.getItem('route') ?? 'normal');
-		this.removeProgress(status);
-		if (!dt || isNaN(dt.valueOf())) {
-			// This shouldn't ever happen.
-			this.manipDatetime = '[ERROR]';
-			return;
-		}
-		this.setTargetDateTime(dt);
+		this.dialog.open(PopupDialogComponent, {
+			data: { message: [`The new date and time is ${this.manipDatetime}`] }
+		});		
 	}
 }

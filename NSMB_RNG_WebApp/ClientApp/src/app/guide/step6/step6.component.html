@@ -15,6 +15,7 @@
 <p>{{ feedback }}</p>
 
 <button class="btn-primary" type="button" (click)="submit()">Submit</button>
+<br />
 
 <div [hidden]="!this.isGood">
 	<p>
@@ -25,15 +26,7 @@
 	</p>
 </div>
 
-<div [hidden]="this.retrySeed == -1">
-	<p>Did you get this pattern 3+ times?</p>
-	<button class="btn-primary" type="button" [hidden]="this.offerRetry" (click)="this.offerRetry = true">Yes</button>
-	<div [hidden]="!this.offerRetry">
-		<p>
-			Each pattern is associated with some RNG params. The RNG params used to calculate RNG initialization time came from the patterns you entered in a previous step.<br />
-			Since this pattern is apparently more common, it may be helpful to calculate a new RNG initialization time using these RNG params instead.<br />
-			This may help you get the right pattern if you're having trouble getting it with the current time.
-		</p>
-		<button id="newtime" class="btn-primary" type="button" (click)="calculateNewTime()">Get new time</button>
-	</div>
+<div [hidden]="!this.newParams">
+	<p>We have a new date and time that might be more likely to give the correct RNG and tile pattern.</p>
+	<button class="btn-primary" type="button" (click)="useNewParams()">Use new time</button>
 </div>

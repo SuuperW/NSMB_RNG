@@ -82,7 +82,7 @@ export class StepTilesComponent extends StepComponent implements AfterViewInit {
 	requiredFullSearch: boolean = false;
 	displayedBadPatternsMessage: boolean = false;
 
-	resultManager: RngParamsSearchResultManager;
+	private get resultManager() { return this.guide.resultManager!; } // We set it in constructor, and nothing else sets it; it is always defined.
 
 	constructor(guide: GuideComponent) {
 		super(guide);
@@ -100,7 +100,7 @@ export class StepTilesComponent extends StepComponent implements AfterViewInit {
 			this.date = new Date();
 			this.targetDateTime = 'INVALID [go back and enter a date and time!]';
 		}
-		this.resultManager = new RngParamsSearchResultManager(this.date, this.http);
+		this.guide.resultManager = new RngParamsSearchResultManager(this.date, this.http);
 
 		this.generalInputs = {
 			mac: localStorage.getItem('mac')!,

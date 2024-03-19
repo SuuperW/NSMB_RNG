@@ -107,15 +107,17 @@ export class RngParamsSearchResultManager {
 		this.range.maxVCount = Math.max(this.range.maxVCount, params.vCount);
 	}
 	/**
-	 * This method should not ever be called twice with the same time.
+	 * This method should not be called twice with the same time, until "most likely" RngParams are obtained.
 	 * @param result The result of the RNG parameter search.
-	 * @param time The time of expected RNG initialization.
+	 * @param time The time of expected RNG initialization. Required until "most likely" RngParams are obtained.
 	 */
-	submitResult(result: RngParamsSearch, time: Date) {
-		if (this.submittedTimes.has(time.valueOf())) {
-			// this should never happen; caller should ensure no two calls have the same time
-			alert('something went wrong; submission discarded');
-			return;
+	submitResult(result: RngParamsSearch, time?: Date) {
+		if (!this.mostLikely) {
+			if (!time || this.submittedTimes.has(time.valueOf())) {
+				// this should never happen; caller should ensure no two calls have the same time
+				alert('something went wrong; submission discarded');
+				return;
+			}
 		}
 
 		this.submitCount++;
@@ -125,7 +127,7 @@ export class RngParamsSearchResultManager {
 				row1: result.row1,
 				row2: result.row2,
 				seeds: result.seeds,
-				time: time,
+				time: time!,
 			});
 		}
 		for (let params of result.result) {	
@@ -163,6 +165,7 @@ export class RngParamsSearchResultManager {
 		this.postResults(result);
 	}
 
+	private mostLikely: ParamsWithCount | undefined;
 	private toParams(p: ParamsWithCount): RngParams {
 		return {
 			timer0: p.timer0,
@@ -184,8 +187,13 @@ export class RngParamsSearchResultManager {
 		let highestCount = this.distinctParams.sort((a, b) => b.count - a.count)[0];
 		if (highestCount.count === 1)
 			return undefined;
-		else
-			return this.toParams(highestCount);
+		else {
+			// Update most likely only if there is a higher (not equal) count
+			if (!this.mostLikely || highestCount.count > this.mostLikely.count)
+				this.mostLikely = highestCount;
+		}
+
+		return this.toParams(this.mostLikely);
 	}
 
 	getSearchParams(dt: Date) {

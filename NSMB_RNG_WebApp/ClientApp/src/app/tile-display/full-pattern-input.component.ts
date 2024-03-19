@@ -72,20 +72,24 @@ export class FullPatternInputComponent {
 			let precomputedResult = this.autocomplete.getPatternInfo(this.row1, this.row2);
 			let enoughTilesEntered = precomputedResult.extraTiles! >= this.autocompleteRequireExtraTiles;
 			if (!precomputedResult.ambiguous && precomputedResult.match && enoughTilesEntered) {
-				this._row2SetByAutocomplete = true;
-				let row2 = getRow2(precomputedResult.match.seed);
-				// _changedByUser being false will short-circuit the event handler.
-				// However, the event handler does not happen until later on so we cannot
-				// un-set _changedByUser afterwards. The handler must do that for us.
-				// Additionally, the event handler will only be triggered if the set value is different from the current value.
-				if (row2 != this.row2Input) this._changedByUser = false;
-				this.row2Input = row2;
 				this.setSeeds([precomputedResult.match.seed]);
-				this.row1Input = getRow1(precomputedResult.match.seed);
-				this.cdr.detectChanges();
+
+				let row2 = getRow2(precomputedResult.match.seed);
+				this._row2SetByAutocomplete = true;
+				this._changedByUser = false; // short-circuit event handler
+				if (row2 != this.row2Input) {
+					this.row2Input = row2;
+					this.cdr.detectChanges(); // triggers event handler
+				}
+				let row1 = getRow1(precomputedResult.match.seed);
+				if (this.row1Input != row1) {
+					this.row1Input = row1;
+					this.cdr.detectChanges();
+				}
+				this._changedByUser = true;
+				
 			} else if (this._row2SetByAutocomplete) {
-				this.row2Input = '';
-				this._row2SetByAutocomplete = false;
+				this.row2Input = this.rowsForm.value.row2Input ?? '';
 			}
 			this._patternChanged.trigger(precomputedResult);
 		} else
@@ -94,6 +98,9 @@ export class FullPatternInputComponent {
 
 	protected async row1Changed(tiles: string) {
 		this.row1 = tiles;
+		if (!this._changedByUser)
+			return;
+
 		this.seeds = [];
 		this.networkError = false;
 
@@ -124,13 +131,8 @@ export class FullPatternInputComponent {
 	async row2Changed(tiles: string) {
 		this.patternIsInvalid = false;
 		this.row2 = tiles;
-
-		if (!this._changedByUser) {
-			// Angular will not call this handler at the time the value is set. The handler will get called later.
-			// Thus, the caller cannot handle setting _changedByUser back to true. We must do it here.
-			this._changedByUser = true;
+		if (!this._changedByUser)
 			return;
-		}
 
 		this.seeds = [];
 		this.bottomRows = [''];
@@ -140,6 +142,8 @@ export class FullPatternInputComponent {
 		// If row2Input is invalid, row2 will be a blank string. So autocomplete might find something!
 		if (tiles !== '' || this.row2Input.length === 0)
 			this.doAutocomplete();
+		else
+			this._patternChanged.trigger(null);
 
 		if (tiles.length == 11 && this.row1.length == 7) {
 			this.computingLastRow = true;
@@ -154,7 +158,6 @@ export class FullPatternInputComponent {
 		}
 
 		this.computingLastRow = false;
-		this._patternChanged.trigger(null);
 	}
 
 	private setSeeds(seeds: number[]) {
