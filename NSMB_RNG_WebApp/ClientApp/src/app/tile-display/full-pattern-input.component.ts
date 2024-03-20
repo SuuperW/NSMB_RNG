@@ -67,6 +67,15 @@ export class FullPatternInputComponent {
 		control.setValue((control.value ?? '') + tile);
 	}
 
+	public backspace() {
+		let control = this.rowsForm.controls.row2Input;
+		if ((control.value?.length ?? 0) === 0) {
+			control = this.rowsForm.controls.row1Input;
+		}
+		const oldValue = control.value ?? '';
+		control.setValue(oldValue.substring(0, oldValue.length - 1));
+	}
+
 	private doAutocomplete() {
 		if (this.autocomplete) {
 			let precomputedResult = this.autocomplete.getPatternInfo(this.row1, this.row2);

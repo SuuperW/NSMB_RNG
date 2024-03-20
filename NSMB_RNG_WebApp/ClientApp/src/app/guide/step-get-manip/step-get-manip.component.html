@@ -9,7 +9,7 @@
 
 <p>Set your console's clock and load the game so that RNG is initialized at<span class="notranslate"> {{ manipDatetime }}</span>.</p>
 
-<app-clickable-tiles [hidden]="!datetimeCalculated" (tileClicked)="tileClick($event)"></app-clickable-tiles>
+<app-clickable-tiles [hidden]="!datetimeCalculated" (tileClicked)="tileClick($event)" (backspaceClicked)="backspace()"></app-clickable-tiles>
 <br />
 <app-full-pattern-input id="patternInput" [hidden]="!datetimeCalculated"></app-full-pattern-input>
 <p [hidden]="!feedback">{{ feedback }}</p>

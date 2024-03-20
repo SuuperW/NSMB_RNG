@@ -361,4 +361,8 @@ export class StepTilesComponent extends StepComponent implements AfterViewInit {
 	tileClick(letter: string) {
 		this.patternInput.appendTile(letter);
 	}
+
+	backspace() {
+		this.patternInput.backspace();
+	}
 }

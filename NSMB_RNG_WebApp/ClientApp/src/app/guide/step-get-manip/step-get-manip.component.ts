@@ -212,6 +212,10 @@ export class StepGetManipComponent extends StepComponent implements AfterViewIni
 		this.patternInput.appendTile(letter);	
 	}
 
+	backspace() {
+		this.patternInput.backspace();
+	}
+
 	protected async useNewParams() {
 		this.guide.expectedParams = this.newParams;
 		this.setTargetDateTime(this.newParams!.datetime);

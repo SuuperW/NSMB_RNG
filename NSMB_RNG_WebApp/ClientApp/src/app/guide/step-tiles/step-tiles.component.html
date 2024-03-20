@@ -19,7 +19,7 @@
 <img class="example" src="assets/exampleTilePattern.jpg" alt="An example picture of 1-2" />
 <br />
 <p>Here are the letters for each tile. You can type or click the tile images below to input your pattern.</p>
-<app-clickable-tiles (tileClicked)="tileClick($event)"></app-clickable-tiles>
+<app-clickable-tiles (tileClicked)="tileClick($event)" (backspaceClicked)="backspace()"></app-clickable-tiles>
 <br />
 
 <p>Current time to set:<span class="notranslate"> {{ dateToTime(date) }}</span></p>
