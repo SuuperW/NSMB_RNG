@@ -16,7 +16,10 @@ describe('StepTilesComponent', () => {
 	let tiles014515 = ['sccpbep', 'beebpcsbbep'];
 	let tiles014514 = ['scbeipe', 'pbbiesiepee'];
 	let tiles014415 = ['ecepbbp', 'ibsebicebbb'];
-	let tilesOtherTime = ['pbpiecb', 'cbciesceibc']
+	let tilesOtherTime = ['pbpiecb', 'cbciesceibc'];
+
+	let setRow1 = async (tiles: string) => { await (component.patternInput as any).row1Changed(tiles); };
+	let setRow2 = async (tiles: string) => { await (component.patternInput as any).row2Changed(tiles); };
 
 	beforeEach(async () => {
 		// We must set some localstorage for StepTiles to access.
@@ -51,39 +54,52 @@ describe('StepTilesComponent', () => {
 		mockHttpClient.respondWith('asp/submitResults', undefined);
 	});
 
+	afterEach(() => {
+		component.timeFinder.pauseSearch();
+	})
+
+	it('verify that private methods these tests use exist', async () => {
+		// We must interact with the component to perform our tests.
+		// Ideally we'd have a proper way to programmatically interact with the UI,
+		// but we don't right now. So these methods will cast it as type any
+		// and access private or protected members.
+		await setRow1('');
+		await setRow2('');
+	});
+
 	it('should create', () => {
 		expect(component).toBeTruthy();
 	});
 
 	it('can compute seeds', async () => {
-		await component.row1Changed(tiles014515[0]);
-		await component.row2Changed(tiles014515[1].toUpperCase());
+		await setRow1(tiles014515[0]);
+		await setRow2(tiles014515[1].toUpperCase());
 		// The above pattern comes from known, hard-coded RNG params.
 		// So, it will know the one specific seed that generated it.
-		assert(component.seeds.length === 1, `Found ${component.seeds.length} seeds for pattern from known RNG params.`);
+		assert(component.patternInput.seeds.length === 1, `Found ${component.patternInput.seeds.length} seeds for pattern from known RNG params.`);
 
 		// This pattern doesn't. So it'll have multiple possible seeds.
-		await component.row1Changed(tilesOtherTime[0]);
-		await component.row2Changed(tilesOtherTime[1].toUpperCase());
-		assert(component.seeds.length === 5, `Found ${component.seeds.length} seeds for valid pattern from unknown RNG params.`);
+		await setRow1(tilesOtherTime[0]);
+		await setRow2(tilesOtherTime[1].toUpperCase());
+		assert(component.patternInput.seeds.length === 5, `Found ${component.patternInput.seeds.length} seeds for valid pattern from unknown RNG params.`);
 
 	});
 
 	it('can progress with good patterns', async () => {
-		await component.row1Changed(tiles014515[0]);
-		await component.row2Changed(tiles014515[1]);
+		await setRow1(tiles014515[0]);
+		await setRow2(tiles014515[1]);
 		await component.submit();
 
-		await component.row1Changed(tiles014415[0]);
-		await component.row2Changed(tiles014415[1]);
+		await setRow1(tiles014415[0]);
+		await setRow2(tiles014415[1]);
 		await component.submit();
 
 		assert(component.errorStatus === undefined); // no error indicates user can proceed to next step
 	});
 
 	it('recognizes bad pattern', async () => {
-		await component.row1Changed(tilesOtherTime[0]);
-		await component.row2Changed(tilesOtherTime[1]);
+		await setRow1(tilesOtherTime[0]);
+		await setRow2(tilesOtherTime[1]);
 		await component.submit();
 
 		assert(component.resultManager.submitCount == 1);
@@ -101,8 +117,8 @@ describe('StepTilesComponent', () => {
 		(component.resultManager as any).submitCount = 1;
 		(component.resultManager as any).distinctParamsCount = 0;
 
-		await component.row1Changed(tiles014515[0]);
-		await component.row2Changed(tiles014515[1]);
+		await setRow1(tiles014515[0]);
+		await setRow2(tiles014515[1]);
 		await component.submit();
 
 		assert(component.resultManager.distinctParamsCount == 2, `Found ${component.resultManager.distinctParamsCount}, expected 2`);

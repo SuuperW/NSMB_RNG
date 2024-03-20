@@ -25,7 +25,7 @@ export class FullPatternInputComponent {
 
 	// I'm using the control validators as change handlers.
 	// No other method of change handling that I found both worked and triggered immediately upon typing a character.
-	protected rowsForm = new FormGroup({
+	public rowsForm = new FormGroup({
 		row1Input: new FormControl('', (c: AbstractControl<string>) => { this.row1Input = c.value; return null; }),
 		row2Input: new FormControl('', (c: AbstractControl<string>) => { this.row2Input = c.value; return null; }),
 	});
@@ -128,7 +128,7 @@ export class FullPatternInputComponent {
 	}
 
 	r2cc = 0;
-	async row2Changed(tiles: string) {
+	protected async row2Changed(tiles: string) {
 		this.patternIsInvalid = false;
 		this.row2 = tiles;
 		if (!this._changedByUser)
@@ -139,13 +139,13 @@ export class FullPatternInputComponent {
 		this._row2SetByAutocomplete = false;
 		let r2cc = ++this.r2cc;
 
-		// If row2Input is invalid, row2 will be a blank string. So autocomplete might find something!
+		// If row2Input is invalid, row2 will be a blank string. So autocomplete might mistakenly find something!
 		if (tiles !== '' || this.row2Input.length === 0)
 			this.doAutocomplete();
 		else
 			this._patternChanged.trigger(null);
 
-		if (tiles.length == 11 && this.row1.length == 7) {
+		if (tiles.length == 11 && this.row1.length == 7 && !this._row2SetByAutocomplete) {
 			this.computingLastRow = true;
 			let seeds = await this.seedService.getPossibleSeedsFor(this.row1, tiles) as number[];
 

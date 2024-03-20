@@ -82,7 +82,7 @@ export class StepTilesComponent extends StepComponent implements AfterViewInit {
 	requiredFullSearch: boolean = false;
 	displayedBadPatternsMessage: boolean = false;
 
-	private get resultManager() { return this.guide.resultManager!; } // We set it in constructor, and nothing else sets it; it is always defined.
+	public get resultManager() { return this.guide.resultManager!; } // We set it in constructor, and nothing else sets it; it is always defined.
 
 	constructor(guide: GuideComponent) {
 		super(guide);

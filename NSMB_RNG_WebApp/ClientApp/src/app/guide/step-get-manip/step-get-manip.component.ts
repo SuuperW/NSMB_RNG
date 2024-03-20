@@ -8,7 +8,7 @@ import { RouterModule } from '@angular/router';
 import { PatternMatchInfo, PrecomputedPatterns } from '../precomputed-patterns';
 import { GuideComponent } from '../guide.component';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { PopupDialogComponent } from '../../popup-dialog/popup-dialog.component';
+import { PopupDialogComponent, PopupDialogData } from '../../popup-dialog/popup-dialog.component';
 import { FullPatternInputComponent } from 'src/app/tile-display/full-pattern-input.component';
 import { ClickableTilesComponent } from 'src/app/tile-display/clickable-tiles.component';
 import { TimeFinderService } from 'src/app/time-finder.service';
@@ -175,6 +175,17 @@ export class StepGetManipComponent extends StepComponent implements AfterViewIni
 				if (paramsEqual(this.guide.resultManager.getMostLikelyResult()!, newParams)) {
 					this.newParams = newParams;
 					this.newParams.datetime = dt;
+
+					this.dialog.open<PopupDialogComponent, PopupDialogData>(PopupDialogComponent, {
+						data: {
+							message: [
+								'We have a new date and time that might be more likely to give the correct RNG and tile pattern.',
+								'Use the new date and time?',
+							],
+							buttons: ['Yes', 'Maybe later'],
+							buttonHandler: (t) => this.useNewParams(),
+						}
+					});
 				}
 
 				this.removeProgress(status);
