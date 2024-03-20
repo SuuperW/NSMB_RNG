@@ -56,6 +56,7 @@ describe('StepTilesComponent', () => {
 
 	afterEach(() => {
 		component.timeFinder.pauseSearch();
+		component.worker.dispose(); // Test framework has a new worker service created for each test.
 	})
 
 	it('verify that private methods these tests use exist', async () => {

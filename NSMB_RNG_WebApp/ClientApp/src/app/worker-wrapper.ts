@@ -33,6 +33,11 @@ export class WorkerWrapper {
 		}
 	}
 
+	public dispose() {
+		if (this.worker?.removeAllListeners) this.worker.removeAllListeners();
+		this.worker?.terminate();
+	}
+
 	private async call(functionName: string, copyData: dict) {
 		this.lastId++;
 
@@ -99,10 +104,14 @@ export class WorkerWrapper {
 					maxVCount: options.maxVCount,
 				}));
 
+				
 				let promises: Promise<RngParams[]>[] = [];
 				promises.push(this.searchForSeeds(seeds, subOptions[0]));
 				for (let i = 1; i < subOptions.length; i++) {
-					promises.push(new WorkerWrapper().searchForSeeds(seeds, subOptions[i]));
+					const worker = new WorkerWrapper();
+					const p = worker.searchForSeeds(seeds, subOptions[i]);
+					p.then((v) => { worker.dispose(); });
+					promises.push(p);
 				}
 				let result = [];
 				for (let p of promises) {

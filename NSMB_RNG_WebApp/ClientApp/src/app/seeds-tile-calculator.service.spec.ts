@@ -14,6 +14,10 @@ describe('SeedTileCalculatorService', () => {
 		service = TestBed.inject(SeedTileCalculatorService);
 	});
 
+	afterEach(() => {
+		service.worker.dispose(); // Test framework has a new worker service created for each test.
+	})
+
 	it('should be created', () => {
 		expect(service).toBeTruthy();
 	});

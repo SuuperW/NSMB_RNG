@@ -7,6 +7,7 @@ import { GuideComponent } from '../guide.component';
 import { MockHttpClient } from 'src/test/mockHttpClient';
 import { HttpClient } from '@angular/common/http';
 import { TimeFinderService } from 'src/app/time-finder.service';
+import { WorkerService } from 'src/app/worker.service';
 
 describe('StepGetManipComponent', () => {
 	let component: StepGetManipComponent;
@@ -26,6 +27,7 @@ describe('StepGetManipComponent', () => {
 			}
 		}
 		TestBed.overrideProvider(TimeFinderService, { useValue: mockTimeFinder });
+		TestBed.overrideProvider(WorkerService, { useValue: {} }); // Don't create a worker thread; we don't use it.
 	
 		let g = TestBed.createComponent(GuideComponent).componentInstance;
 		g.expectedParams = {

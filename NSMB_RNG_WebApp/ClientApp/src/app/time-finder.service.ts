@@ -115,6 +115,7 @@ export class TimeFinderService {
 					this.searchStates = this.searchStates.filter((s) => s.key !== nextState.key);
 				}
 			}
+			worker.dispose();
 		}
 
 		let maxWorkers: number;
