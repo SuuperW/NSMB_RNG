@@ -14,7 +14,7 @@
 <app-full-pattern-input id="patternInput" [hidden]="!datetimeCalculated"></app-full-pattern-input>
 <p [hidden]="!feedback">{{ feedback }}</p>
 
-<button class="btn-primary" type="button" (click)="submit()">Submit</button>
+<button class="btn-primary" type="button" [hidden]="!datetimeCalculated" (click)="submit()">Submit</button>
 <br />
 
 <div [hidden]="!this.isGood">
