@@ -1,9 +1,20 @@
-There is a pre-built version (1.5) for Windows x64 on the Release branch. You can download it here: https://github.com/SuuperW/NSMB_RNG/raw/Release/NSMB_RNG_v1.5.zip
+A website version of NSMB_RNG is available at https://nsmb-rng.azurewebsites.net
+This is the recommended way to use NSMB_RNG. There is also a pre-built Windows x64 app available; see later in this file for more information on that.
 
 --- Purpose of NSMB_RNG ---
 The purpose of NSMB_RNG is to allow speedrunners to play the any% category with the best possible RNG. This means the red ? blocks in World 8 always move left. If attempting mini route, there will be a 7% chance of RNG supporting that in World 5, or 56% if you can manipulate RNG through 5-1.
 
---- How to use NSMB_RNG ---
+--- How the game's RNG works ---
+The random number generator keeps a 32-bit integer representing its current state. Whenever the game wants a random number, this 32-bit integer is given as the input to a function that outputs another 32-bit integer. The output of this function is then used as the RNG's new state. Depending on what the random number is to be used for, a selection of those 32 bits are then used to calculate the random number that is actually used.
+The state of the RNG when it is first started/initialized is called the RNG's "seed". The seed is randomized in a much more robust and random way than the RNG's normal function. (This "more random" method is not used for each random number presumably because it is much slower.) 
+
+--- How the RNG seed is manipulated ---
+The RNG seed is calculated using various inputs. The important ones for this application are: (A) a "magic" that varies across console types, and can also slightly vary with a single DS, (B) the DS's MAC address, (C) the DS's current date and time (rounded down to the nearest second), and (D) the controller buttons that are currently held.
+In order to control the RNG seed, we first need to determine the DS's MAC address and its most common magic. We can then calculate the expected seed for any given date+time and button combination, and search the available possibilities until we find a desired seed.
+
+--- How to use the NSMB_RNG Windows app ---
+There is a pre-built version (1.5) for Windows x64 on the Release branch. You can download it here: https://github.com/SuuperW/NSMB_RNG/raw/Release/NSMB_RNG_v1.5.zip
+
 You will have to have the game generate multiple randomized tile sequences. Any time you need to do that, follow these steps:
  1) Make sure you have an existing NSMB saved file. (Because you must load 1-2 without viewing the cutscene.)
  2) Ensure that you do not have a GBA game in the GBA slot.
@@ -47,11 +58,3 @@ Now, here are the steps to set up your game for optimal RNG:
  8) You can now quit to the main menu and start a run. Repeat step 6 every time you boot the game. Repeat step 7 before every attempt.
 
 NSMB_RNG will save a file named settings.bin, which will be loaded when NSMB_RNG starts next time. You can copy/rename this file to keep info for multiple DSs.
-
---- How the game's RNG works ---
-The random number generator keeps a 32-bit integer representing its current state. Whenever the game wants a random number, this 32-bit integer is given as the input to a function that outputs another 32-bit integer. The output of this function is then used as the RNG's new state. Depending on what the random number is to be used for, a selection of those 32 bits are then used to calculate the random number that is actually used.
-The state of the RNG when it is first started/initialized is called the RNG's "seed". The seed is randomized in a much more robust and random way than the RNG's normal function. (This "more random" method is not used for each random number presumably because it is much slower.) 
-
---- How the RNG seed is manipulated ---
-The RNG seed is calculated using various inputs. The important ones for this application are: (A) a "magic" that varies across console types, and can also slightly vary with a single DS, (B) the DS's MAC address, (C) the DS's current date and time (rounded down to the nearest second), and (D) the controller buttons that are currently held.
-In order to control the RNG seed, we first need to determine the DS's MAC address and its most common magic. We can then calculate the expected seed for any given date+time and button combination, and search the available possibilities until we find a desired seed.
