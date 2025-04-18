@@ -24,8 +24,8 @@ namespace NSMB_RNG
 			maxTimer0 = 0x22ff; // Idk if that's right. Idk what timer0 is.
 			minVCount = 0;
 			maxVCount = 263; // 262?
-			minVFrame = 4; // Lowest I've seen is 4.
-			maxVFrame = 8; // Highest I've seen is 8.
+			minVFrame = 3; // Lowest I've seen is 4.
+			maxVFrame = 10; // Highest I've seen is 8.
 
 			secondsRange = 1;
 		}

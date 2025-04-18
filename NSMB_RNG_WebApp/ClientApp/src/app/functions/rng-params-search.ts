@@ -38,8 +38,8 @@ export class SearchParams implements SearchParamsParams {
 		mac, datetime, minTimer0, maxTimer0,
 		minVCount = 0,
 		maxVCount = 263,
-		minVFrame = 4,
-		maxVFrame = 8,
+		minVFrame = 3, // Lowest I've seen is 4.
+		maxVFrame = 10, // Highest I've seen is 9.
 		is3DS = false,
 		buttons = 0,
 	}: SearchParamsParams) {
