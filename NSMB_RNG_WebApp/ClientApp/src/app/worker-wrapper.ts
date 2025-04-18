@@ -87,7 +87,7 @@ export class WorkerWrapper {
 					minTimer0: subOptions[0].maxTimer0 + 1,
 					minVCount: options.minVCount,
 					maxTimer0: options.maxTimer0,
-					maxVCount: (options.minVCount + options.minVCount) >>> 1,
+					maxVCount: (options.maxVCount + options.minVCount) >>> 1,
 				}));
 				subOptions.push(new SearchParams({
 					...options,
