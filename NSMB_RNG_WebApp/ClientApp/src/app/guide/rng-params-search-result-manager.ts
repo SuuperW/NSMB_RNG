@@ -162,7 +162,8 @@ export class RngParamsSearchResultManager {
 			}
 		}
 
-		this.postResults(result);
+		if (time !== undefined)
+			this.postResults(result);
 	}
 
 	private mostLikely: ParamsWithCount | undefined;
