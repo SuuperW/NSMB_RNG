@@ -81,6 +81,14 @@ export class StepTilesComponent extends StepComponent implements AfterViewInit {
 	knownSearchParams: SearchParams[] = [];
 	requiredFullSearch: boolean = false;
 	displayedBadPatternsMessage: boolean = false;
+	displayedPotentiallyUseful: boolean = false;
+	incorrectPatternsMessage: string[] = [
+		'This might mean you incorrectly entered something. For example, you might have a typo in your mac address.',
+		'Or it might mean you\'re not following the correct process to collect tile patterns. (See https://youtu.be/4XJ8dgqii10)',
+		'Or, there might be something that is affecting RNG that I don\'t know about. ' +
+		'If you need help, record a video of you viewing your MAC address, setting date and time, and getting a tile ' +
+		'pattern on your console. Send the video to @suuper on Discord and I\'ll see if I can figure out what the problem is.'
+	];
 
 	public get resultManager() { return this.guide.resultManager!; } // We set it in constructor, and nothing else sets it; it is always defined.
 
@@ -206,42 +214,42 @@ export class StepTilesComponent extends StepComponent implements AfterViewInit {
 		let message: string[] | undefined = undefined;
 		if (this.resultManager.suspectUserErrorOrStrangeConsole() && !this.displayedBadPatternsMessage) {
 			this.displayedBadPatternsMessage = true;
-
-			const statusBadTime = 'Checking +1/-1 second for all patterns... (this may take a long time)';
-			this.addProgress(statusBadTime);
-			let promise: Promise<boolean> = (async () => { return true })();
-			for (let i of this.resultManager.emptySearches) {
-				promise = promise.then((v) => {
-					return this.processTilePattern(this.getProcessingInputs(i), -1);
-				})
-					.then((v) => {
-						if (!v) return this.processTilePattern(this.getProcessingInputs(i), +1);
-						else return true;
-					});
-
-			}
-			this.dialog.open(PopupDialogComponent, {
-				data: {
-					message: ['We haven\'t been able to find RNG params that match your RNG values/tile patterns.',
-						'This might mean the game is initializing RNG one second earlier or later than you think.',
-						'We\'re going to re-calculate with +/-1 second to see if this is the case.',
-					],
-				}
-			});
-			await promise;
-			this.removeProgress(statusBadTime);
-
-			if (this.resultManager.suspectUserErrorOrStrangeConsole()) {
-				message = ['Unfortunately, we didn\'t find anything useful.',
-					'This might mean you incorrectly entered something. For example, you might have a typo in your mac address.',
-					'Or it might mean you\'re not following the correct process to collect tile patterns.', // TODO: Make and refer to detailed instructions + video.
-					'Or, there might be something that is affecting RNG that I don\'t know about. ' +
-					'If you need help, record a video of you viewing your MAC address, setting date and time, and getting a tile ' +
-					'pattern on your console. Send the video to @suuper on Discord and I\'ll see if I can figure out what the problem is.'
-				];
+			if (this.displayedPotentiallyUseful) {
+				message = ['Your tile patterns aren\'t consistently matching any expectations.', ...this.incorrectPatternsMessage];
 			} else {
-				message = ['Good news! We found something potentially useful. Keep going.'];
+				const statusBadTime = 'Checking +1/-1 second for all patterns... (this may take a long time)';
+				this.addProgress(statusBadTime);
+				let promise: Promise<boolean> = (async () => { return true })();
+				for (let i of this.resultManager.emptySearches) {
+					promise = promise.then((v) => {
+						return this.processTilePattern(this.getProcessingInputs(i), -1);
+					})
+						.then((v) => {
+							if (!v) return this.processTilePattern(this.getProcessingInputs(i), +1);
+							else return true;
+						});
+
+				}
+				this.dialog.open(PopupDialogComponent, {
+					data: {
+						message: ['We haven\'t been able to find RNG params that match your RNG values/tile patterns.',
+							'This might mean the game is initializing RNG one second earlier or later than you think.',
+							'We\'re going to re-calculate with +/-1 second to see if this is the case.',
+						],
+					}
+				});
+				await promise;
+				this.removeProgress(statusBadTime);
+
+				if (this.resultManager.suspectUserErrorOrStrangeConsole()) {
+					message = ['Unfortunately, we didn\'t find anything useful.', ...this.incorrectPatternsMessage];
+				} else {
+					message = ['Good news! We found something potentially useful. Keep going.'];
+					this.displayedPotentiallyUseful = true;
+					this.displayedBadPatternsMessage = false;
+				}
 			}
+
 		}
 
 		// See if we know which RNG params to use, and potentially tell the user something.
