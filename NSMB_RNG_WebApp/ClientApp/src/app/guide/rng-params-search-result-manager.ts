@@ -123,12 +123,14 @@ export class RngParamsSearchResultManager {
 		this.submitCount++;
 
 		if (result.result.length === 0) {
-			this.emptySearches.push({
-				row1: result.row1,
-				row2: result.row2,
-				seeds: result.seeds,
-				time: time!,
-			});
+			if (this.emptySearches.findIndex((v) => v.row1 == result.row1 && v.row2 == result.row2) === -1) {
+				this.emptySearches.push({
+					row1: result.row1,
+					row2: result.row2,
+					seeds: result.seeds,
+					time: time!,
+				});
+			}
 		}
 		for (let params of result.result) {	
 			let prior = this.getPriorResult(params);

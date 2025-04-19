@@ -124,4 +124,22 @@ describe('StepTilesComponent', () => {
 
 		assert(component.resultManager.distinctParamsCount == 2, `Found ${component.resultManager.distinctParamsCount}, expected 2`);
 	});
+
+	it('does not duplicate emptySearhces entry', async () => {
+		// simulate submission of bad pattern
+		component.resultManager.emptySearches = [{
+			row1: 'bbbbbbb',
+			row2: 'bbbbbbbbbbb',
+			seeds: [...previousState(nextState(1))],
+			time: firstSearchDate
+		}];
+		(component.resultManager as any).submitCount = 1;
+		(component.resultManager as any).distinctParamsCount = 0;
+
+		await setRow1(tiles014515[0]);
+		await setRow2(tiles014515[1]);
+		await component.submit();
+
+		assert(component.resultManager.emptySearches.length == 1, `Found ${component.resultManager.distinctParamsCount}, expected 2`);
+	});
 });
