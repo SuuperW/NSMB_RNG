@@ -265,12 +265,13 @@ export class RngParamsSearchResultManager {
 		if (!this.http) return;
 
 		let submitCount = this.submitCount;
+		let sid = this.sessionId;
 		if (submitCount == 1) {
 			this._sessionPromise = this.createSession();
-			this.sessionId = await this._sessionPromise;
+			sid = await this._sessionPromise;
 			this._sessionPromise = undefined;
 		} else if (this._sessionPromise) {
-			await this._sessionPromise;
+			sid = await this._sessionPromise;
 		}
 
 		if (this.sessionId === undefined || this.sessionId.length !== 36)
