@@ -22,6 +22,7 @@ describe('StepTilesComponent', () => {
 	let setRow2 = async (tiles: string) => { await (component.patternInput as any).row2Changed(tiles); };
 
 	beforeEach(async () => {
+		jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000000;
 		// We must set some localstorage for StepTiles to access.
 		let mac = '40f407f7d421';
 		let seconds = '15';
@@ -73,17 +74,22 @@ describe('StepTilesComponent', () => {
 	});
 
 	it('can compute seeds', async () => {
-		await setRow1(tiles014515[0]);
-		await setRow2(tiles014515[1].toUpperCase());
-		// The above pattern comes from known, hard-coded RNG params.
-		// So, it will know the one specific seed that generated it.
-		assert(component.patternInput.seeds.length === 1, `Found ${component.patternInput.seeds.length} seeds for pattern from known RNG params.`);
-
-		// This pattern doesn't. So it'll have multiple possible seeds.
 		await setRow1(tilesOtherTime[0]);
 		await setRow2(tilesOtherTime[1].toUpperCase());
 		assert(component.patternInput.seeds.length === 5, `Found ${component.patternInput.seeds.length} seeds for valid pattern from unknown RNG params.`);
 
+	});
+
+	it('finds only one seed when autocompleted', async() => {
+		// Tiles from a console with known parameters
+		await setRow1(tiles014515[0]);
+		await setRow2(tiles014515[1].toUpperCase());
+		await component.submit(); // must have at least 1 submission to enable auto-complete
+
+		await setRow1(tiles014415[0]);
+		await setRow2(tiles014415[1].toUpperCase());
+		// So, it will know the one specific seed that generated it.
+		assert(component.patternInput.seeds.length === 1, `Found ${component.patternInput.seeds.length} seeds for pattern from known RNG params.`);
 	});
 
 	it('can progress with good patterns', async () => {

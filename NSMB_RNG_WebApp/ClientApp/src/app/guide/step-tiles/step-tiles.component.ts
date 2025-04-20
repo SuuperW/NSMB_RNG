@@ -149,9 +149,6 @@ export class StepTilesComponent extends StepComponent implements AfterViewInit {
 			this.patternInput.autocomplete.addParams(sp, 1);
 			// We stop requiring 1 extra tile before autocompleting when we have params from user patterns.
 			this.patternInput.autocompleteRequireExtraTiles = 0;
-		} else {
-			// Until we find RNG params for this user, auto-complete will be disabled.
-			this.patternInput.autocomplete = new PrecomputedPatterns();
 		}
 	}
 
@@ -263,8 +260,9 @@ export class StepTilesComponent extends StepComponent implements AfterViewInit {
 
 		// Update auto-complete list (again) if search range has changed
 		let newRange = this.resultManager.getSearchParams(new Date());
-		if (oldRange && newRange && (oldRange.minTimer0 != newRange.minTimer0 || oldRange.minVCount != newRange.minVCount))
-		this.updateAutocomplete();
+		if (newRange && (!oldRange || (oldRange.minTimer0 != newRange.minTimer0 || oldRange.minVCount != newRange.minVCount))) {
+			this.updateAutocomplete();
+		}
 	}
 
 	private getProcessingInputs(result?: SearchInputs): ProcessingInputs {
