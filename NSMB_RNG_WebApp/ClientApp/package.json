@@ -28,7 +28,8 @@
     "jquery": "^3.6.4",
     "run-script-os": "^1.1.6",
     "rxjs": "~7.8.1",
-    "tslib": "^2.5.0"
+    "tslib": "^2.5.0",
+    "zone.js": "0.14.0"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "^17.1.3",
