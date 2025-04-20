@@ -335,13 +335,16 @@ export class StepTilesComponent extends StepComponent implements AfterViewInit {
 			}));
 		}
 
-		this.resultManager.submitResult({
-			result: rngParams,
-			seeds: processingInptus.seeds,
-			row1: processingInptus.row1,
-			row2: processingInptus.row2,
-			offsetUsed: secondsOffset,
-		}, processingInptus.date);
+		// There's no sense re-submitting a failed retry search
+		if (allowFull || rngParams.length !== 0) {
+			this.resultManager.submitResult({
+				result: rngParams,
+				seeds: processingInptus.seeds,
+				row1: processingInptus.row1,
+				row2: processingInptus.row2,
+				offsetUsed: secondsOffset,
+			}, processingInptus.date);
+		}
 
 		this.inProgressCount--;
 
