@@ -25,15 +25,11 @@ type ProcessingInputs = {
 	date: Date,
 }
 
-let knownParams = [
-	// timer0 min, max, vCount min, max, vFrame
-	[0x566, 0x567, 0x26, 0x27, 5], // DSi, 3DS
-	[0x564, 0x565, 0xe8, 0xe8, 6], // DSLite
-	[0x556, 0x557, 0x38, 0x39, 8], // DSPhat
-	[0x20ca, 0x20ca, 0xa, 0xb, 6], // 3DS, non-US
-	[0x20a8, 0x20a8, 0x26, 0x27, 5], // 3DS
-	[0x56c, 0x56c, 0x18, 0x18, 5], // 3DS
-	//[0x566, 0x567, 0x9, 0xa, 6],
+let knownParams = [	
+	// timer0 min, max, vFrame min, max
+	[1350, 1400, 4, 8], // USA+JPN (JPN is very clsoe to USA)
+	[8340, 8400, 5, 9], // EUR english
+	[8470, 8480, 5, 9], // EUR probably non-english (sample size of 1 here)
 ]
 
 @Component({
@@ -78,7 +74,7 @@ export class StepTilesComponent extends StepComponent implements AfterViewInit {
 			this.timeFinder.pauseSearch();
 	}
 
-	knownSearchParams: SearchParams[] = [];
+	knownSearchParams: SearchParams[];
 	requiredFullSearch: boolean = false;
 	displayedBadPatternsMessage: boolean = false;
 	displayedPotentiallyUseful: boolean = false;
@@ -114,6 +110,27 @@ export class StepTilesComponent extends StepComponent implements AfterViewInit {
 			mac: localStorage.getItem('mac')!,
 			consoleType: localStorage.getItem('consoleType')!,
 		}
+
+		// Use expected params based on other consoles for fast searching (until we find something for this user's console).
+		this.knownSearchParams = [];
+		let is3DS = this.generalInputs.consoleType == '3DS';
+		let basicParams = new SearchParams({
+			mac: this.generalInputs.mac,
+			is3DS: is3DS,
+			datetime: new Date(this.date),
+			buttons: 0,
+			minTimer0: 0,
+			maxTimer0: 0,
+		});
+
+		for (let kp of knownParams) {
+			let sp = new SearchParams(basicParams);
+			sp.minTimer0 = kp[0];
+			sp.maxTimer0 = kp[1];
+			sp.minVFrame = kp[2];
+			sp.maxVFrame = kp[3];
+			this.knownSearchParams.push(sp);
+		}
 	}
 
 	ngAfterViewInit(): void {
@@ -132,32 +149,9 @@ export class StepTilesComponent extends StepComponent implements AfterViewInit {
 			this.patternInput.autocomplete.addParams(sp, 1);
 			// We stop requiring 1 extra tile before autocompleting when we have params from user patterns.
 			this.patternInput.autocompleteRequireExtraTiles = 0;
-			return;
-		}
-
-		// Until we find RNG params for this user, auto-complete will be based on RNG params for all consoles.
-		let is3DS = this.generalInputs.consoleType == '3DS';
-		let basicParams = new SearchParams({
-			mac: this.generalInputs.mac,
-			is3DS: is3DS,
-			datetime: new Date(this.date),
-			buttons: 0,
-			minTimer0: 0,
-			maxTimer0: 0,
-		});
-
-		this.patternInput.autocomplete = new PrecomputedPatterns();
-		let firstTime = this.knownSearchParams.length === 0;
-		for (let kp of knownParams) {
-			let sp = new SearchParams(basicParams);
-			sp.minTimer0 = kp[0];
-			sp.maxTimer0 = kp[1];
-			sp.minVCount = kp[2];
-			sp.maxVCount = kp[3];
-			sp.minVFrame = sp.maxVFrame = kp[4];
-			this.patternInput.autocomplete.addParams(sp, 1);
-			if (firstTime)
-				this.knownSearchParams.push(sp);
+		} else {
+			// Until we find RNG params for this user, auto-complete will be disabled.
+			this.patternInput.autocomplete = new PrecomputedPatterns();
 		}
 	}
 
