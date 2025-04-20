@@ -1,0 +1,16 @@
+#!/bin/bash
+# Don't run this directly. Run manual, or use pipeline.
+
+echo "Building"
+run dotnet publish NSMB_RNG_WebApp/NSMB_RNG_WebApp.csproj -c $BUILDCONFIGURATION
+
+echo "Running tests"
+run dotnet test TEST_NSMB_RNG/TEST_NSMB_RNG.csproj -c $BUILDCONFIGURATION
+cd NSMB_RNG_WebApp/ClientApp && run "pnpm test" && cd ../..
+
+echo "Running infrastructure deployment"
+run az deployment sub create --template-file NSMB_RNG_WebApp/deployment/main.bicep -l eastus -o none
+
+echo "Running software deployment"
+run 7za.exe a azpub.zip "./NSMB_RNG_WebApp/bin/$BUILDCONFIGURATION/$TARGETFRAMEWORK/publish/**"
+run az webapp deployment source config-zip --src azpub.zip -n NSMB-RNG -g NSMB_RNG

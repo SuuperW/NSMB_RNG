@@ -1,0 +1,19 @@
+#!/bin/bash
+# Azure's pipelines/azure agent/wsl are giving me serious issues. So, here. Run this instead.
+
+export BUILDCONFIGURATION=Release
+export TARGETFRAMEWORK=net6.0
+
+run() {
+	# Run a command and exit on non-zero exit codes.
+	$@
+	code=$?
+	if [ $code != 0 ]; then
+		echo "Error running $1"
+		exit $code
+	fi
+}
+export -f run
+
+cd ../../
+NSMB_RNG_WebApp/deployment/deploy
